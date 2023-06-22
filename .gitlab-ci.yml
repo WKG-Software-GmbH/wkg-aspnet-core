@@ -1,0 +1,31 @@
+stages:
+    - build
+    - test
+    - increase-version
+    - deploy-baget
+
+variables:
+    PROJECT_FILE_PATH: "Wkg.AspNetCore/Wkg.AspNetCore/Wkg.AspNetCore.csproj"
+    MAJOR_VERSION: "7"
+    MINOR_VERSION: "0"
+
+include:
+    - project: 'wkg/gitlab-templates'
+      ref: 'v1.1.10'
+      file:
+          - '/jobs/build_dotnet_7.yml'
+          - '/jobs/test_dotnet_7.yml'
+          - '/jobs/increase_version.yml'
+          - '/jobs/deploy_baget_dotnet_7.yml'
+
+build-library:
+    extends: .build
+
+test-library:
+    extends: .test
+
+increase-version:
+    extends: .increase-version
+
+deploy:
+    extends: .deploy-baget

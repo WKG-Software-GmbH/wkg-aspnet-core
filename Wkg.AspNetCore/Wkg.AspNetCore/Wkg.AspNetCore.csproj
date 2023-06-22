@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--.NET build settings-->
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RestoreAdditionalProjectSources>
+            https://baget.wkg.lan/v3/index.json
+        </RestoreAdditionalProjectSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.7" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.7" />
+      <PackageReference Include="Wkg" Version="7.3.13016" />
+    </ItemGroup>
+
+    <!--Nuget packaging-->
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <RepositoryUrl>https://git.wkg.lan/WKG/components/wkg-aspnet-core</RepositoryUrl>
+        <PackageProjectUrl>https://git.wkg.lan/WKG/components/wkg-aspnet-core</PackageProjectUrl>
+        <Description>Internal WKG library containing reusable cross-platform frameworks for ASP.NET Core projects.</Description>
+        <Company>WKG Software GmbH</Company>
+        <Authors>WKG Software GmbH</Authors>
+        <Copyright>Copyright (c) WKG Software GmbH 2023</Copyright>
+        <PackageIcon>logo.png</PackageIcon>
+        <Title>WKG ASP.NET Core</Title>
+        <PackageType>Dependency</PackageType>
+        <PackageTags>
+            AspNet;WebApi;EntityFrameworkCore;DatabaseTransactions
+        </PackageTags>
+    </PropertyGroup>
+
+    <!--Nuget symbols and debugging-->
+    <PropertyGroup>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <EmbedAllSources>true</EmbedAllSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="Assets\logo.png" Pack="true" PackagePath="\" />
+    </ItemGroup>
+</Project>
