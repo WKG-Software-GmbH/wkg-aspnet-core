@@ -5,7 +5,8 @@ stages:
     - deploy-baget
 
 variables:
-    PROJECT_FILE_PATH: "Wkg.AspNetCore/Wkg.AspNetCore/Wkg.AspNetCore.csproj"
+    LIBRARY_PROJECT: "Wkg.AspNetCore/Wkg.AspNetCore/Wkg.AspNetCore.csproj"
+    TEST_ADAPTER_PROJECT: "Wkg.AspNetCore/Wkg.AspNetCore.TestAdapters/Wkg.AspNetCore.TestAdapters.csproj"
     MAJOR_VERSION: "7"
     MINOR_VERSION: "0"
 
@@ -20,12 +21,28 @@ include:
 
 build-library:
     extends: .build
+    variables:
+        PROJECT_FILE_PATH: "$LIBRARY_PROJECT"
+    
+build-test-adapters:
+    extends: .build
+    variables:
+        PROJECT_FILE_PATH: "$TEST_ADAPTER_PROJECT"
 
 test-library:
     extends: .test
+    variables:
+        PROJECT_FILE_PATH: "$LIBRARY_PROJECT"
 
 increase-version:
     extends: .increase-version
 
-deploy:
+deploy-library:
     extends: .deploy-baget
+    variables:
+        PROJECT_FILE_PATH: "$LIBRARY_PROJECT"
+        
+deploy-test-adapters:
+    extends: .deploy-baget
+    variables:
+        PROJECT_FILE_PATH: "$TEST_ADAPTER_PROJECT"
