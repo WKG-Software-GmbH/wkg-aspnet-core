@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--.NET build settings-->
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <!--Nuget packaging-->
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <RepositoryUrl>https://git.wkg.lan/WKG/components/wkg-aspnet-core</RepositoryUrl>
+        <PackageProjectUrl>https://git.wkg.lan/WKG/components/wkg-aspnet-core</PackageProjectUrl>
+        <Description>Internal WKG library containing unit test adapters for projects using WKG ASP.NET Core.</Description>
+        <Company>WKG Software GmbH</Company>
+        <Authors>WKG Software GmbH</Authors>
+        <Copyright>Copyright (c) WKG Software GmbH 2023</Copyright>
+        <PackageIcon>logo.png</PackageIcon>
+        <Title>WKG ASP.NET Core Test Adapters</Title>
+        <PackageType>Dependency</PackageType>
+        <PackageTags>
+            AspNet;EntityFrameworkCore;UnitTest;Testing
+        </PackageTags>
+    </PropertyGroup>
+
+    <!--Nuget symbols and debugging-->
+    <PropertyGroup>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <EmbedAllSources>true</EmbedAllSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Wkg.AspNetCore\Wkg.AspNetCore.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <None Include="Assets\logo.png" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+</Project>
