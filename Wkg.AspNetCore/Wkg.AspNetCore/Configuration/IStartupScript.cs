@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Wkg.AspNetCore.Configuration;
 
-public interface IStartup
+public interface IStartupScript
 {
     static abstract void Configure(WebApplication app);
 

@@ -4,11 +4,14 @@ namespace Wkg.AspNetCore.Configuration;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static WebApplication BuildUsing<TStartup>(this WebApplicationBuilder builder) where TStartup : IStartup
+    public static WebApplication BuildUsing<TStartupScript>(this WebApplicationBuilder builder) where TStartupScript : IStartupScript
     {
-        TStartup.ConfigureServices(builder.Services);
+        builder.ConfigureServicesUsing<TStartupScript>();
         WebApplication app = builder.Build();
-        TStartup.Configure(app);
+        TStartupScript.Configure(app);
         return app;
     }
+
+    public static void ConfigureServicesUsing<TStartupScript>(this WebApplicationBuilder builder) where TStartupScript : IStartupScript => 
+        TStartupScript.ConfigureServices(builder.Services);
 }
