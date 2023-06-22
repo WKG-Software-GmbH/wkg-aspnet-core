@@ -36,5 +36,9 @@
     <ItemGroup>
       <ProjectReference Include="..\Wkg.AspNetCore\Wkg.AspNetCore.csproj" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <None Include="Assets\logo.png" Pack="true" PackagePath="\" />
+    </ItemGroup>
 
 </Project>
