@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Runtime.CompilerServices;
 
 namespace Wkg.AspNetCore.Configuration;
 
 public static class ServiceCollectionExtensions
 {
-    public static void ConfigureUsing<TStartupScript>(this IServiceCollection servcies) where TStartupScript : IStartupScript => 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IServiceCollection ConfigureUsing<TStartupScript>(this IServiceCollection servcies) where TStartupScript : IStartupScript
+    {
         TStartupScript.ConfigureServices(servcies);
+        return servcies;
+    }
 }

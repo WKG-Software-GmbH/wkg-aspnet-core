@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using System.Runtime.CompilerServices;
 
 namespace Wkg.AspNetCore.Configuration;
 
@@ -12,6 +13,7 @@ public static class WebApplicationBuilderExtensions
         return app;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ConfigureServicesUsing<TStartupScript>(this WebApplicationBuilder builder) where TStartupScript : IStartupScript => 
         TStartupScript.ConfigureServices(builder.Services);
 }
