@@ -5,6 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Wkg.AspNetCore.TestAdapters;
 
+/// <summary>
+/// Represents a test that uses a database context.
+/// </summary>
+/// <typeparam name="TDbContext">The type of the database context.</typeparam>
+/// <typeparam name="TDatabaseLoader">The type of the <see cref="IDatabaseLoader"/> to be used to initialize the database, if necessary.</typeparam>
 public abstract class DbContextTest<TDbContext, TDatabaseLoader> : TestBase 
     where TDbContext : DbContext
     where TDatabaseLoader : IDatabaseLoader
@@ -16,8 +21,12 @@ public abstract class DbContextTest<TDbContext, TDatabaseLoader> : TestBase
     }
 
     /// <summary>
-    /// Use this method to perform unit tests on the database context. Any changes made to the database will be rolled back after the unit test completes.
+    /// Executes the specified unit test against the database context.
     /// </summary>
+    /// <param name="unitTest">The unit test to be executed.</param>
+    /// <remarks>
+    /// Any changes made to the database context will be rolled back after the unit test has been executed.
+    /// </remarks>
     protected void UsingDbContext(Action<TDbContext> unitTest)
     {
         TDbContext dbContext = ServiceProvider.GetRequiredService<TDbContext>();
@@ -32,6 +41,14 @@ public abstract class DbContextTest<TDbContext, TDatabaseLoader> : TestBase
         }
     }
 
+    /// <summary>
+    /// Executes the specified unit test asynchronously against the database context.
+    /// </summary>
+    /// <param name="unitTestAsync">The unit test to be executed asynchronously.</param>
+    /// <remarks>
+    /// Any changes made to the database context will be rolled back after the unit test has been executed.
+    /// </remarks>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     protected async Task UsingDbContextAsync(Func<TDbContext, Task> unitTestAsync)
     {
         TDbContext dbContext = ServiceProvider.GetRequiredService<TDbContext>();

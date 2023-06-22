@@ -5,6 +5,11 @@ using Wkg.AspNetCore.TestAdapters.Extensions;
 
 namespace Wkg.AspNetCore.TestAdapters;
 
+/// <summary>
+/// Provides a base class for unit tests targeting an ASP.NET Core controller.
+/// </summary>
+/// <typeparam name="TController">The type of the controller to test.</typeparam>
+/// <typeparam name="TDatabaseLoader">The type of the <see cref="IDatabaseLoader"/> to be used to initialize the database, if necessary.</typeparam>
 public abstract class ControllerTest<TController, TDatabaseLoader> : TestBase 
     where TController : ControllerBase
     where TDatabaseLoader : IDatabaseLoader
@@ -15,6 +20,13 @@ public abstract class ControllerTest<TController, TDatabaseLoader> : TestBase
         TDatabaseLoader.InitializeDatabase(ServiceProvider);
     }
 
+    /// <summary>
+    /// Executes the specified unit test against the controller.
+    /// </summary>
+    /// <param name="unitTest">The unit test to be executed.</param>
+    /// <remarks>
+    /// Any transactional context created by the controller will be rolled back after the unit test has been executed.
+    /// </remarks>
     protected virtual void UsingController(Action<TController> unitTest)
     {
         TController controller = ServiceProvider.ActivateController<TController>();
@@ -33,6 +45,13 @@ public abstract class ControllerTest<TController, TDatabaseLoader> : TestBase
         }
     }
 
+    /// <summary>
+    /// Executes the specified unit test asynchronously against the controller.
+    /// </summary>
+    /// <param name="unitTestAsync">The unit test to be executed asynchronously.</param>
+    /// <remarks>
+    /// Any transactional context created by the controller will be rolled back after the unit test has been executed.
+    /// </remarks>
     protected static async Task UsingControllerAsync(Func<TController, Task> unitTestAsync)
     {
         TController controller = ServiceProvider.ActivateController<TController>();

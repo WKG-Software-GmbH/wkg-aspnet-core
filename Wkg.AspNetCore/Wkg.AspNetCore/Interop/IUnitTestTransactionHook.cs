@@ -1,12 +1,12 @@
 ﻿namespace Wkg.AspNetCore.Interop;
 
 /// <summary>
-/// Represents a hook for unit tests to control the transaction management of ASP .NET Core API controllers.
+/// Represents a hook for unit tests to control the transaction management of ASP.NET Core API controllers.
 /// </summary>
 internal interface IUnitTestTransactionHook
 {
     /// <summary>
-    /// Gets or sets a value indicating whether the controller should yield control over the transaction management to the unit test runner.
+    /// Gets or sets a value indicating whether the API controller should yield control over the transaction management to the unit test runner.
     /// </summary>
     internal bool ExternalTransactionManagement__UNIT_TEST_HOOK { get; set; }
 

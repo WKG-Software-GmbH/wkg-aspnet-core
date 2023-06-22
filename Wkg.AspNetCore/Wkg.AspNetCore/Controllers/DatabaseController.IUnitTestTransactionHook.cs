@@ -1,4 +1,5 @@
 ﻿using Wkg.AspNetCore.Interop;
+using Wkg.AspNetCore.TransactionManagement;
 
 namespace Wkg.AspNetCore.Controllers;
 
@@ -10,6 +11,11 @@ public abstract partial class DatabaseController<TDbContext> : IUnitTestTransact
         {
             DbContext.Database.CurrentTransaction.Rollback();
             _isIsolated = false;
+
+            // reset the continuation type to Commit, which is the expected default
+            // even if we don't want to commit the transaction.
+            // nothing will be committed anyway because transaction management is disabled (not allowed)
+            _continuationType = TransactionalContinuationType.Commit;
         }
     }
 
@@ -19,6 +25,11 @@ public abstract partial class DatabaseController<TDbContext> : IUnitTestTransact
         {
             await DbContext.Database.CurrentTransaction.RollbackAsync();
             _isIsolated = false;
+
+            // reset the continuation type to Commit, which is the expected default
+            // even if we don't want to commit the transaction.
+            // nothing will be committed anyway because transaction management is disabled (not allowed)
+            _continuationType = TransactionalContinuationType.Commit;
         }
     }
 
