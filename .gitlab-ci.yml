@@ -6,9 +6,10 @@ stages:
 
 variables:
     LIBRARY_PROJECT: "Wkg.AspNetCore/Wkg.AspNetCore/Wkg.AspNetCore.csproj"
+    LIBRARY_TEST_PROJECT: "Wkg.AspNetCore/Wkg.AspNetCoreTests/Wkg.AspNetCoreTests.csproj"
     TEST_ADAPTER_PROJECT: "Wkg.AspNetCore/Wkg.AspNetCore.TestAdapters/Wkg.AspNetCore.TestAdapters.csproj"
     MAJOR_VERSION: "7"
-    MINOR_VERSION: "0"
+    MINOR_VERSION: "3"
 
 include:
     - project: 'wkg/gitlab-templates'
@@ -32,7 +33,7 @@ build-test-adapters:
 test-library:
     extends: .test
     variables:
-        PROJECT_FILE_PATH: "$LIBRARY_PROJECT"
+        PROJECT_FILE_PATH: "$LIBRARY_TEST_PROJECT"
 
 increase-version:
     extends: .increase-version

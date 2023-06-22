@@ -1,4 +1,6 @@
-﻿namespace Wkg.AspNetCore.TransactionManagement;
+﻿using System.Diagnostics;
+
+namespace Wkg.AspNetCore.TransactionManagement;
 
 public interface ITransactionalContinuation
 {
