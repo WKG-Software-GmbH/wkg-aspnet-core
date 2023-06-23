@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 using System.Runtime.CompilerServices;
+using Wkg.AspNetCore.Configuration;
 using Wkg.AspNetCore.Exceptions;
 using Wkg.AspNetCore.RequestActions;
 using Wkg.AspNetCore.TransactionManagement;
@@ -29,7 +30,10 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
 
     private TransactionalContinuationType _continuationType = TransactionalContinuationType.Commit;
 
-    private static IsolationLevel TransactionIsolationLevel => IsolationLevel.ReadCommitted;
+    /// <summary>
+    /// Gets or sets the <see cref="IsolationLevel"/> to be used for all transactions of this controller.
+    /// </summary>
+    protected IsolationLevel TransactionIsolationLevel { get; init; } = DatabaseControllerDefaults.DefaultIsolationLevel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DatabaseController{TDbContext}"/> class.
