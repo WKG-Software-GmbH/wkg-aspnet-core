@@ -172,13 +172,19 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
         IDbContextTransaction? transaction = null;
         try
         {
+            // only create a new transaction if we are not running in an isolated context already
             transaction = await DbContext.Database.BeginTransactionAsync(TransactionIsolationLevel);
 
+            // we are now running in an isolated context (prevents recursion)
             _isIsolated = true;
 
+            // execute the client code and evaluate the result (commit or rollback)
             ITransactionalContinuation<TResult> result = await task.Invoke(DbContext);
             _continuationType |= result.NextAction;
 
+            // only commit or rollback if we are the outermost transaction and if we are allowed to manage transactions
+            // (if we are not allowed to manage transactions, we are running in a unit test, and the unit test runner
+            // will take care of rolling back the transaction)
             if (TransactionManagementAllowed)
             {
                 if (_continuationType is TransactionalContinuationType.Commit)
@@ -190,6 +196,8 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
                     await transaction.RollbackAsync();
                 }
             }
+
+            // return the actual result of the client code (API response)
             return result.Result;
         }
         catch (Exception e)
@@ -198,6 +206,7 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
         }
         finally
         {
+            // clean up (only if we are the outermost transaction and not running in a unit test)
             if (TransactionManagementAllowed)
             {
                 if (transaction is not null)
