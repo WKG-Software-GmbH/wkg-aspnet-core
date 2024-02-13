@@ -30,7 +30,7 @@ public static class ServiceCollectionExtensions
         configuration ??= new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: false)
-            .AddJsonFile($"apsettings.{env}.json", optional: true)
+            .AddJsonFile($"appsettings.{env}.json", optional: true)
             .AddEnvironmentVariables()
             .Build();
 
