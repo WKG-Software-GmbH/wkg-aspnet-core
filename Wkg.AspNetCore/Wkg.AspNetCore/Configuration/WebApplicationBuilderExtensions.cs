@@ -29,5 +29,5 @@ public static class WebApplicationBuilderExtensions
     /// <param name="builder">The builder.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ConfigureServicesUsing<TStartupScript>(this WebApplicationBuilder builder) where TStartupScript : IStartupScript => 
-        TStartupScript.ConfigureServices(builder.Services);
+        TStartupScript.ConfigureServices(builder.Services, builder.Configuration);
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Wkg.AspNetCore.Configuration;
@@ -19,5 +20,6 @@ public interface IStartupScript
     /// Configures the specified <paramref name="services"/> for dependency injection.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to configure.</param>
-    static abstract void ConfigureServices(IServiceCollection services);
+    /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
+    static abstract void ConfigureServices(IServiceCollection services, IConfiguration configuration);
 }
