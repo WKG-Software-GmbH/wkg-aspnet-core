@@ -8,32 +8,32 @@ variables:
     LIBRARY_PROJECT: "Wkg.AspNetCore/Wkg.AspNetCore/Wkg.AspNetCore.csproj"
     LIBRARY_TEST_PROJECT: "Wkg.AspNetCore/Wkg.AspNetCoreTests/Wkg.AspNetCoreTests.csproj"
     TEST_ADAPTER_PROJECT: "Wkg.AspNetCore/Wkg.AspNetCore.TestAdapters/Wkg.AspNetCore.TestAdapters.csproj"
-    MAJOR_VERSION: "7"
-    MINOR_VERSION: "3"
+    MAJOR_VERSION: "8"
+    MINOR_VERSION: "0"
 
 include:
     - project: 'wkg/gitlab-templates'
-      ref: 'v1.1.10'
+      ref: 'v1.2.0'
       file:
-          - '/jobs/build_dotnet_7.yml'
-          - '/jobs/test_dotnet_7.yml'
+          - '/jobs/build_dotnet_8.yml'
+          - '/jobs/test_dotnet_8.yml'
           - '/jobs/increase_version.yml'
-          - '/jobs/deploy_baget_dotnet_7.yml'
+          - '/jobs/deploy_baget_dotnet_8.yml'
 
 build-library:
     extends: .build
     variables:
-        PROJECT_FILE_PATH: "$LIBRARY_PROJECT"
+        PROJECT_FILE_PATH: "${LIBRARY_PROJECT}"
     
 build-test-adapters:
     extends: .build
     variables:
-        PROJECT_FILE_PATH: "$TEST_ADAPTER_PROJECT"
+        PROJECT_FILE_PATH: "${TEST_ADAPTER_PROJECT}"
 
 test-library:
     extends: .test
     variables:
-        PROJECT_FILE_PATH: "$LIBRARY_TEST_PROJECT"
+        TEST_PROJECT_FILE_PATH: "${LIBRARY_TEST_PROJECT}"
 
 increase-version:
     extends: .increase-version
@@ -41,9 +41,9 @@ increase-version:
 deploy-library:
     extends: .deploy-baget
     variables:
-        PROJECT_FILE_PATH: "$LIBRARY_PROJECT"
+        PROJECT_FILE_PATH: "${LIBRARY_PROJECT}"
         
 deploy-test-adapters:
     extends: .deploy-baget
     variables:
-        PROJECT_FILE_PATH: "$TEST_ADAPTER_PROJECT"
+        PROJECT_FILE_PATH: "${TEST_ADAPTER_PROJECT}"

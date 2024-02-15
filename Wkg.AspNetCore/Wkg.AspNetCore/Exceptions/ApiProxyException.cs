@@ -5,16 +5,12 @@ namespace Wkg.AspNetCore.Exceptions;
 /// <summary>
 /// Represents an <see cref="Exception"/> that is (re-)thrown when an unhandled error was intercepted by an <see cref="ErrorHandlingController"/> instance.
 /// </summary>
-public class ApiProxyException : Exception
+/// <remarks>
+/// Initializes a new instance of the <see cref="ApiProxyException"/> class.
+/// </remarks>
+/// <param name="innerException">The inner exception that caused this exception to be thrown.</param>
+public class ApiProxyException(Exception innerException) : Exception(nameof(ApiProxyException), innerException)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ApiProxyException"/> class.
-    /// </summary>
-    /// <param name="innerException">The inner exception that caused this exception to be thrown.</param>
-    public ApiProxyException(Exception innerException) : base(nameof(ApiProxyException), innerException)
-    {
-    }
-
     /// <summary>
     /// Gets the message that describes the current exception.
     /// </summary>

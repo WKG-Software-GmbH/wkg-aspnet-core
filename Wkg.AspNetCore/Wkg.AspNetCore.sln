@@ -3,15 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wkg.AspNetCore", "Wkg.AspNetCore\Wkg.AspNetCore.csproj", "{F1885D1A-8C67-4C6A-AB7E-267AC74656D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wkg.AspNetCore", "Wkg.AspNetCore\Wkg.AspNetCore.csproj", "{F1885D1A-8C67-4C6A-AB7E-267AC74656D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wkg.AspNetCore.TestAdapters", "Wkg.AspNetCore.TestAdapters\Wkg.AspNetCore.TestAdapters.csproj", "{A0141F38-8B73-4B1A-82F8-8EB4AC1C05E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wkg.AspNetCore.TestAdapters", "Wkg.AspNetCore.TestAdapters\Wkg.AspNetCore.TestAdapters.csproj", "{A0141F38-8B73-4B1A-82F8-8EB4AC1C05E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wkg.AspNetCoreTests", "Wkg.AspNetCoreTests\Wkg.AspNetCoreTests.csproj", "{5499D091-00B1-459D-ACDC-95F236CEBB8E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wkg.AspNetCoreTests", "Wkg.AspNetCoreTests\Wkg.AspNetCoreTests.csproj", "{5499D091-00B1-459D-ACDC-95F236CEBB8E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AF526FAE-0C92-46D3-9284-BC512C36FB87}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Global
