@@ -2,7 +2,7 @@
 
     <!--.NET build settings-->
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -16,9 +16,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.7" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.7" />
-      <PackageReference Include="Wkg" Version="7.3.13016" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.2" />
+      <PackageReference Include="Wkg" Version="8.0.14643" />
     </ItemGroup>
 
     <!--Nuget packaging-->
@@ -29,7 +29,7 @@
         <Description>Internal WKG library containing reusable cross-platform frameworks for ASP.NET Core projects.</Description>
         <Company>WKG Software GmbH</Company>
         <Authors>WKG Software GmbH</Authors>
-        <Copyright>Copyright (c) WKG Software GmbH 2023</Copyright>
+        <Copyright>Copyright (c) WKG Software GmbH 2024</Copyright>
         <PackageIcon>logo.png</PackageIcon>
         <Title>WKG ASP.NET Core</Title>
         <PackageType>Dependency</PackageType>

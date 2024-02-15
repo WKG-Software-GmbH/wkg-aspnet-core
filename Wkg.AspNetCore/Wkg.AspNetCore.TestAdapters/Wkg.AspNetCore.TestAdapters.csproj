@@ -2,7 +2,7 @@
 
     <!--.NET build settings-->
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
@@ -16,7 +16,7 @@
         <Description>Internal WKG library containing unit test adapters for projects using WKG ASP.NET Core.</Description>
         <Company>WKG Software GmbH</Company>
         <Authors>WKG Software GmbH</Authors>
-        <Copyright>Copyright (c) WKG Software GmbH 2023</Copyright>
+        <Copyright>Copyright (c) WKG Software GmbH 2024</Copyright>
         <PackageIcon>logo.png</PackageIcon>
         <Title>WKG ASP.NET Core Test Adapters</Title>
         <PackageType>Dependency</PackageType>
