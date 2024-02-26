@@ -8,6 +8,7 @@ internal class DefaultManagerBindings(ManagerBindingOptions _options, IServicePr
     {
         if (_options.Map.TryGetValue(typeof(TManager), out ManagerFactory? factory))
         {
+            // reinterpret_cast because we know the type is correct by convention (the map is built from the same types)
             TManager manager = factory.Invoke(_serviceProvider).ReinterpretAs<TManager>();
             manager.Context = context;
             return manager;

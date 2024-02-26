@@ -4,7 +4,7 @@ using Wkg.AspNetCore.Abstractions.Managers;
 namespace Wkg.AspNetCore.Configuration.ManagerBindings;
 
 /// <summary>
-/// Represents a binding between a controller and a manager.
+/// Represents the bindings of all mapped managers and their DI factories.
 /// </summary>
 public interface IManagerBindings
 {

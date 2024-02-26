@@ -25,7 +25,7 @@ public abstract class DatabasePageModel<TDbContext> : ErrorHandlingPageModel, IU
     /// <param name="dbContext">The database context.</param>
     protected DatabasePageModel(TDbContext dbContext)
     {
-        _implementation = new DatabaseManagerImpl<TDbContext>(dbContext)
+        _implementation = new ProxiedDatabaseManager<TDbContext>(dbContext)
         {
             Context = this
         };

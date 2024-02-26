@@ -5,9 +5,9 @@ using Wkg.AspNetCore.Configuration.ManagerBindings;
 namespace Wkg.AspNetCore.Abstractions.Controllers;
 
 /// <summary>
-/// Base class for API controllers proxying a manager.
+/// Base class for API controllers implemented through a manager.
 /// </summary>
-/// <typeparam name="TManager">The type of the manager to proxy.</typeparam>
+/// <typeparam name="TManager">The type of the implementing manager.</typeparam>
 public abstract class ManagerController<TManager> : ControllerBase, IMvcContext<TManager>
     where TManager : ManagerBase
 {

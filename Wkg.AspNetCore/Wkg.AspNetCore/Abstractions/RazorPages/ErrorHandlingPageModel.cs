@@ -21,7 +21,7 @@ public abstract class ErrorHandlingPageModel : PageModel, IMvcContext
     /// </summary>
     protected ErrorHandlingPageModel()
     {
-        _implementation = new ErrorHandlingManagerImpl()
+        _implementation = new ProxiedErrorHandlingManager()
         {
             Context = this
         };

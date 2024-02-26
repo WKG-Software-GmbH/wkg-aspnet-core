@@ -25,7 +25,7 @@ public abstract class DatabaseController<TDbContext> : ErrorHandlingController, 
     /// <param name="dbContext">The database context.</param>
     protected DatabaseController(TDbContext dbContext)
     {
-        _implementation = new DatabaseManagerImpl<TDbContext>(dbContext)
+        _implementation = new ProxiedDatabaseManager<TDbContext>(dbContext)
         {
             Context = this
         };

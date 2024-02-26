@@ -2,7 +2,6 @@
 using Wkg.AspNetCore.RequestActions;
 using System.Runtime.CompilerServices;
 using Wkg.AspNetCore.Abstractions.Managers;
-using Wkg.AspNetCore.Abstractions;
 using Wkg.AspNetCore.Exceptions;
 
 namespace Wkg.AspNetCore.Abstractions.Controllers;
@@ -19,7 +18,7 @@ public abstract class ErrorHandlingController : ControllerBase, IMvcContext
     /// </summary>
     protected ErrorHandlingController()
     {
-        _implementation = new ErrorHandlingManagerImpl()
+        _implementation = new ProxiedErrorHandlingManager()
         {
             Context = this
         };

@@ -1,10 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Wkg.AspNetCore.Abstractions.Controllers;
 using Wkg.AspNetCore.Abstractions.Managers;
 using Wkg.AspNetCore.Configuration.ManagerBindings;
@@ -12,9 +7,9 @@ using Wkg.AspNetCore.Configuration.ManagerBindings;
 namespace Wkg.AspNetCore.Abstractions.RazorPages;
 
 /// <summary>
-/// Base class for Razor Pages proxying a manager.
+/// Base class for Razor Pages implemented through a manager.
 /// </summary>
-/// <typeparam name="TManager">The type of the manager to proxy.</typeparam>
+/// <typeparam name="TManager">The type of the implemented manager.</typeparam>
 public abstract class ManagerPageModel<TManager> : PageModel, IMvcContext<TManager>
     where TManager : ManagerBase
 {

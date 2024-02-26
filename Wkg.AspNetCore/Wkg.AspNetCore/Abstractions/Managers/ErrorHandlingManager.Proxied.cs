@@ -1,3 +1,3 @@
 ﻿namespace Wkg.AspNetCore.Abstractions.Managers;
 
-internal class ErrorHandlingManagerImpl : ErrorHandlingManager;
+internal class ProxiedErrorHandlingManager : ErrorHandlingManager;

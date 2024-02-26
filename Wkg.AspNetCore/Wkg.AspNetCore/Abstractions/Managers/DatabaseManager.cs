@@ -11,7 +11,7 @@ using Wkg.AspNetCore.TransactionManagement;
 namespace Wkg.AspNetCore.Abstractions.Managers;
 
 /// <summary>
-/// Provides a base class for API controllers that require database access.
+/// Provides a base class for API managers that require database access.
 /// </summary>
 /// <typeparam name="TDbContext">The type of the database context.</typeparam>
 public abstract partial class DatabaseManager<TDbContext> : ErrorHandlingManager where TDbContext : DbContext
@@ -21,7 +21,7 @@ public abstract partial class DatabaseManager<TDbContext> : ErrorHandlingManager
     private bool _isIsolated = false;
 
     /// <summary>
-    /// Indicates whether this controller is allowed to manage transactions.
+    /// Indicates whether this manager is allowed to manage transactions.
     /// </summary>
     /// <remarks>
     /// The value of this property may be set by unit tests to disable transaction management, e.g. to allow the unit test runner to roll back transactions after each test.
@@ -31,7 +31,7 @@ public abstract partial class DatabaseManager<TDbContext> : ErrorHandlingManager
     private TransactionalContinuationType _continuationType = TransactionalContinuationType.Commit;
 
     /// <summary>
-    /// Gets or sets the <see cref="IsolationLevel"/> to be used for all transactions of this controller.
+    /// Gets or sets the <see cref="IsolationLevel"/> to be used for all transactions of this manager.
     /// </summary>
     internal protected IsolationLevel TransactionIsolationLevel { get; init; } = DatabaseTransactionDefaults.DefaultIsolationLevel;
 
