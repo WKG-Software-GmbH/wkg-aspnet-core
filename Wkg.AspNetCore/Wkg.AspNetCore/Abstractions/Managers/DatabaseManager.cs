@@ -8,15 +8,15 @@ using Wkg.AspNetCore.Exceptions;
 using Wkg.AspNetCore.RequestActions;
 using Wkg.AspNetCore.TransactionManagement;
 
-namespace Wkg.AspNetCore.Controllers;
+namespace Wkg.AspNetCore.Abstractions.Managers;
 
 /// <summary>
 /// Provides a base class for API controllers that require database access.
 /// </summary>
 /// <typeparam name="TDbContext">The type of the database context.</typeparam>
-public abstract partial class DatabaseController<TDbContext> : ErrorHandlingController where TDbContext : DbContext
+public abstract partial class DatabaseManager<TDbContext> : ErrorHandlingManager where TDbContext : DbContext
 {
-    private protected TDbContext DbContext { get; }
+    internal TDbContext DbContext { get; }
 
     private bool _isIsolated = false;
 
@@ -26,20 +26,20 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
     /// <remarks>
     /// The value of this property may be set by unit tests to disable transaction management, e.g. to allow the unit test runner to roll back transactions after each test.
     /// </remarks>
-    protected bool TransactionManagementAllowed { get; private set; } = true;
+    internal protected bool TransactionManagementAllowed { get; private set; } = true;
 
     private TransactionalContinuationType _continuationType = TransactionalContinuationType.Commit;
 
     /// <summary>
     /// Gets or sets the <see cref="IsolationLevel"/> to be used for all transactions of this controller.
     /// </summary>
-    protected IsolationLevel TransactionIsolationLevel { get; init; } = DatabaseControllerDefaults.DefaultIsolationLevel;
+    internal protected IsolationLevel TransactionIsolationLevel { get; init; } = DatabaseTransactionDefaults.DefaultIsolationLevel;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DatabaseController{TDbContext}"/> class.
+    /// Initializes a new instance of the <see cref="DatabaseManager{TDbContext}"/> class.
     /// </summary>
     /// <param name="dbContext">The database context.</param>
-    protected DatabaseController(TDbContext dbContext) => DbContext = dbContext;
+    protected DatabaseManager(TDbContext dbContext) => DbContext = dbContext;
 
     /// <summary>
     /// Executes the specified <paramref name="action"/> in an isolated database transaction with automatic error handling.
@@ -48,7 +48,7 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
     /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected IActionResult InTransaction(DatabaseRequestAction<TDbContext, IActionResult> action) =>
+    internal protected IActionResult InTransaction(DatabaseRequestAction<TDbContext, IActionResult> action) =>
         InTransaction<IActionResult>(action);
 
     /// <summary>
@@ -58,10 +58,10 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
     /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected void InTransaction(DatabaseRequestAction<TDbContext> action) => InTransaction<IActionResult>(dbContext =>
+    internal protected void InTransaction(DatabaseRequestAction<TDbContext> action) => InTransaction<IActionResult>(dbContext =>
     {
         ITransactionalContinuation continuation = action.Invoke(dbContext);
-        return new TransactionalContinuation<IActionResult>(continuation.NextAction, Ok());
+        return new TransactionalContinuation<IActionResult>(continuation.NextAction, Context.Ok());
     });
 
     /// <summary>
@@ -72,7 +72,7 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
     /// <returns>The result of the <paramref name="action"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
     /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid.</exception>
-    protected TResult InTransaction<TResult>(DatabaseRequestAction<TDbContext, TResult> action)
+    internal protected TResult InTransaction<TResult>(DatabaseRequestAction<TDbContext, TResult> action)
     {
         // if we are running already in an isolated context, return immediately
         // (enables recursion)
@@ -132,7 +132,7 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
     /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected Task<IActionResult> InTransactionAsync(DatabaseRequestTask<TDbContext, IActionResult> task) =>
+    internal protected Task<IActionResult> InTransactionAsync(DatabaseRequestTask<TDbContext, IActionResult> task) =>
         InTransactionAsync<IActionResult>(task);
 
     /// <summary>
@@ -143,10 +143,10 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
     /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected Task InTransactionAsync(DatabaseRequestTask<TDbContext> task) => InTransactionAsync(async dbContext =>
+    internal protected Task InTransactionAsync(DatabaseRequestTask<TDbContext> task) => InTransactionAsync(async dbContext =>
     {
         ITransactionalContinuation continuation = await task.Invoke(dbContext);
-        return new TransactionalContinuation<IActionResult>(continuation.NextAction, Ok());
+        return new TransactionalContinuation<IActionResult>(continuation.NextAction, Context.Ok());
     });
 
     /// <summary>
@@ -156,7 +156,7 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
     /// <param name="task">The asynchronous Task to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
     /// <exception cref="InvalidOperationException"></exception>
-    protected async Task<TResult> InTransactionAsync<TResult>(DatabaseRequestTask<TDbContext, TResult> task)
+    internal protected async Task<TResult> InTransactionAsync<TResult>(DatabaseRequestTask<TDbContext, TResult> task)
     {
         // if we are running already in an isolated context, return immediately
         // (enables recursion)
@@ -225,7 +225,7 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
     /// <param name="e">The intercepted <see cref="Exception"/>.</param>
     /// <param name="transaction">The current transaction.</param>
     /// <returns>A new <see cref="ApiProxyException"/> to be rethrown.</returns>
-    protected virtual ApiProxyException AfterHandled(Exception e, IDbContextTransaction? transaction)
+    internal protected virtual ApiProxyException AfterHandled(Exception e, IDbContextTransaction? transaction)
     {
         if (TransactionManagementAllowed && transaction is not null)
         {
@@ -247,7 +247,7 @@ public abstract partial class DatabaseController<TDbContext> : ErrorHandlingCont
     /// <param name="e">The intercepted <see cref="Exception"/>.</param>
     /// <param name="transaction">The current transaction.</param>
     /// <returns>A new <see cref="ApiProxyException"/> to be rethrown.</returns>
-    protected virtual async ValueTask<ApiProxyException> AfterHandledAsync(Exception e, IDbContextTransaction? transaction)
+    internal protected virtual async ValueTask<ApiProxyException> AfterHandledAsync(Exception e, IDbContextTransaction? transaction)
     {
         if (TransactionManagementAllowed && transaction is not null)
         {

@@ -1,4 +1,4 @@
-﻿using Wkg.AspNetCore.Controllers;
+﻿using Wkg.AspNetCore.Abstractions.Controllers;
 
 namespace Wkg.AspNetCore.Exceptions;
 

@@ -18,7 +18,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.2" />
-      <PackageReference Include="Wkg" Version="8.0.14643" />
+      <PackageReference Include="Wkg" Version="[8.0.14725,8.1.0)" />
     </ItemGroup>
 
     <!--Nuget packaging-->
@@ -47,6 +47,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="Assets\logo.png" Pack="true" PackagePath="\" />
+        <None Include="_Assets\logo.png" Pack="true" PackagePath="\" />
     </ItemGroup>
 </Project>

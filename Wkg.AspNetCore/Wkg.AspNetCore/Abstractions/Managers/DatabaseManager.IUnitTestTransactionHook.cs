@@ -1,9 +1,9 @@
 ﻿using Wkg.AspNetCore.Interop;
 using Wkg.AspNetCore.TransactionManagement;
 
-namespace Wkg.AspNetCore.Controllers;
+namespace Wkg.AspNetCore.Abstractions.Managers;
 
-public abstract partial class DatabaseController<TDbContext> : IUnitTestTransactionHook
+public abstract partial class DatabaseManager<TDbContext> : IUnitTestTransactionHook
 {
     void IUnitTestTransactionHook.RollbackTransaction__UNIT_TEST_HOOK()
     {

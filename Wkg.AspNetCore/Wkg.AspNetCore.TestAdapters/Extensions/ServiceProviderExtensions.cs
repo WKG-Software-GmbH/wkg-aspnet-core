@@ -1,22 +1,25 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Wkg.Unmanaged;
 
 namespace Wkg.AspNetCore.TestAdapters.Extensions;
 
 internal static class ServiceProviderExtensions
 {
-    public static T ActivateController<T>(this ServiceProvider serviceProvider) where T : ControllerBase
+    public static T Activate<T>(this ServiceProvider serviceProvider) where T : class
     {
         Type type = typeof(T);
-        ConstructorInfo constructorInfo = type
-            .GetConstructors()
-            .First();
-        object?[] dependencies = constructorInfo
+        ConstructorInfo[] constructors = type.GetConstructors();
+        if (constructors.Length != 1)
+        {
+            throw new InvalidOperationException($"Type {type} must have exactly one constructor.");
+        }
+        ConstructorInfo constructorInfo = constructors[0];
+        object[] dependencies = constructorInfo
             .GetParameters()
             .Select(param => serviceProvider
-                .GetService(param.ParameterType))
+                .GetRequiredService(param.ParameterType))
             .ToArray();
-        return (T)constructorInfo.Invoke(dependencies);
+        return constructorInfo.Invoke(dependencies).ReinterpretAs<T>();
     }
 }
