@@ -36,7 +36,10 @@ public static class ServiceCollectionExtensions
                 // get the manager type (IMvcContext<TManager>)
                 // assume that every MvcContext implements the IMvcContext<TManager> interface exactly once
                 // otherwise: wtf are you doing?
-                .Select(t => t.GetGenericTypeArgumentOfSingleInterface(typeof(IMvcContext<>))!));
+                .Select(t => t.GetGenericTypeArgumentOfSingleInterface(typeof(IMvcContext<>))!))
+            // important: multiple MvcContext types may use the backing manager implementation
+            // for example a RazorPage and a Controller may both use the same implementation
+            .Distinct();
 
         // create a frozen dictionary of manager types and their DI-aware factories
         FrozenDictionary<Type, ManagerFactory> factories = managers
