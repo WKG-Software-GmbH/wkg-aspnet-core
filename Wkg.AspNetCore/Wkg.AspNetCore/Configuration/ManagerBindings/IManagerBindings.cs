@@ -8,5 +8,5 @@ namespace Wkg.AspNetCore.Configuration.ManagerBindings;
 /// </summary>
 public interface IManagerBindings
 {
-    internal TManager ActivateManager<TManager>(IMvcContext context) where TManager : ManagerBase;
+    internal TManager ActivateManager<TManager>(IMvcContext<TManager> context) where TManager : ManagerBase;
 }

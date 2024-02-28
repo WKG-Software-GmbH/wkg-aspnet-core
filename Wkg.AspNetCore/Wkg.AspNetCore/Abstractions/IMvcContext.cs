@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.DependencyInjection;
 using Wkg.AspNetCore.Abstractions.Managers;
 
 namespace Wkg.AspNetCore.Abstractions;
 
-internal interface IMvcContext<TManager> : IMvcContext where TManager : ManagerBase
+internal interface IMvcContext<TManager> : IMvcContext, IDisposable where TManager : ManagerBase
 {
+    internal IServiceScope? ServiceScope { get; set; }
 }
 
 /// <summary>
