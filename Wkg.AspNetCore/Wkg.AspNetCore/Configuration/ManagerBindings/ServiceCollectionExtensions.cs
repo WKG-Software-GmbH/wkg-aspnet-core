@@ -70,7 +70,7 @@ public static class ServiceCollectionExtensions
         ConstructorInfo[] constructors = managerType.GetConstructors(BindingFlags.Public);
         if (constructors.Length != 1)
         {
-            throw new InvalidOperationException($"Manager {managerType.Name} must have exactly one publicly accessible constructor.");
+            throw new InvalidOperationException($"Manager {managerType.Name} must have exactly one publicly accessible constructor. Currently, there are {constructors.Length}!");
         }
         // build a lambda expression that takes an IServiceProvider, retrieves the required services, and invokes the constructor
         ConstructorInfo constructor = constructors[0];
