@@ -76,12 +76,13 @@ public static class ServiceCollectionExtensions
         ConstructorInfo constructor = constructors[0];
         ParameterInfo[] parameters = constructor.GetParameters();
         ParameterExpression serviceProvider = Expression.Parameter(typeof(IServiceProvider), "serviceProvider");
-        // new TManager(serviceProvider.GetRequiredService(param1), ...);
+        // new TManager(Unsafe.As<typeof(param1)>(serviceProvider.GetRequiredService(typeof(param1))), ...);
         Expression[] arguments = parameters
             .Select(param =>
-                Expression.Call(_serviceProviderGetRequiredService,
-                    serviceProvider,
-                    Expression.Constant(param.ParameterType)))
+                Expression.Call(UnsafeReflection.As(param.ParameterType),
+                    Expression.Call(_serviceProviderGetRequiredService,
+                        serviceProvider,
+                        Expression.Constant(param.ParameterType))))
             .ToArray();
         NewExpression newExpression = Expression.New(constructor, arguments);
         Expression<ManagerFactory> lambda = Expression.Lambda<ManagerFactory>(newExpression, serviceProvider);
