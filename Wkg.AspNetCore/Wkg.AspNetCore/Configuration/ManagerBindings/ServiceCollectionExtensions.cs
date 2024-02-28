@@ -67,7 +67,7 @@ public static class ServiceCollectionExtensions
         {
             throw new InvalidOperationException($"Manager {managerType.Name} must be concrete.");
         }
-        ConstructorInfo[] constructors = managerType.GetConstructors(BindingFlags.Public);
+        ConstructorInfo[] constructors = managerType.GetConstructors();
         if (constructors.Length != 1)
         {
             throw new InvalidOperationException($"Manager {managerType.Name} must have exactly one publicly accessible constructor. Currently, there are {constructors.Length}!");
