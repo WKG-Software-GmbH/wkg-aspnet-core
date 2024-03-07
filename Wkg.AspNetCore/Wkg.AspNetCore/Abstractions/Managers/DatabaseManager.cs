@@ -31,6 +31,11 @@ public abstract partial class DatabaseManager<TDbContext> : ErrorHandlingManager
     private TransactionalContinuationType _continuationType = TransactionalContinuationType.Commit;
 
     /// <summary>
+    /// Indicates whether the <see cref="IMvcContext.ModelState"/> should be automatically asserted before starting a transaction.
+    /// </summary>
+    internal protected bool AutoAssertModelState { get; set; }
+
+    /// <summary>
     /// Gets or sets the <see cref="IsolationLevel"/> to be used for all transactions of this manager.
     /// </summary>
     internal protected IsolationLevel TransactionIsolationLevel { get; init; } = DatabaseTransactionDefaults.DefaultIsolationLevel;
@@ -39,7 +44,12 @@ public abstract partial class DatabaseManager<TDbContext> : ErrorHandlingManager
     /// Initializes a new instance of the <see cref="DatabaseManager{TDbContext}"/> class.
     /// </summary>
     /// <param name="dbContext">The database context.</param>
-    protected DatabaseManager(TDbContext dbContext) => DbContext = dbContext;
+    /// <param name="autoAssertModelState">Indicates whether the <see cref="IMvcContext.ModelState"/> should be automatically asserted before starting a transaction.</param>
+    protected DatabaseManager(TDbContext dbContext, bool autoAssertModelState = false)
+    {
+        DbContext = dbContext;
+        AutoAssertModelState = autoAssertModelState;
+    }
 
     /// <summary>
     /// Executes the specified <paramref name="action"/> in an isolated database transaction with automatic error handling.
@@ -84,7 +94,10 @@ public abstract partial class DatabaseManager<TDbContext> : ErrorHandlingManager
         }
 
         // Validates the Model State
-        AssertModelState();
+        if (AutoAssertModelState)
+        {
+            AssertModelState();
+        }
 
         IDbContextTransaction? transaction = null;
         try
@@ -167,7 +180,11 @@ public abstract partial class DatabaseManager<TDbContext> : ErrorHandlingManager
             return result.Result;
         }
 
-        AssertModelState();
+        // Validates the Model State
+        if (AutoAssertModelState)
+        {
+            AssertModelState();
+        }
 
         IDbContextTransaction? transaction = null;
         try

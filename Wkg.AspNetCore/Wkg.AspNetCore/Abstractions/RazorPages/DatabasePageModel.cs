@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
@@ -23,9 +24,10 @@ public abstract class DatabasePageModel<TDbContext> : ErrorHandlingPageModel, IU
     /// Initializes a new instance of the <see cref="DatabasePageModel{TDbContext}"/> class.
     /// </summary>
     /// <param name="dbContext">The database context.</param>
-    protected DatabasePageModel(TDbContext dbContext)
+    /// <param name="autoAssertModelState">Indicates whether the <see cref="PageModel.ModelState"/> should be automatically asserted before starting a transaction.</param>
+    protected DatabasePageModel(TDbContext dbContext, bool autoAssertModelState = false)
     {
-        _implementation = new ProxiedDatabaseManager<TDbContext>(dbContext)
+        _implementation = new ProxiedDatabaseManager<TDbContext>(dbContext, autoAssertModelState)
         {
             Context = this
         };
@@ -34,6 +36,13 @@ public abstract class DatabasePageModel<TDbContext> : ErrorHandlingPageModel, IU
     #region Core API
 
     private protected TDbContext DbContext => _implementation.DbContext;
+
+    /// <inheritdoc cref="DatabaseManager{TDbContext}.AutoAssertModelState"/>
+    protected bool AutoAssertModelState
+    {
+        get => _implementation.AutoAssertModelState;
+        set => _implementation.AutoAssertModelState = value;
+    }
 
     /// <inheritdoc cref="DatabaseManager{TDbContext}.TransactionManagementAllowed"/>
     protected bool TransactionManagementAllowed => _implementation.TransactionManagementAllowed;
