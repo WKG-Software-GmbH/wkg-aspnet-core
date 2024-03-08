@@ -17,7 +17,10 @@ public class ValidEmailAddressAttribute : DataTypeAttribute
     /// </summary>
     public ValidEmailAddressAttribute() : base(DataType.EmailAddress)
     {
-        ErrorMessage ??= "The {0} field is not a valid e-mail address.";
+        if (ErrorMessage is null && ErrorMessageResourceName is null)
+        {
+            ErrorMessage = "The {0} field is not a valid e-mail address.";
+        }
     }
 
     /// <summary>
