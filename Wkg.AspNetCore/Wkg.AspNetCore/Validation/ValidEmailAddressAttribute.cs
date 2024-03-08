@@ -17,10 +17,6 @@ public class ValidEmailAddressAttribute : DataTypeAttribute
     /// </summary>
     public ValidEmailAddressAttribute() : base(DataType.EmailAddress)
     {
-        if (ErrorMessage is null && ErrorMessageResourceName is null)
-        {
-            ErrorMessage = "The {0} field is not a valid e-mail address.";
-        }
     }
 
     /// <summary>
@@ -30,6 +26,11 @@ public class ValidEmailAddressAttribute : DataTypeAttribute
     /// <returns><see langword="true" /> if the specified value is a valid email address or <see langword="null" />; otherwise, <see langword="false" />.</returns>
     public override bool IsValid(object? value)
     {
+        if (ErrorMessage is null && ErrorMessageResourceName is null)
+        {
+            ErrorMessage = "The {0} field is not a valid e-mail address.";
+        }
+
         if (value == null)
         {
             return true;
