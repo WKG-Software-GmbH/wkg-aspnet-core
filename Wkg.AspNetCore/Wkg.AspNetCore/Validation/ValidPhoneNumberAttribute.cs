@@ -16,7 +16,6 @@ public class ValidPhoneNumberAttribute : DataTypeAttribute
     /// </summary>
     public ValidPhoneNumberAttribute() : base(DataType.PhoneNumber)
     {
-        ErrorMessage ??= "The {0} field is not a valid phone number.";
     }
 
     /// <summary>
@@ -26,6 +25,11 @@ public class ValidPhoneNumberAttribute : DataTypeAttribute
     /// <returns><see langword="true" /> if the specified value is a valid phone number or <see langword="null" />; otherwise, <see langword="false" />.</returns>
     public override bool IsValid(object? value)
     {
+        if (ErrorMessage is null && ErrorMessageResourceName is null)
+        {
+            ErrorMessage = "The {0} field is not a valid phone number.";
+        }
+
         if (value == null)
         {
             return true;
