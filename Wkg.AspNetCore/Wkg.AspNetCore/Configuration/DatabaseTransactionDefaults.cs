@@ -2,7 +2,7 @@
 
 namespace Wkg.AspNetCore.Configuration;
 
-internal static class DatabaseControllerDefaults
+internal static class DatabaseTransactionDefaults
 {
     public static IsolationLevel DefaultIsolationLevel { get; set; } = IsolationLevel.ReadCommitted;
 }
