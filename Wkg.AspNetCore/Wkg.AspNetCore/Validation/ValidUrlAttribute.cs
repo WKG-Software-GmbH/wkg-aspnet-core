@@ -17,7 +17,6 @@ public class ValidUrlAttribute : DataTypeAttribute
     /// </summary>
     public ValidUrlAttribute() : base(DataType.Url)
     {
-        ErrorMessage ??= "The {0} field is not a valid URL.";
     }
 
     /// <summary>
@@ -27,6 +26,11 @@ public class ValidUrlAttribute : DataTypeAttribute
     /// <returns><see langword="true" /> if the specified value is a valid URL or <see langword="null" />; otherwise, <see langword="false" />.</returns>
     public override bool IsValid(object? value)
     {
+        if (ErrorMessage is null && ErrorMessageResourceName is null)
+        {
+            ErrorMessage = "The {0} field is not a valid URL.";
+        }
+
         if (value == null)
         {
             return true;
