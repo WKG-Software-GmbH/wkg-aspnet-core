@@ -23,11 +23,12 @@ public abstract class DatabasePageModel<TDbContext> : ErrorHandlingPageModel, IU
     /// <summary>
     /// Initializes a new instance of the <see cref="DatabasePageModel{TDbContext}"/> class.
     /// </summary>
-    /// <param name="dbContext">The database context.</param>
+    /// <param name="unsafeDbContext">The database context. Note that this context should not be used directly by client code. 
+    /// Use the <typeparamref name="TDbContext"/> instance exposed through the InTransaction methods instead.</param>
     /// <param name="autoAssertModelState">Indicates whether the <see cref="PageModel.ModelState"/> should be automatically asserted before starting a transaction.</param>
-    protected DatabasePageModel(TDbContext dbContext, bool autoAssertModelState = false)
+    protected DatabasePageModel(TDbContext unsafeDbContext, bool autoAssertModelState = false)
     {
-        _implementation = new ProxiedDatabaseManager<TDbContext>(dbContext, autoAssertModelState)
+        _implementation = new ProxiedDatabaseManager<TDbContext>(unsafeDbContext, autoAssertModelState)
         {
             Context = this
         };
