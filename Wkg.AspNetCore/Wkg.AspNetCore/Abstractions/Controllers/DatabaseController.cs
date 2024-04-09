@@ -49,6 +49,21 @@ public abstract class DatabaseController<TDbContext> : ErrorHandlingController, 
     /// <inheritdoc cref="DatabaseManager{TDbContext}.TransactionIsolationLevel"/>
     protected IsolationLevel TransactionIsolationLevel => _implementation.TransactionIsolationLevel;
 
+    /// <inheritdoc cref="DatabaseManager{TDbContext}.InReadOnlyTransaction(ReadOnlyDatabaseRequestAction{TDbContext, IActionResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected IActionResult InReadOnlyTransaction(ReadOnlyDatabaseRequestAction<TDbContext, IActionResult> action) =>
+        _implementation.InReadOnlyTransaction(action);
+
+    /// <inheritdoc cref="DatabaseManager{TDbContext}.InReadOnlyTransaction(ReadOnlyDatabaseRequestAction{TDbContext})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected void InReadOnlyTransaction(ReadOnlyDatabaseRequestAction<TDbContext> action) =>
+        _implementation.InReadOnlyTransaction(action);
+
+    /// <inheritdoc cref="DatabaseManager{TDbContext}.InReadOnlyTransaction{TResult}(ReadOnlyDatabaseRequestAction{TDbContext, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected TResult InReadOnlyTransaction<TResult>(ReadOnlyDatabaseRequestAction<TDbContext, TResult> action) =>
+        _implementation.InReadOnlyTransaction(action);
+
     /// <inheritdoc cref="DatabaseManager{TDbContext}.InTransaction(DatabaseRequestAction{TDbContext, IActionResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected IActionResult InTransaction(DatabaseRequestAction<TDbContext, IActionResult> action) =>
@@ -63,6 +78,21 @@ public abstract class DatabaseController<TDbContext> : ErrorHandlingController, 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected TResult InTransaction<TResult>(DatabaseRequestAction<TDbContext, TResult> action) =>
         _implementation.InTransaction(action);
+
+    /// <inheritdoc cref="DatabaseManager{TDbContext}.InReadOnlyTransactionAsync(ReadOnlyDatabaseRequestTask{TDbContext, IActionResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected Task<IActionResult> InReadOnlyTransactionAsync(ReadOnlyDatabaseRequestTask<TDbContext, IActionResult> task) =>
+        _implementation.InReadOnlyTransactionAsync(task);
+
+    /// <inheritdoc cref="DatabaseManager{TDbContext}.InReadOnlyTransactionAsync(ReadOnlyDatabaseRequestTask{TDbContext})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected Task InReadOnlyTransactionAsync(ReadOnlyDatabaseRequestTask<TDbContext> task) =>
+        _implementation.InReadOnlyTransactionAsync(task);
+
+    /// <inheritdoc cref="DatabaseManager{TDbContext}.InReadOnlyTransactionAsync{TResult}(ReadOnlyDatabaseRequestTask{TDbContext, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected Task<TResult> InReadOnlyTransactionAsync<TResult>(ReadOnlyDatabaseRequestTask<TDbContext, TResult> task) =>
+        _implementation.InReadOnlyTransactionAsync(task);
 
     /// <inheritdoc cref="DatabaseManager{TDbContext}.InTransactionAsync(DatabaseRequestTask{TDbContext, IActionResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

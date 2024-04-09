@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Wkg.AspNetCore.Abstractions.Managers;
@@ -25,9 +24,4 @@ public interface IMvcContext
     /// Gets the model state of the request.
     /// </summary>
     ModelStateDictionary ModelState { get; }
-
-    /// <summary>
-    /// The <see cref="IActionResult"/> that represents a successful response, if no other result is returned.
-    /// </summary>
-    internal IActionResult Ok();
 }
