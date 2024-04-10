@@ -209,7 +209,7 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
     /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal protected Task InReadOnlyTransactionAsync(ReadOnlyDatabaseRequestTask<TDbContext> task) => InTransactionAsync(async dbContext =>
+    internal protected Task InReadOnlyTransactionAsync(ReadOnlyDatabaseRequestTask<TDbContext> task) => InTransactionAsync<VoidResult>(async dbContext =>
     {
         await task.Invoke(dbContext);
         return new TransactionalContinuation<VoidResult>(TransactionalContinuationType.Rollback, default);
@@ -223,7 +223,7 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
     /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal protected Task InTransactionAsync(DatabaseRequestTask<TDbContext> task) => InTransactionAsync(async dbContext =>
+    internal protected Task InTransactionAsync(DatabaseRequestTask<TDbContext> task) => InTransactionAsync<VoidResult>(async dbContext =>
     {
         ITransactionalContinuation continuation = await task.Invoke(dbContext);
         return new TransactionalContinuation<VoidResult>(continuation.NextAction, default);
