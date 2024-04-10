@@ -3,6 +3,7 @@ using System.Collections.Frozen;
 using System.Linq.Expressions;
 using System.Reflection;
 using Wkg.AspNetCore.Abstractions;
+using Wkg.AspNetCore.Abstractions.Managers;
 using Wkg.Reflection;
 using Wkg.Reflection.Extensions;
 
@@ -50,6 +51,15 @@ public static class ServiceCollectionExtensions
         ManagerBindingOptions bindingOptions = new(factories);
         services.AddSingleton(bindingOptions);
         services.AddSingleton<IManagerBindings, DefaultManagerBindings>();
+
+        foreach (MethodInfo registerRequiredServices in managers
+            .Where(manager => manager.ImplementsInterfaceDirectly(typeof(IRequireDependencyRegistration)))
+            .Select(m => m.GetInterfaceMap(typeof(IRequireDependencyRegistration)).TargetMethods.Single()))
+        {
+            // call the static RegisterRequiredServices method on the manager type
+            registerRequiredServices.Invoke(null, [services]);
+        }
+
         return services;
     }
 

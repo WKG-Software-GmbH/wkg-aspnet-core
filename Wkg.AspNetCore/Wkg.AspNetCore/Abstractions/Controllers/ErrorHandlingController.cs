@@ -65,6 +65,4 @@ public abstract class ErrorHandlingController : ControllerBase, IMvcContext
     /// <inheritdoc cref="ErrorHandlingManager.AfterHandled"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected virtual ApiProxyException AfterHandled(Exception e) => _implementation.AfterHandled(e);
-
-    IActionResult IMvcContext.Ok() => Ok();
 }

@@ -24,10 +24,10 @@ public abstract class ErrorHandlingManager : ManagerBase
     /// </summary>
     /// <param name="action">The action to be executed with error handling.</param>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="action"/>.</exception>
-    internal protected virtual void WithErrorHandling(RequestAction action) => WithErrorHandling(() =>
+    internal protected virtual void WithErrorHandling(RequestAction action) => WithErrorHandling<VoidResult>(() =>
     {
         action.Invoke();
-        return Context.Ok();
+        return default;
     });
 
     /// <summary>
@@ -64,10 +64,10 @@ public abstract class ErrorHandlingManager : ManagerBase
     /// <param name="task">The action to be executed with error handling.</param>
     /// <returns>The <see cref="Task"/> representing the asynchronous action being performed.</returns>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="task"/>.</exception>
-    internal protected virtual Task WithErrorHandlingAsync(RequestTask task) => WithErrorHandlingAsync(async () =>
+    internal protected virtual Task WithErrorHandlingAsync(RequestTask task) => WithErrorHandlingAsync<VoidResult>(async () =>
     {
         await task.Invoke();
-        return Context.Ok();
+        return default;
     });
 
     /// <summary>
