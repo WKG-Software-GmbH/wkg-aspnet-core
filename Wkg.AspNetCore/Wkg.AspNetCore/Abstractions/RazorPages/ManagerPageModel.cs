@@ -46,15 +46,14 @@ public abstract class ManagerPageModel<TManager> : PageModel, IMvcContext<TManag
     /// <exception cref="ArgumentException">thrown when the result code is not a valid result code.</exception>
     protected virtual IActionResult HandleNonSuccess(ManagerResult result, bool includeDetails = false)
     {
-        string? details = null;
-        if (includeDetails)
-        {
-            details = result.ErrorMessage;
-        }
+        IErrorState details = includeDetails
+            ? ErrorState.CreateErrorState(result.ErrorMessage)
+            : HiddenErrorState.CreateErrorState(string.Empty);
+
         return result.StatusCode switch
         {
             ManagerResultCode.BadRequest => BadRequest(details),
-            ManagerResultCode.Unauthorized => Unauthorized(details),
+            ManagerResultCode.Unauthorized => Unauthorized(),
             ManagerResultCode.Forbidden => Forbid(),
             ManagerResultCode.NotFound => NotFound(details),
             ManagerResultCode.InternalServerError => throw new Exception(result.ErrorMessage), // handled by the error handling middleware
