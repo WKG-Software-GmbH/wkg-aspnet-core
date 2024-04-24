@@ -17,12 +17,12 @@ namespace Wkg.AspNetCore.Abstractions.Managers;
 /// <remarks>
 /// Initializes a new instance of the <see cref="DatabaseManager{TDbContext}"/> class.
 /// </remarks>
-/// <param name="unsafeDbContext">The database context. Note that this context should not be used directly by client code. 
-/// Use the <typeparamref name="TDbContext"/> instance exposed through the InTransaction methods instead.</param>
-/// <param name="autoAssertModelState">Indicates whether the <see cref="IMvcContext.ModelState"/> should be automatically asserted before starting a transaction.</param>
-public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbContext, bool autoAssertModelState = false) : ErrorHandlingManager where TDbContext : DbContext
+/// <param name="dbContextDescriptor">The DI descriptor of the database context.</param>
+public abstract partial class DatabaseManager<TDbContext>(IDbContextDescriptor dbContextDescriptor) : ErrorHandlingManager where TDbContext : DbContext
 {
-    internal TDbContext DbContext { get; } = unsafeDbContext;
+    private TDbContext? _dbContext;
+
+    internal TDbContext DbContext => _dbContext ??= dbContextDescriptor.GetDbContext<TDbContext>();
 
     private bool _isIsolated = false;
 
@@ -37,11 +37,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     private TransactionalContinuationType _continuationType = TransactionalContinuationType.Commit;
 
     /// <summary>
-    /// Indicates whether the <see cref="IMvcContext.ModelState"/> should be automatically asserted before starting a transaction.
-    /// </summary>
-    internal protected bool AutoAssertModelState { get; set; } = autoAssertModelState;
-
-    /// <summary>
     /// Gets or sets the <see cref="IsolationLevel"/> to be used for all transactions of this manager.
     /// </summary>
     internal protected IsolationLevel TransactionIsolationLevel { get; init; } = DatabaseTransactionDefaults.DefaultIsolationLevel;
@@ -54,7 +49,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// </remarks>
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected IActionResult InReadOnlyTransaction(ReadOnlyDatabaseRequestAction<TDbContext, IActionResult> action) =>
         InReadOnlyTransaction<IActionResult>(action);
@@ -64,7 +58,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// </summary>
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected IActionResult InTransaction(DatabaseRequestAction<TDbContext, IActionResult> action) =>
         InTransaction<IActionResult>(action);
@@ -77,7 +70,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// </remarks>
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected void InReadOnlyTransaction(ReadOnlyDatabaseRequestAction<TDbContext> action) => InTransaction(dbContext =>
     {
@@ -90,7 +82,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// </summary>
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected void InTransaction(DatabaseRequestAction<TDbContext> action) => InTransaction(dbContext =>
     {
@@ -108,7 +99,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <returns>The result of the <paramref name="action"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected TResult InReadOnlyTransaction<TResult>(ReadOnlyDatabaseRequestAction<TDbContext, TResult> action) =>
         InTransaction(dbContext => Rollback(action.Invoke(dbContext)));
@@ -120,7 +110,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <returns>The result of the <paramref name="action"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     internal protected TResult InTransaction<TResult>(DatabaseRequestAction<TDbContext, TResult> action)
     {
         // if we are running already in an isolated context, return immediately
@@ -130,12 +119,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
             ITransactionalContinuation<TResult> result = action.Invoke(DbContext);
             _continuationType |= result.NextAction;
             return result.Result;
-        }
-
-        // Validates the Model State
-        if (AutoAssertModelState)
-        {
-            AssertModelState();
         }
 
         IDbContextTransaction? transaction = null;
@@ -185,7 +168,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// <param name="task">The action to be executed in the isolated environment.</param>
     /// <returns>The asynchronous result of the <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected Task<IActionResult> InReadOnlyTransactionAsync(ReadOnlyDatabaseRequestTask<TDbContext, IActionResult> task) =>
         InReadOnlyTransactionAsync<IActionResult>(task);
@@ -196,7 +178,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// <param name="task">The action to be executed in the isolated environment.</param>
     /// <returns>The asynchronous result of the <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected Task<IActionResult> InTransactionAsync(DatabaseRequestTask<TDbContext, IActionResult> task) =>
         InTransactionAsync<IActionResult>(task);
@@ -207,7 +188,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// <param name="task">The action to be executed in the isolated environment.</param>
     /// <returns>The asynchronous result of the <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected Task InReadOnlyTransactionAsync(ReadOnlyDatabaseRequestTask<TDbContext> task) => InTransactionAsync<VoidResult>(async dbContext =>
     {
@@ -221,7 +201,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// <param name="task">The action to be executed in the isolated environment.</param>
     /// <returns>The asynchronous result of the <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected Task InTransactionAsync(DatabaseRequestTask<TDbContext> task) => InTransactionAsync<VoidResult>(async dbContext =>
     {
@@ -235,7 +214,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// <typeparam name="TResult">The result of the <paramref name="task"/>.</typeparam>
     /// <param name="task">The asynchronous Task to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     internal protected Task<TResult> InReadOnlyTransactionAsync<TResult>(ReadOnlyDatabaseRequestTask<TDbContext, TResult> task) => InTransactionAsync(async dbContext =>
     {
         TResult result = await task.Invoke(dbContext);
@@ -248,7 +226,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
     /// <typeparam name="TResult">The result of the <paramref name="task"/>.</typeparam>
     /// <param name="task">The asynchronous Task to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    /// <exception cref="InvalidOperationException">if the <see cref="ControllerBase.ModelState"/> is invalid and <see cref="AutoAssertModelState"/> is <see langword="true"/>.</exception>
     internal protected async Task<TResult> InTransactionAsync<TResult>(DatabaseRequestTask<TDbContext, TResult> task)
     {
         // if we are running already in an isolated context, return immediately
@@ -258,12 +235,6 @@ public abstract partial class DatabaseManager<TDbContext>(TDbContext unsafeDbCon
             ITransactionalContinuation<TResult> result = await task.Invoke(DbContext);
             _continuationType |= result.NextAction;
             return result.Result;
-        }
-
-        // Validates the Model State
-        if (AutoAssertModelState)
-        {
-            AssertModelState();
         }
 
         IDbContextTransaction? transaction = null;

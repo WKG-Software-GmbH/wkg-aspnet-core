@@ -14,14 +14,10 @@ namespace Wkg.AspNetCore.Abstractions.Controllers;
 public abstract class ManagerController<TManager> : ControllerBase, IMvcContext<TManager>
     where TManager : ManagerBase
 {
-    private bool _disposedValue;
-
     /// <summary>
     /// The manager associated with this controller.
     /// </summary>
     protected TManager Manager { get; }
-
-    IServiceScope? IMvcContext<TManager>.ServiceScope { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ManagerController{TManager}"/> class.
@@ -108,25 +104,5 @@ public abstract class ManagerController<TManager> : ControllerBase, IMvcContext<
         }
         error = null;
         return true;
-    }
-
-    /// <summary>
-    /// Releases the unmanaged resources used by the <see cref="ManagerController{TManager}"/> and optionally releases the managed resources.
-    /// </summary>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing && !_disposedValue)
-        {
-            this.To<IMvcContext<TManager>>().ServiceScope?.Dispose();
-            _disposedValue = true;
-        }
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }

@@ -1,30 +1,34 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using System.Data;
+using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
+using Wkg.AspNetCore.Abstractions.Controllers;
 using Wkg.AspNetCore.Abstractions.Managers;
 using Wkg.AspNetCore.Exceptions;
 using Wkg.AspNetCore.Interop;
 using Wkg.AspNetCore.RequestActions;
 using Wkg.AspNetCore.TransactionManagement;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Data;
 
-namespace Wkg.AspNetCore.Abstractions.RazorPages;
+namespace Wkg.AspNetCore.Abstractions.Services;
 
 /// <summary>
-/// Provides a base class for Razor Pages that require database access.
+/// Represents an independent scoped service that requires database access.
 /// </summary>
+/// <remarks>
+/// Services of this type should not be mixed with controllers or Razor Pages.
+/// </remarks>
 /// <typeparam name="TDbContext">The type of the database context.</typeparam>
-public abstract class DatabasePageModel<TDbContext> : ErrorHandlingPageModel, IUnitTestTransactionHookProxy where TDbContext : DbContext
+public abstract class DatabaseService<TDbContext> : IMvcContext, IUnitTestTransactionHookProxy where TDbContext : DbContext
 {
     private readonly DatabaseManager<TDbContext> _implementation;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DatabasePageModel{TDbContext}"/> class.
+    /// Initializes a new instance of the <see cref="DatabaseController{TDbContext}"/> class.
     /// </summary>
     /// <param name="dbContextDescriptor">The DI descriptor of the database context.</param>
-    protected DatabasePageModel(IDbContextDescriptor dbContextDescriptor)
+    protected DatabaseService(IDbContextDescriptor dbContextDescriptor)
     {
         _implementation = new ProxiedDatabaseManager<TDbContext>(dbContextDescriptor)
         {
@@ -109,7 +113,7 @@ public abstract class DatabasePageModel<TDbContext> : ErrorHandlingPageModel, IU
 
     /// <inheritdoc cref="DatabaseManager{TDbContext}.AfterHandledAsync(Exception, IDbContextTransaction?)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected virtual ValueTask<ApiProxyException> AfterHandledAsync(Exception e, IDbContextTransaction? transaction) => 
+    protected virtual ValueTask<ApiProxyException> AfterHandledAsync(Exception e, IDbContextTransaction? transaction) =>
         _implementation.AfterHandledAsync(e, transaction);
 
     #endregion Core API
@@ -138,4 +142,6 @@ public abstract class DatabasePageModel<TDbContext> : ErrorHandlingPageModel, IU
     #endregion ITransactionalContinuation
 
     IUnitTestTransactionHook IUnitTestTransactionHookProxy.TransactionHookImplementation => _implementation;
+
+    ModelStateDictionary? IMvcContext.ModelState => null;
 }

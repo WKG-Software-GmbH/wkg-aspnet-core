@@ -50,7 +50,8 @@ public static class ServiceCollectionExtensions
             .ToFrozenDictionary();
         ManagerBindingOptions bindingOptions = new(factories);
         services.AddSingleton(bindingOptions);
-        services.AddSingleton<IManagerBindings, DefaultManagerBindings>();
+        services.AddScoped<IDbContextDescriptor, DbContextDescriptor>();
+        services.AddScoped<IManagerBindings, DefaultManagerBindings>();
 
         foreach (MethodInfo registerRequiredServices in managers
             .Where(manager => manager.ImplementsInterfaceDirectly(typeof(IRequireDependencyRegistration)))

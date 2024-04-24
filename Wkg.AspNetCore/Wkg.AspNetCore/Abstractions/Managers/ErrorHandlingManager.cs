@@ -11,6 +11,11 @@ namespace Wkg.AspNetCore.Abstractions.Managers;
 public abstract class ErrorHandlingManager : ManagerBase
 {
     /// <summary>
+    /// Indicates whether the application is running in development mode and if stack traces should be appended to the Model State.
+    /// </summary>
+    protected bool IsDevelopmentMode { get; set; } = false;
+
+    /// <summary>
     /// Executes the specified <paramref name="action"/> with error handling and returns the result.
     /// </summary>
     /// <param name="action">The action to be executed with error handling.</param>
@@ -95,7 +100,7 @@ public abstract class ErrorHandlingManager : ManagerBase
     /// <exception cref="InvalidOperationException"> if the <see cref="ControllerBase.ModelState"/> is invalid.</exception>
     internal protected virtual void AssertModelState()
     {
-        if (!Context.ModelState.IsValid)
+        if (Context.ModelState?.IsValid is false)
         {
             throw new InvalidOperationException($"{nameof(Context.ModelState)} was invalid!");
         }
@@ -112,13 +117,17 @@ public abstract class ErrorHandlingManager : ManagerBase
     {
         const string stackTraceNull = "<UnknownStackTrace>";
 
-        Context.ModelState.AddModelError("ExceptionMessage", e.Message);
-        Context.ModelState.AddModelError("StackTrace", e.StackTrace ?? stackTraceNull);
-        if (e.InnerException is not null)
+        if (IsDevelopmentMode && Context.ModelState is not null)
         {
-            Context.ModelState.AddModelError("InnerException", e.InnerException.Message);
-            Context.ModelState.AddModelError("InnerExceptionStackTrace", e.InnerException.StackTrace ?? stackTraceNull);
+            Context.ModelState.AddModelError("ExceptionMessage", e.Message);
+            Context.ModelState.AddModelError("StackTrace", e.StackTrace ?? stackTraceNull);
+            if (e.InnerException is not null)
+            {
+                Context.ModelState.AddModelError("InnerException", e.InnerException.Message);
+                Context.ModelState.AddModelError("InnerExceptionStackTrace", e.InnerException.StackTrace ?? stackTraceNull);
+            }
         }
+
         // write to all configured loggers
         Log.WriteException(e, LogLevel.Fatal);
     }
