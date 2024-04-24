@@ -100,7 +100,7 @@ public abstract class ErrorHandlingManager : ManagerBase
     /// <exception cref="InvalidOperationException"> if the <see cref="ControllerBase.ModelState"/> is invalid.</exception>
     internal protected virtual void AssertModelState()
     {
-        if (Context.ModelState?.IsValid is false)
+        if (Context?.ModelState.IsValid is false)
         {
             throw new InvalidOperationException($"{nameof(Context.ModelState)} was invalid!");
         }
@@ -117,7 +117,7 @@ public abstract class ErrorHandlingManager : ManagerBase
     {
         const string stackTraceNull = "<UnknownStackTrace>";
 
-        if (IsDevelopmentMode && Context.ModelState is not null)
+        if (IsDevelopmentMode && Context?.ModelState is not null)
         {
             Context.ModelState.AddModelError("ExceptionMessage", e.Message);
             Context.ModelState.AddModelError("StackTrace", e.StackTrace ?? stackTraceNull);

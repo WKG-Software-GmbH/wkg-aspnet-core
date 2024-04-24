@@ -20,21 +20,13 @@ namespace Wkg.AspNetCore.Abstractions.Services;
 /// Services of this type should not be mixed with controllers or Razor Pages.
 /// </remarks>
 /// <typeparam name="TDbContext">The type of the database context.</typeparam>
-public abstract class DatabaseService<TDbContext> : IMvcContext, IUnitTestTransactionHookProxy where TDbContext : DbContext
+/// <remarks>
+/// Initializes a new instance of the <see cref="DatabaseController{TDbContext}"/> class.
+/// </remarks>
+/// <param name="dbContextDescriptor">The DI descriptor of the database context.</param>
+public abstract class DatabaseService<TDbContext>(IDbContextDescriptor dbContextDescriptor) : IUnitTestTransactionHookProxy where TDbContext : DbContext
 {
-    private readonly DatabaseManager<TDbContext> _implementation;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DatabaseController{TDbContext}"/> class.
-    /// </summary>
-    /// <param name="dbContextDescriptor">The DI descriptor of the database context.</param>
-    protected DatabaseService(IDbContextDescriptor dbContextDescriptor)
-    {
-        _implementation = new ProxiedDatabaseManager<TDbContext>(dbContextDescriptor)
-        {
-            Context = this
-        };
-    }
+    private readonly DatabaseManager<TDbContext> _implementation = new ProxiedDatabaseManager<TDbContext>(dbContextDescriptor);
 
     #region Core API
 
@@ -142,6 +134,4 @@ public abstract class DatabaseService<TDbContext> : IMvcContext, IUnitTestTransa
     #endregion ITransactionalContinuation
 
     IUnitTestTransactionHook IUnitTestTransactionHookProxy.TransactionHookImplementation => _implementation;
-
-    ModelStateDictionary? IMvcContext.ModelState => null;
 }
