@@ -51,6 +51,7 @@ public abstract class ManagerPageModel<TManager> : PageModel, IMvcContext<TManag
             ManagerResultCode.BadRequest => BadRequest(details),
             ManagerResultCode.Unauthorized => Unauthorized(),
             ManagerResultCode.Forbidden => Forbid(),
+            ManagerResultCode.InvalidModelState => Page(),
             ManagerResultCode.NotFound => NotFound(details),
             ManagerResultCode.InternalServerError => throw new Exception(result.ErrorMessage), // handled by the error handling middleware
             ManagerResultCode.Success => throw new InvalidOperationException("This method should only be called when the result is not successful."),
@@ -79,6 +80,7 @@ public abstract class ManagerPageModel<TManager> : PageModel, IMvcContext<TManag
             ManagerResultCode.BadRequest => BadRequest(details),
             ManagerResultCode.Unauthorized => Unauthorized(),
             ManagerResultCode.Forbidden => Forbid(),
+            ManagerResultCode.InvalidModelState => Page(),
             ManagerResultCode.NotFound => NotFound(details),
             ManagerResultCode.InternalServerError => throw new Exception(result.ErrorMessage),
             _ => throw new ArgumentException($"{result.StatusCode} is not a valid result code.", nameof(result)),
