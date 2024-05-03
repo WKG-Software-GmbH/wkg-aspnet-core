@@ -33,6 +33,10 @@ public abstract class ManagerBase
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected static ManagerResult Forbidden(string? errorMessage = null) => ManagerResult.Forbidden(errorMessage);
 
+    /// <inheritdoc cref="ManagerResult.InvalidModelState()"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected static ManagerResult InvalidModelState() => ManagerResult.InvalidModelState();
+
     /// <inheritdoc cref="ManagerResult.InternalServerError(string?)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected static ManagerResult InternalServerError(string errorMessage) => ManagerResult.InternalServerError(errorMessage);
@@ -56,6 +60,10 @@ public abstract class ManagerBase
     /// <inheritdoc cref="ManagerResult.Forbidden{TResult}(string?)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected static ManagerResult<TResult> Forbidden<TResult>(string? errorMessage = null) => ManagerResult.Forbidden<TResult>(errorMessage);
+
+    /// <inheritdoc cref="ManagerResult.InvalidModelState{TResult}()"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected static ManagerResult<TResult> InvalidModelState<TResult>() => ManagerResult.InvalidModelState<TResult>();
 
     /// <inheritdoc cref="ManagerResult.InternalServerError{TResult}(string?)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

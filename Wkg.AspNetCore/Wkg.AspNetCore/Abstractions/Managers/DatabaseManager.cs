@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Wkg.AspNetCore.Configuration;
 using Wkg.AspNetCore.Exceptions;
@@ -49,6 +50,7 @@ public abstract partial class DatabaseManager<TDbContext>(IDbContextDescriptor d
     /// </remarks>
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
+    /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected IActionResult InReadOnlyTransaction(ReadOnlyDatabaseRequestAction<TDbContext, IActionResult> action) =>
         InReadOnlyTransaction<IActionResult>(action);
@@ -58,6 +60,7 @@ public abstract partial class DatabaseManager<TDbContext>(IDbContextDescriptor d
     /// </summary>
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
+    /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected IActionResult InTransaction(DatabaseRequestAction<TDbContext, IActionResult> action) =>
         InTransaction<IActionResult>(action);
@@ -70,6 +73,7 @@ public abstract partial class DatabaseManager<TDbContext>(IDbContextDescriptor d
     /// </remarks>
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
+    /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected void InReadOnlyTransaction(ReadOnlyDatabaseRequestAction<TDbContext> action) => InTransaction(dbContext =>
     {
@@ -82,6 +86,7 @@ public abstract partial class DatabaseManager<TDbContext>(IDbContextDescriptor d
     /// </summary>
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
+    /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected void InTransaction(DatabaseRequestAction<TDbContext> action) => InTransaction(dbContext =>
     {
@@ -99,6 +104,7 @@ public abstract partial class DatabaseManager<TDbContext>(IDbContextDescriptor d
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <returns>The result of the <paramref name="action"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
+    /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal protected TResult InReadOnlyTransaction<TResult>(ReadOnlyDatabaseRequestAction<TDbContext, TResult> action) =>
         InTransaction(dbContext => Rollback(action.Invoke(dbContext)));
@@ -110,8 +116,14 @@ public abstract partial class DatabaseManager<TDbContext>(IDbContextDescriptor d
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <returns>The result of the <paramref name="action"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
+    /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
     internal protected TResult InTransaction<TResult>(DatabaseRequestAction<TDbContext, TResult> action)
     {
+        if (typeof(TResult).IsAssignableTo(typeof(Task)))
+        {
+            ThrowConcurrencyViolation_AsyncInSyncContext();
+        }
+
         // if we are running already in an isolated context, return immediately
         // (enables recursion)
         if (_isIsolated && DbContext.Database.CurrentTransaction is not null)
@@ -158,6 +170,10 @@ public abstract partial class DatabaseManager<TDbContext>(IDbContextDescriptor d
             }
         }
     }
+
+    [DoesNotReturn]
+    private static void ThrowConcurrencyViolation_AsyncInSyncContext() => 
+        throw new ConcurrencyViolationException(SR.ConcurrencyViolation_AsyncInSyncContext);
 
     /// <summary>
     /// Executes the specified asynchronous <paramref name="task"/> in an isolated readonly database transaction with automatic error handling.
