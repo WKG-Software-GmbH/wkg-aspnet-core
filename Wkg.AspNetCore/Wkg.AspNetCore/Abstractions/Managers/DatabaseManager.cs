@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using Wkg.AspNetCore.Configuration;
 using Wkg.AspNetCore.Exceptions;
 using Wkg.AspNetCore.RequestActions;
@@ -172,8 +173,12 @@ public abstract partial class DatabaseManager<TDbContext>(IDbContextDescriptor d
     }
 
     [DoesNotReturn]
-    private static void ThrowConcurrencyViolation_AsyncInSyncContext() => 
-        throw new ConcurrencyViolationException(SR.ConcurrencyViolation_AsyncInSyncContext);
+    private void ThrowConcurrencyViolation_AsyncInSyncContext()
+    {
+        ConcurrencyViolationException ex = new(SR.ConcurrencyViolation_AsyncInSyncContext);
+        ExceptionDispatchInfo.SetCurrentStackTrace(ex);
+        throw AfterHandled(ex);
+    }
 
     /// <summary>
     /// Executes the specified asynchronous <paramref name="task"/> in an isolated readonly database transaction with automatic error handling.
