@@ -11,12 +11,8 @@ public abstract class TestBase
 
     private protected static ServiceProvider ServiceProvider { get; private set; } = null!;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TestBase"/> class.
-    /// </summary>
-    protected TestBase()
+    static TestBase()
     {
-        EnsureIsInitialized();
         if (!WkgAspNetCore.VersionString.Equals(WkgAspNetCoreTestAdapters.VersionString))
         {
             throw new InvalidOperationException(
@@ -25,6 +21,14 @@ public abstract class TestBase
                 Please ensure that the unit test project is using the same version of the Wkg.AspNetCore.TestAdapters framework as the Wkg.AspNetCore framework that it is testing.
                 """);
         }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TestBase"/> class.
+    /// </summary>
+    protected TestBase()
+    {
+        EnsureIsInitialized();
     }
 
     /// <summary>
