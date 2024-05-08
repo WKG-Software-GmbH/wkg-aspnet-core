@@ -8,7 +8,8 @@ variables:
   LIBRARY_DIRECTORY: "Wkg.AspNetCore/Wkg.AspNetCore"
   LIBRARY_PROJECT: "${LIBRARY_DIRECTORY}/Wkg.AspNetCore.csproj"
   LIBRARY_TEST_PROJECT: "Wkg.AspNetCore/Wkg.AspNetCoreTests/Wkg.AspNetCoreTests.csproj"
-  TEST_ADAPTER_PROJECT: "Wkg.AspNetCore/Wkg.AspNetCore.TestAdapters/Wkg.AspNetCore.TestAdapters.csproj"
+  TEST_ADAPTER_DIRECTORY: "Wkg.AspNetCore/Wkg.AspNetCore.TestAdapters"
+  TEST_ADAPTER_PROJECT: "${TEST_ADAPTER_DIRECTORY}/Wkg.AspNetCore.TestAdapters.csproj"
   MAJOR_VERSION: "8"
   MINOR_VERSION: "1"
 
@@ -49,3 +50,4 @@ deploy-test-adapters:
   extends: .deploy-baget
   variables:
     PROJECT_FILE_PATH: "${TEST_ADAPTER_PROJECT}"
+    DOTNET_CI_VERSION_FILE: "${TEST_ADAPTER_DIRECTORY}/WkgAspNetCoreTestAdapters.cs"

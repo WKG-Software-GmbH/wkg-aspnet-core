@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Wkg.AspNetCore.Interop;
+﻿using Wkg.AspNetCore.Interop;
 using Wkg.AspNetCore.TestAdapters.Extensions;
 
 namespace Wkg.AspNetCore.TestAdapters;

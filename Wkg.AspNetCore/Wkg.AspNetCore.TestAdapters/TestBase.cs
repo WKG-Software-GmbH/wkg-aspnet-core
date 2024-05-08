@@ -17,6 +17,14 @@ public abstract class TestBase
     protected TestBase()
     {
         EnsureIsInitialized();
+        if (!WkgAspNetCore.VersionString.Equals(WkgAspNetCoreTestAdapters.VersionString))
+        {
+            throw new InvalidOperationException(
+                """
+                Encountered a version mismatch between the Wkg.AspNetCore and Wkg.AspNetCore.TestAdapters frameworks.
+                Please ensure that the unit test project is using the same version of the Wkg.AspNetCore.TestAdapters framework as the Wkg.AspNetCore framework that it is testing.
+                """);
+        }
     }
 
     /// <summary>
