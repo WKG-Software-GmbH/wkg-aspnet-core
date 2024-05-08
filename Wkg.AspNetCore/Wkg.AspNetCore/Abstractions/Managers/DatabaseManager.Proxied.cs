@@ -2,4 +2,4 @@
 
 namespace Wkg.AspNetCore.Abstractions.Managers;
 
-internal class ProxiedDatabaseManager<TDbContext>(TDbContext dbContext, bool autoAssertModelState) : DatabaseManager<TDbContext>(dbContext, autoAssertModelState) where TDbContext : DbContext;
+internal class ProxiedDatabaseManager<TDbContext>(IDbContextDescriptor dbContextDescriptor) : DatabaseManager<TDbContext>(dbContextDescriptor) where TDbContext : DbContext;

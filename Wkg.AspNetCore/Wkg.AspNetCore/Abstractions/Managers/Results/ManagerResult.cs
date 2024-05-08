@@ -85,6 +85,11 @@ public readonly struct ManagerResult
     public static ManagerResult Forbidden(string? errorMessage = null) => new(ManagerResultCode.Forbidden, errorMessage);
 
     /// <summary>
+    /// Creates a new <see cref="ManagerResultCode.InvalidModelState"/> result.
+    /// </summary>
+    public static ManagerResult InvalidModelState() => new(ManagerResultCode.InvalidModelState, null);
+
+    /// <summary>
     /// Creates a new <see cref="ManagerResultCode.InternalServerError"/> result with the specified error message.
     /// </summary>
     /// <param name="errorMessage">The error message describing the reason for the failure.</param>
@@ -124,6 +129,12 @@ public readonly struct ManagerResult
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="errorMessage">The error message describing the reason for the failure.</param>
     public static ManagerResult<TResult> Forbidden<TResult>(string? errorMessage = null) => Forbidden(errorMessage).FailureAs<TResult>();
+
+    /// <summary>
+    /// Creates a new <see cref="ManagerResultCode.InvalidModelState"/> result.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    public static ManagerResult<TResult> InvalidModelState<TResult>() => InvalidModelState().FailureAs<TResult>();
 
     /// <summary>
     /// Creates a new <see cref="ManagerResultCode.InternalServerError"/> result with the specified error message.

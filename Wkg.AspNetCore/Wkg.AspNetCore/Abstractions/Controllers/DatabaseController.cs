@@ -22,12 +22,10 @@ public abstract class DatabaseController<TDbContext> : ErrorHandlingController, 
     /// <summary>
     /// Initializes a new instance of the <see cref="DatabaseController{TDbContext}"/> class.
     /// </summary>
-    /// <param name="unsafeDbContext">The database context. Note that this context should not be used directly by client code. 
-    /// Use the <typeparamref name="TDbContext"/> instance exposed through the InTransaction methods instead.</param>
-    /// <param name="autoAssertModelState">Indicates whether the <see cref="ControllerBase.ModelState"/> should be automatically asserted before starting a transaction.</param>
-    protected DatabaseController(TDbContext unsafeDbContext, bool autoAssertModelState = false)
+    /// <param name="dbContextDescriptor">The DI descriptor of the database context.</param>
+    protected DatabaseController(IDbContextDescriptor dbContextDescriptor)
     {
-        _implementation = new ProxiedDatabaseManager<TDbContext>(unsafeDbContext, autoAssertModelState)
+        _implementation = new ProxiedDatabaseManager<TDbContext>(dbContextDescriptor)
         {
             Context = this
         };
@@ -36,13 +34,6 @@ public abstract class DatabaseController<TDbContext> : ErrorHandlingController, 
     #region Core API
 
     private protected TDbContext DbContext => _implementation.DbContext;
-
-    /// <inheritdoc cref="DatabaseManager{TDbContext}.AutoAssertModelState"/>
-    protected bool AutoAssertModelState
-    {
-        get => _implementation.AutoAssertModelState;
-        set => _implementation.AutoAssertModelState = value;
-    }
 
     /// <inheritdoc cref="DatabaseManager{TDbContext}.TransactionManagementAllowed"/>
     protected bool TransactionManagementAllowed => _implementation.TransactionManagementAllowed;

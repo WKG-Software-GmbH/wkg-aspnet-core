@@ -21,6 +21,8 @@ public static class ServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> for fluent configuration.</returns>
     public static IServiceCollection AddManagers(this IServiceCollection services)
     {
+        services.AddDbAbstractions();
+
         // collect all manager types used by concrete MvcContext types (controllers, razor pages, etc.)
         IEnumerable<Type> managers = AppDomain.CurrentDomain
             // get all assemblies
@@ -50,7 +52,7 @@ public static class ServiceCollectionExtensions
             .ToFrozenDictionary();
         ManagerBindingOptions bindingOptions = new(factories);
         services.AddSingleton(bindingOptions);
-        services.AddSingleton<IManagerBindings, DefaultManagerBindings>();
+        services.AddScoped<IManagerBindings, DefaultManagerBindings>();
 
         foreach (MethodInfo registerRequiredServices in managers
             .Where(manager => manager.ImplementsInterfaceDirectly(typeof(IRequireDependencyRegistration)))
