@@ -13,7 +13,7 @@ public abstract class TestBase
 
     static TestBase()
     {
-        if (!WkgAspNetCore.VersionString.Equals(WkgAspNetCoreTestAdapters.VersionString))
+        if (!WkgAspNetCore.VersionInfo.VersionString.Equals(WkgAspNetCoreTestAdapters.VersionInfo.VersionString))
         {
             throw new InvalidOperationException(
                 """
