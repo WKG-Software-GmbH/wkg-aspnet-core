@@ -24,7 +24,7 @@
         <Title>WKG ASP.NET Core Test Adapters</Title>
         <PackageType>Dependency</PackageType>
         <PackageTags>
-            AspNet;EntityFrameworkCore;UnitTest;Testing
+            AspNetCore;REST;EntityFrameworkCore;UnitTest;Testing
         </PackageTags>
     </PropertyGroup>
 
