@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 using Wkg.AspNetCore.Abstractions.Managers;
 using Wkg.AspNetCore.Abstractions.Managers.Results;
@@ -11,7 +10,7 @@ namespace Wkg.AspNetCore.Abstractions.Controllers;
 /// Base class for API controllers implemented through a manager.
 /// </summary>
 /// <typeparam name="TManager">The type of the implementing manager.</typeparam>
-public abstract class ManagerController<TManager> : ControllerBase, IMvcContext<TManager>
+public abstract class ManagerController<TManager> : ErrorHandlingController, IMvcContext<TManager>
     where TManager : ManagerBase
 {
     /// <summary>
