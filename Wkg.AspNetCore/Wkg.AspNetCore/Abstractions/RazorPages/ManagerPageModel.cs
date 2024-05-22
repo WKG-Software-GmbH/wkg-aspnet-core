@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 using Wkg.AspNetCore.Abstractions.Controllers;
 using Wkg.AspNetCore.Abstractions.Managers;
@@ -13,7 +11,7 @@ namespace Wkg.AspNetCore.Abstractions.RazorPages;
 /// Base class for Razor Pages implemented through a manager.
 /// </summary>
 /// <typeparam name="TManager">The type of the implemented manager.</typeparam>
-public abstract class ManagerPageModel<TManager> : PageModel, IMvcContext<TManager>
+public abstract class ManagerPageModel<TManager> : ErrorHandlingPageModel, IMvcContext<TManager>
     where TManager : ManagerBase
 {
     /// <summary>
