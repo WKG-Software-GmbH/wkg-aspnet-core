@@ -142,6 +142,7 @@ public abstract class ErrorHandlingManager : ManagerBase
         {
             return apiProxyException;
         }
+        // only log the exception once as it bubbles up the call stack
         OnError(e);
         // preserve original stacktrace
         return new ApiProxyException(e);
