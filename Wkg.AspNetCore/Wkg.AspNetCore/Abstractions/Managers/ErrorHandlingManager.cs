@@ -109,27 +109,26 @@ public abstract class ErrorHandlingManager : ManagerBase
     /// <summary>
     /// Performs the necessary actions to handle the intercepted <see cref="Exception"/>.
     /// </summary>
-    /// <param name="e">The intercepted <see cref="Exception"/>.</param>
+    /// <param name="exception">The intercepted <see cref="Exception"/>.</param>
     /// <remarks>
     /// By default, the <see cref="Exception"/> is logged and returned to the client via a model state error.
     /// </remarks>
-    internal protected virtual void OnError(Exception e)
+    internal protected virtual void OnError(Exception exception)
     {
         const string stackTraceNull = "<UnknownStackTrace>";
 
         if (IsDevelopmentMode && Context?.ModelState is not null)
         {
-            Context.ModelState.AddModelError("ExceptionMessage", e.Message);
-            Context.ModelState.AddModelError("StackTrace", e.StackTrace ?? stackTraceNull);
-            if (e.InnerException is not null)
+            int depth = 0;
+            for (Exception? e = exception; e is not null; e = e.InnerException, depth++)
             {
-                Context.ModelState.AddModelError("InnerException", e.InnerException.Message);
-                Context.ModelState.AddModelError("InnerExceptionStackTrace", e.InnerException.StackTrace ?? stackTraceNull);
+                Context.ModelState.AddModelError($"ExceptionMessage (depth: {depth})", e.Message);
+                Context.ModelState.AddModelError($"StackTrace (depth: {depth})", e.StackTrace ?? stackTraceNull);
             }
         }
 
         // write to all configured loggers
-        Log.WriteException(e, LogLevel.Fatal);
+        Log.WriteException(exception, LogLevel.Fatal);
     }
 
     /// <summary>
@@ -139,6 +138,10 @@ public abstract class ErrorHandlingManager : ManagerBase
     /// <returns>An <see cref="ApiProxyException"/> corresponding to the intercepted <see cref="Exception"/>.</returns>
     internal protected virtual ApiProxyException AfterHandled(Exception e)
     {
+        if (e is ApiProxyException apiProxyException)
+        {
+            return apiProxyException;
+        }
         OnError(e);
         // preserve original stacktrace
         return new ApiProxyException(e);
