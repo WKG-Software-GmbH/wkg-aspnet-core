@@ -1,11 +1,27 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Wkg.AspNetCore.Abstractions;
+﻿using Wkg.AspNetCore.Abstractions;
+using Wkg.AspNetCore.Abstractions.Managers;
 
 namespace Wkg.AspNetCore.Configuration.ManagerBindings;
 
 internal class DefaultManagerBindings(ManagerBindingOptions _options, IServiceProvider _scopedServiceProvider) : IManagerBindings
 {
-    TManager IManagerBindings.ActivateManager<TManager>(IMvcContext<TManager> context)
+    private Dictionary<Type, ManagerBase>? _scopedManagerCache;
+
+    public TManager ActivateManagerUnsafe<TManager>(IMvcContext context) where TManager : ManagerBase
+    {
+        _scopedManagerCache ??= [];
+        if (_scopedManagerCache.TryGetValue(typeof(TManager), out ManagerBase? cachedManager))
+        {
+            return cachedManager.ReinterpretAs<TManager>();
+        }
+        TManager manager = ActivateManagerCore<TManager>(context);
+        _scopedManagerCache.Add(typeof(TManager), manager);
+        return manager;
+    }
+
+    TManager IManagerBindings.ActivateManager<TManager>(IMvcContext<TManager> context) => ActivateManagerCore<TManager>(context);
+
+    private TManager ActivateManagerCore<TManager>(IMvcContext context) where TManager : ManagerBase
     {
         if (_options.Map.TryGetValue(typeof(TManager), out ManagerFactory? factory))
         {
