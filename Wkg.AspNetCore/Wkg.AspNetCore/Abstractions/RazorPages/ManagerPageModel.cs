@@ -20,12 +20,18 @@ public abstract class ManagerPageModel<TManager> : ErrorHandlingPageModel, IMvcC
     protected TManager Manager { get; }
 
     /// <summary>
+    /// The manager bindings used to activate the manager.
+    /// </summary>
+    protected IManagerBindings ManagerBindings { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ManagerController{TManager}"/> class.
     /// </summary>
     /// <param name="managerBindings">The manager bindings.</param>
     protected ManagerPageModel(IManagerBindings managerBindings)
     {
         Manager = managerBindings.ActivateManager(this);
+        ManagerBindings = managerBindings;
     }
 
     /// <summary>
