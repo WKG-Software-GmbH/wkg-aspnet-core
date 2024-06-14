@@ -89,10 +89,10 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         Span<byte> keyBufferSpan = keyBuffer.AsSpan();
         Unsafe.CopyBlock(ref options.SecretBytes[0], ref keyBuffer[0], (uint)options.SecretBytes.Length);
         Unsafe.CopyBlock(ref sessionKeyBytes[0], ref keyBuffer[options.SecretBytes.Length], (uint)sessionKeyBytes.Length);
-        Span<byte> hmac = stackalloc byte[HMACSHA3_512.HashSizeInBytes];
-        int bytesWritten = HMACSHA3_512.HashData(keyBufferSpan, stream, hmac);
+        Span<byte> hmac = stackalloc byte[HMACSHA512.HashSizeInBytes];
+        int bytesWritten = HMACSHA512.HashData(keyBufferSpan, stream, hmac);
         keyBufferSpan.Clear();
-        Debug.Assert(bytesWritten == HMACSHA3_512.HashSizeInBytes);
+        Debug.Assert(bytesWritten == HMACSHA512.HashSizeInBytes);
         ArrayPool.Return(keyBuffer);
         stream.Write(hmac);
         PooledArray<byte> result = ArrayPool.Rent<byte>((int)stream.Length);
@@ -117,7 +117,7 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
             return false;
         }
         OperationStatus status = Base64.DecodeFromUtf8InPlace(bufferSpan, out bytesWritten);
-        if (status != OperationStatus.Done || bytesWritten <= HMACSHA3_512.HashSizeInBytes)
+        if (status != OperationStatus.Done || bytesWritten <= HMACSHA512.HashSizeInBytes)
         {
             Log.WriteWarning("Failed to decode base64 string. The provided string is not a valid base64 string.");
             ArrayPool.Return(buffer);
@@ -125,8 +125,8 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
             return false;
         }
         Span<byte> decodedBytes = bufferSpan[..bytesWritten];
-        Span<byte> hmac = decodedBytes[^HMACSHA3_512.HashSizeInBytes..];
-        Span<byte> content = decodedBytes[..^HMACSHA3_512.HashSizeInBytes];
+        Span<byte> hmac = decodedBytes[^HMACSHA512.HashSizeInBytes..];
+        Span<byte> content = decodedBytes[..^HMACSHA512.HashSizeInBytes];
         data = JsonSerializer.Deserialize<ClaimScopeData<TIdentityClaim>>(content);
         if (data is null)
         {
@@ -151,10 +151,10 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         Span<byte> keyBufferSpan = keyBuffer.AsSpan();
         Unsafe.CopyBlock(ref options.SecretBytes[0], ref keyBuffer[0], (uint)options.SecretBytes.Length);
         Unsafe.CopyBlock(ref sessionKeyBytes[0], ref keyBuffer[options.SecretBytes.Length], (uint)sessionKeyBytes.Length);
-        Span<byte> computedHmac = stackalloc byte[HMACSHA3_512.HashSizeInBytes];
-        bytesWritten = HMACSHA3_512.HashData(keyBufferSpan, content, computedHmac);
+        Span<byte> computedHmac = stackalloc byte[HMACSHA512.HashSizeInBytes];
+        bytesWritten = HMACSHA512.HashData(keyBufferSpan, content, computedHmac);
         keyBufferSpan.Clear();
-        Debug.Assert(bytesWritten == HMACSHA3_512.HashSizeInBytes);
+        Debug.Assert(bytesWritten == HMACSHA512.HashSizeInBytes);
         ArrayPool.Return(keyBuffer);
         if (!computedHmac.SequenceEqual(hmac))
         {
