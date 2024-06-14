@@ -157,19 +157,17 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         keyBufferSpan.Clear();
         Debug.Assert(bytesWritten == HMACSHA512.HashSizeInBytes);
         ArrayPool.Return(keyBuffer);
+        ArrayPool.Return(buffer);
         if (!computedHmac.SequenceEqual(hmac))
         {
             Log.WriteError($"[SECURITY] Session key HMAC mismatch. This may indicate an attempt to tamper with the session data for IdentityClaim {data.IdentityClaim.RawValue}.");
-            ArrayPool.Return(buffer);
             return false;
         }
         if (data.ExpirationDate.HasValue && data.ExpirationDate.Value < DateTime.UtcNow)
         {
             Log.WriteWarning($"Session key for IdentityClaim {data.IdentityClaim.RawValue} has expired.");
-            ArrayPool.Return(buffer);
             return false;
         }
-        ArrayPool.Return(buffer);
         Log.WriteDebug($"Audit success: Session key for IdentityClaim {data.IdentityClaim.RawValue} has been validated.");
         return true;
     }
