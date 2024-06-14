@@ -87,8 +87,8 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         }
         PooledArray<byte> keyBuffer = ArrayPool.Rent<byte>(options.SecretBytes.Length + 16);
         Span<byte> keyBufferSpan = keyBuffer.AsSpan();
-        Unsafe.CopyBlock(ref options.SecretBytes[0], ref keyBuffer[0], (uint)options.SecretBytes.Length);
-        Unsafe.CopyBlock(ref sessionKeyBytes[0], ref keyBuffer[options.SecretBytes.Length], (uint)sessionKeyBytes.Length);
+        Unsafe.CopyBlock(ref keyBufferSpan[0], in options.SecretBytes[0], (uint)options.SecretBytes.Length);
+        Unsafe.CopyBlock(ref keyBufferSpan[options.SecretBytes.Length], in sessionKeyBytes[0], (uint)sessionKeyBytes.Length);
         Span<byte> hmac = stackalloc byte[HMACSHA512.HashSizeInBytes];
         int bytesWritten = HMACSHA512.HashData(keyBufferSpan, stream, hmac);
         keyBufferSpan.Clear();
@@ -149,8 +149,8 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         }
         PooledArray<byte> keyBuffer = ArrayPool.Rent<byte>(options.SecretBytes.Length + 16);
         Span<byte> keyBufferSpan = keyBuffer.AsSpan();
-        Unsafe.CopyBlock(ref options.SecretBytes[0], ref keyBuffer[0], (uint)options.SecretBytes.Length);
-        Unsafe.CopyBlock(ref sessionKeyBytes[0], ref keyBuffer[options.SecretBytes.Length], (uint)sessionKeyBytes.Length);
+        Unsafe.CopyBlock(ref keyBufferSpan[0], in options.SecretBytes[0], (uint)options.SecretBytes.Length);
+        Unsafe.CopyBlock(ref keyBufferSpan[options.SecretBytes.Length], in sessionKeyBytes[0], (uint)sessionKeyBytes.Length);
         Span<byte> computedHmac = stackalloc byte[HMACSHA512.HashSizeInBytes];
         bytesWritten = HMACSHA512.HashData(keyBufferSpan, content, computedHmac);
         keyBufferSpan.Clear();
