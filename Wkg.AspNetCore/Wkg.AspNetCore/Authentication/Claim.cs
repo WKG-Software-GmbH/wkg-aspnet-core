@@ -1,10 +1,9 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Wkg.AspNetCore.Authentication;
 
-public abstract class IdentityClaim(string value) : Claim(IdentityClaimSubject, value)
+public abstract class IdentityClaim(string rawValue) : Claim(IdentityClaimSubject, rawValue)
 {
     public static string IdentityClaimSubject => "Wkg.AspNetCore.Authentication.IdentityClaim";
 }
@@ -19,17 +18,18 @@ public class IdentityClaim<TIdentityKey> : IdentityClaim where TIdentityKey : no
     }
 
     [JsonConstructor]
-    public IdentityClaim(string value) : base(value) => Pass();
+    public IdentityClaim(string rawValue) : base(rawValue) => Pass();
 
+    [JsonIgnore]
     public TIdentityKey IdentityKey => _identityKey ??= JsonSerializer.Deserialize<TIdentityKey>(RawValue)
         ?? throw new InvalidOperationException($"Failed to deserialize {nameof(IdentityKey)} from {RawValue}.");
 }
 
-public class Claim(string subject, string value)
+public class Claim(string subject, string rawValue)
 {
     public virtual string Subject { get; } = subject;
 
-    public virtual string RawValue { get; protected set; } = value;
+    public virtual string RawValue { get; protected set; } = rawValue;
 
     internal Claim<TValue>? ToClaim<TValue>()
     {
@@ -56,6 +56,7 @@ public class Claim<TValue> : Claim
         _value = value;
     }
 
+    [JsonIgnore]
     public TValue Value
     {
         get => _value;
