@@ -90,6 +90,7 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         Unsafe.CopyBlock(ref keyBufferSpan[0], in options.SecretBytes[0], (uint)options.SecretBytes.Length);
         Unsafe.CopyBlock(ref keyBufferSpan[options.SecretBytes.Length], in sessionKeyBytes[0], (uint)sessionKeyBytes.Length);
         Span<byte> hmac = stackalloc byte[HMACSHA512.HashSizeInBytes];
+        stream.Position = 0;
         int bytesWritten = HMACSHA512.HashData(keyBufferSpan, stream, hmac);
         keyBufferSpan.Clear();
         Debug.Assert(bytesWritten == HMACSHA512.HashSizeInBytes);
