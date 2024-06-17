@@ -105,7 +105,7 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
             Log.WriteError($"[SECURITY] Session key HMAC mismatch. This may indicate an attempt to tamper with the session data for IdentityClaim {data.IdentityClaim.RawValue}.");
             return false;
         }
-        if (data.ExpirationDate.HasValue && data.ExpirationDate.Value < DateTime.UtcNow)
+        if (data.ExpirationDate < DateTime.UtcNow)
         {
             Log.WriteWarning($"Session key for IdentityClaim {data.IdentityClaim.RawValue} has expired.");
             sessions.TryRevokeSession(data.IdentityClaim.RawValue);

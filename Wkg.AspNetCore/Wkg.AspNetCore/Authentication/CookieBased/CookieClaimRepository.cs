@@ -45,7 +45,7 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
         }
     }
 
-    internal CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager, TIdentityClaim identityClaim, DateTime? expirationDate)
+    internal CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager, TIdentityClaim identityClaim, DateTime expirationDate)
     {
         _context = contextAccessor.HttpContext
             ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current repository.");
@@ -61,13 +61,13 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
 
     public TIdentityClaim? IdentityClaim { get; private set; }
 
-    public DateTime? ExpirationDate { get; set; }
+    public DateTime ExpirationDate { get; set; }
 
     [MemberNotNullWhen(true, nameof(IdentityClaim))]
     public bool IsInitialized { get; private set; }
 
     [MemberNotNullWhen(true, nameof(IdentityClaim))]
-    public bool IsValid => IsInitialized && IdentityClaim is not null && (ExpirationDate is null || ExpirationDate > DateTime.UtcNow);
+    public bool IsValid => IsInitialized && IdentityClaim is not null && ExpirationDate > DateTime.UtcNow;
 
     public int Count => _claims.Count;
 
@@ -189,6 +189,7 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
                     .. _claims.Values.Where(c => !ReferenceEquals(c, IdentityClaim))
                 ]
             );
+            ClaimManager.TryRenewClaims(IdentityClaim);
             string cookieValue = ClaimManager.Serialize(data);
             _context.Response.Cookies.Append(CookieName, cookieValue, new CookieOptions
             {

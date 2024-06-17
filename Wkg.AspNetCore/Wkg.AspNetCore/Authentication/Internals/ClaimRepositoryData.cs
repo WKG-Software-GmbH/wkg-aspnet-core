@@ -2,4 +2,4 @@
 
 namespace Wkg.AspNetCore.Authentication.Internals;
 
-internal record ClaimRepositoryData<TIdentityClaim>(TIdentityClaim IdentityClaim, DateTime? ExpirationDate, Claim[] Claims);
+internal record ClaimRepositoryData<TIdentityClaim>(TIdentityClaim IdentityClaim, DateTime ExpirationDate, Claim[] Claims);

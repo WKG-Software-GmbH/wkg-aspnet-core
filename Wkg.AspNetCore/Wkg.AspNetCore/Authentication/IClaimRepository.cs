@@ -6,7 +6,7 @@ namespace Wkg.AspNetCore.Authentication;
 public interface IClaimRepository<TIdentityClaim> : ICollection<Claim>, IDisposable
     where TIdentityClaim : IdentityClaim
 {
-    DateTime? ExpirationDate { get; set; }
+    DateTime ExpirationDate { get; set; }
 
     [MemberNotNullWhen(true, nameof(IdentityClaim))]
     bool IsValid { get; }
