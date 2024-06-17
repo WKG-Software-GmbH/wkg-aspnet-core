@@ -16,6 +16,7 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
     private readonly Dictionary<string, Claim> _claims;
     private bool _hasChanges;
     private bool _disposedValue;
+    private DateTime expirationDate;
 
     [ActivatorUtilitiesConstructor]
     public CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager)
@@ -61,7 +62,15 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
 
     public TIdentityClaim? IdentityClaim { get; private set; }
 
-    public DateTime ExpirationDate { get; set; }
+    public DateTime ExpirationDate
+    {
+        get => expirationDate;
+        set
+        {
+            expirationDate = value;
+            _hasChanges = true;
+        }
+    }
 
     [MemberNotNullWhen(true, nameof(IdentityClaim))]
     public bool IsInitialized { get; private set; }
