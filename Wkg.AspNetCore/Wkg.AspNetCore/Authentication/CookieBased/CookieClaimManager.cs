@@ -135,6 +135,12 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
             status = ClaimRepositoryStatus.Expired;
             return false;
         }
+        if (data.Claims.Any(c => c.RawValue is null))
+        {
+            Log.WriteWarning($"One or more claims in the session key for IdentityClaim {data.IdentityClaim.RawValue} are null. Is your JSON serialization working correctly? Rejecting invalid claim scope data.");
+            status = ClaimRepositoryStatus.Invalid;
+            return false;
+        }
         Log.WriteDebug($"Audit success: Session key for IdentityClaim {data.IdentityClaim.RawValue} has been validated.");
         data.ExtendedKeys = sessionKey.ExtendedKeys;
         status = ClaimRepositoryStatus.Valid;
