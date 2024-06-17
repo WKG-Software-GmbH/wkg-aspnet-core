@@ -1,5 +1,15 @@
-﻿using Wkg.AspNetCore.Authentication.Claims;
+﻿using System.Text.Json.Serialization;
+using Wkg.AspNetCore.Authentication.Claims;
 
 namespace Wkg.AspNetCore.Authentication.Internals;
 
-internal record ClaimRepositoryData<TIdentityClaim>(TIdentityClaim IdentityClaim, DateTime ExpirationDate, Claim[] Claims);
+internal record ClaimRepositoryData<TIdentityClaim, TExtendedKeys>
+(
+    TIdentityClaim IdentityClaim, 
+    DateTime ExpirationDate, 
+    Claim[] Claims
+)
+{
+    [JsonIgnore]
+    public TExtendedKeys ExtendedKeys { get; set; } = default!;
+}

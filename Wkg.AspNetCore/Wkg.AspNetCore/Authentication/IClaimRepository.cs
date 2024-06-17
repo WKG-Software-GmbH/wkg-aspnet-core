@@ -3,9 +3,22 @@ using Wkg.AspNetCore.Authentication.Claims;
 
 namespace Wkg.AspNetCore.Authentication;
 
-public interface IClaimRepository<TIdentityClaim> : ICollection<Claim>, IDisposable
+public interface IClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepository<TIdentityClaim>
     where TIdentityClaim : IdentityClaim
+    where TExtendedKeys : IExtendedKeys<TExtendedKeys>
 {
+    TExtendedKeys? ExtendedKeys { get; }
+
+    new IClaimManager<TIdentityClaim, TExtendedKeys> ClaimManager { get; }
+
+    [MemberNotNull(nameof(ExtendedKeys))]
+    new void Initialize(TIdentityClaim identityClaim);
+}
+
+public interface IClaimRepository<TIdentityClaim> : ICollection<Claim>, IDisposable where TIdentityClaim : IdentityClaim
+{
+    IClaimManager<TIdentityClaim> ClaimManager { get; }
+
     DateTime ExpirationDate { get; set; }
 
     [MemberNotNullWhen(true, nameof(IdentityClaim))]
@@ -31,8 +44,6 @@ public interface IClaimRepository<TIdentityClaim> : ICollection<Claim>, IDisposa
     bool ContainsClaim(string subject);
 
     bool SaveChanges();
-
-    IClaimManager<TIdentityClaim> ClaimManager { get; }
 
     TIdentityClaim? IdentityClaim { get; }
 

@@ -14,22 +14,26 @@ using Wkg.Logging;
 
 namespace Wkg.AspNetCore.Authentication.CookieBased;
 
-internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAccessor, ClaimValidationOptions options, SessionKeyStore sessions)
-    : IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityClaim
+internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAccessor contextAccessor, ClaimValidationOptions options, SessionKeyStore<TExtendedKeys> sessions)
+    : IClaimManager<TIdentityClaim, TExtendedKeys>
+    where TIdentityClaim : IdentityClaim 
+    where TExtendedKeys : IExtendedKeys<TExtendedKeys>
 {
-    public IClaimRepository<TIdentityClaim> CreateRepository(TIdentityClaim identityClaim)
+    public IClaimRepository<TIdentityClaim, TExtendedKeys> CreateRepository(TIdentityClaim identityClaim)
     {
-        CookieClaimRepository<TIdentityClaim> scope = new(contextAccessor, this, identityClaim, DateTime.UtcNow.Add(options.TimeToLive));
+        CookieClaimRepository<TIdentityClaim, TExtendedKeys> scope = new(contextAccessor, this, identityClaim, DateTime.UtcNow.Add(options.TimeToLive));
         return scope;
     }
 
+    IClaimRepository<TIdentityClaim> IClaimManager<TIdentityClaim>.CreateRepository(TIdentityClaim identityClaim) => CreateRepository(identityClaim);
+
     public IClaimValidationOptions Options => options;
 
-    string IClaimManager<TIdentityClaim>.Serialize(ClaimRepositoryData<TIdentityClaim> repository)
+    string IClaimManager<TIdentityClaim, TExtendedKeys>.Serialize(ClaimRepositoryData<TIdentityClaim, TExtendedKeys> repository)
     {
         using MemoryStream stream = new();
         JsonSerializer.Serialize(stream, repository);
-        SessionKey sessionKey = sessions.GetOrCreateSession(repository.IdentityClaim.RawValue);
+        SessionKey<TExtendedKeys> sessionKey = sessions.GetOrCreateSession(repository.IdentityClaim.RawValue, repository.ExtendedKeys);
         Span<byte> sessionKeyBytes = stackalloc byte[sessionKey.Size];
         sessionKey.WriteKey(sessionKeyBytes);
         PooledArray<byte> keyBuffer = ArrayPool.Rent<byte>(options.SecretBytes.Length + sessionKeyBytes.Length);
@@ -52,7 +56,7 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         return base64;
     }
 
-    bool IClaimManager<TIdentityClaim>.TryDeserialize(string base64, [NotNullWhen(true)] out ClaimRepositoryData<TIdentityClaim>? data)
+    bool IClaimManager<TIdentityClaim, TExtendedKeys>.TryDeserialize(string base64, [NotNullWhen(true)] out ClaimRepositoryData<TIdentityClaim, TExtendedKeys>? data)
     {
         PooledArray<byte> buffer = ArrayPool.Rent<byte>(base64.Length);
         Span<byte> bufferSpan = buffer.AsSpan();
@@ -75,14 +79,14 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         Span<byte> decodedBytes = bufferSpan[..bytesWritten];
         Span<byte> hmac = decodedBytes[^HMACSHA512.HashSizeInBytes..];
         Span<byte> content = decodedBytes[..^HMACSHA512.HashSizeInBytes];
-        data = JsonSerializer.Deserialize<ClaimRepositoryData<TIdentityClaim>>(content);
+        data = JsonSerializer.Deserialize<ClaimRepositoryData<TIdentityClaim, TExtendedKeys>>(content);
         if (data is null)
         {
             Log.WriteWarning("Failed to deserialize claim scope data.");
             ArrayPool.Return(buffer);
             return false;
         }
-        if (!sessions.TryGetSession(data.IdentityClaim.RawValue, out SessionKey? sessionKey))
+        if (!sessions.TryGetSession(data.IdentityClaim.RawValue, out SessionKey<TExtendedKeys>? sessionKey))
         {
             Log.WriteWarning("Invalid or expired session key.");
             ArrayPool.Return(buffer);
@@ -112,6 +116,7 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
             return false;
         }
         Log.WriteDebug($"Audit success: Session key for IdentityClaim {data.IdentityClaim.RawValue} has been validated.");
+        data.ExtendedKeys = sessionKey.ExtendedKeys;
         return true;
     }
 
@@ -119,7 +124,7 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
 
     public bool TryRenewClaims(TIdentityClaim identityClaim)
     {
-        if (!sessions.TryGetSession(identityClaim.Subject, out SessionKey? sessionKey))
+        if (!sessions.TryGetSession(identityClaim.Subject, out SessionKey<TExtendedKeys>? sessionKey))
         {
             return false;
         }

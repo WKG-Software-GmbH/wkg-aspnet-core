@@ -8,7 +8,9 @@ using Wkg.AspNetCore.Authentication.Internals;
 
 namespace Wkg.AspNetCore.Authentication.CookieBased;
 
-internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentityClaim> where TIdentityClaim : IdentityClaim
+internal class CookieClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepository<TIdentityClaim, TExtendedKeys>
+    where TIdentityClaim : IdentityClaim
+    where TExtendedKeys : IExtendedKeys<TExtendedKeys>
 {
     private const string CookieName = "Wkg.AspNetCore.Authentication.CookieClaims";
 
@@ -19,19 +21,20 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
     private DateTime expirationDate;
 
     [ActivatorUtilitiesConstructor]
-    public CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager)
+    public CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim, TExtendedKeys> claimManager)
     {
         _context = contextAccessor.HttpContext
             ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current repository.");
         ClaimManager = claimManager;
         if (_context.Request.Cookies.TryGetValue(CookieName, out string? cookieValue))
         {
-            if (claimManager.TryDeserialize(cookieValue, out ClaimRepositoryData<TIdentityClaim>? data))
+            if (claimManager.TryDeserialize(cookieValue, out ClaimRepositoryData<TIdentityClaim, TExtendedKeys>? data))
             {
                 _claims = data.Claims.ToDictionary(c => c.Subject, c => c);
                 _claims.Add(data.IdentityClaim.Subject, data.IdentityClaim);
                 IdentityClaim = data.IdentityClaim;
                 ExpirationDate = data.ExpirationDate;
+                ExtendedKeys = data.ExtendedKeys;
                 IsInitialized = true;
             }
             else
@@ -46,7 +49,7 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
         }
     }
 
-    internal CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager, TIdentityClaim identityClaim, DateTime expirationDate)
+    internal CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim, TExtendedKeys> claimManager, TIdentityClaim identityClaim, DateTime expirationDate)
     {
         _context = contextAccessor.HttpContext
             ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current repository.");
@@ -58,7 +61,7 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
         _hasChanges = true;
     }
 
-    public IClaimManager<TIdentityClaim> ClaimManager { get; }
+    public IClaimManager<TIdentityClaim, TExtendedKeys> ClaimManager { get; }
 
     public TIdentityClaim? IdentityClaim { get; private set; }
 
@@ -72,20 +75,25 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
         }
     }
 
-    [MemberNotNullWhen(true, nameof(IdentityClaim))]
+    [MemberNotNullWhen(true, nameof(IdentityClaim), nameof(ExtendedKeys))]
     public bool IsInitialized { get; private set; }
 
     [MemberNotNullWhen(true, nameof(IdentityClaim))]
     public bool IsValid => IsInitialized && IdentityClaim is not null && ExpirationDate > DateTime.UtcNow;
 
+    IClaimManager<TIdentityClaim> IClaimRepository<TIdentityClaim>.ClaimManager => ClaimManager;
+
     public int Count => _claims.Count;
 
     public bool IsReadOnly => false;
+
+    public TExtendedKeys? ExtendedKeys { get; private set; }
 
     public void Initialize(TIdentityClaim identityClaim)
     {
         IdentityClaim = identityClaim;
         ExpirationDate = DateTime.UtcNow.Add(ClaimManager.Options.TimeToLive);
+        ExtendedKeys = TExtendedKeys.Generate();
         IsInitialized = true;
         _hasChanges = true;
     }
@@ -190,14 +198,17 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
             {
                 throw new InvalidOperationException("Unable to serialize uninitialized repository.");
             }
-            ClaimRepositoryData<TIdentityClaim> data = new
+            ClaimRepositoryData<TIdentityClaim, TExtendedKeys> data = new
             (
                 IdentityClaim,
                 ExpirationDate,
                 [
                     .. _claims.Values.Where(c => !ReferenceEquals(c, IdentityClaim))
                 ]
-            );
+            )
+            {
+                ExtendedKeys = ExtendedKeys
+            };
             ClaimManager.TryRenewClaims(IdentityClaim);
             string cookieValue = ClaimManager.Serialize(data);
             _context.Response.Cookies.Append(CookieName, cookieValue, new CookieOptions

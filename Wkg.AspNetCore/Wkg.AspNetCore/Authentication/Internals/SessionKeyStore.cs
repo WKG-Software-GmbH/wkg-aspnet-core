@@ -3,11 +3,11 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Wkg.AspNetCore.Authentication.Internals;
 
-internal record SessionKeyStore(TimeSpan TimeToLive)
+internal record SessionKeyStore<TExtendedKeys>(TimeSpan TimeToLive) where TExtendedKeys : IExtendedKeys<TExtendedKeys>
 {
-    private readonly ConcurrentDictionary<string, SessionKey> _sessionKeys = [];
+    private readonly ConcurrentDictionary<string, SessionKey<TExtendedKeys>> _sessionKeys = [];
 
-    public bool TryGetSession(string sessionId, [NotNullWhen(true)] out SessionKey? sessionKey)
+    public bool TryGetSession(string sessionId, [NotNullWhen(true)] out SessionKey<TExtendedKeys>? sessionKey)
     {
         if (!_sessionKeys.TryGetValue(sessionId, out sessionKey))
         {
@@ -24,26 +24,26 @@ internal record SessionKeyStore(TimeSpan TimeToLive)
         return false;
     }
 
-    public SessionKey GetOrCreateSession(string sessionId)
+    public SessionKey<TExtendedKeys> GetOrCreateSession(string sessionId, TExtendedKeys extendedKeys)
     {
-        SessionKey sessionKey = _sessionKeys.GetOrAdd(sessionId, SessionKeyFactory);
+        SessionKey<TExtendedKeys> sessionKey = _sessionKeys.GetOrAdd(sessionId, _ => new SessionKey<TExtendedKeys>(extendedKeys));
         if (Interlocked.Read(ref sessionKey.CreatedAt) + TimeToLive.Ticks < DateTime.UtcNow.Ticks)
         {
             TryRevokeSession(sessionId);
-            sessionKey = GetOrCreateSession(sessionId);
+            sessionKey = GetOrCreateSession(sessionId, extendedKeys);
         }
         return sessionKey;
     }
 
     public bool TryRevokeSession(string sessionId) => _sessionKeys.TryRemove(sessionId, out _);
-
-    private static SessionKey SessionKeyFactory(string _) => new();
 }
 
-internal record SessionKey
+internal class SessionKey<TExtendedKeys>(TExtendedKeys extendedKeys) where TExtendedKeys : IExtendedKeys<TExtendedKeys>
 {
     private readonly Guid _key = Guid.NewGuid();
     private long _createdAt = DateTime.UtcNow.Ticks;
+
+    public TExtendedKeys ExtendedKeys { get; } = extendedKeys;
 
     public ref long CreatedAt => ref _createdAt;
 

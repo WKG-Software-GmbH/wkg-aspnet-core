@@ -15,9 +15,24 @@ public static class ServiceCollectionExtensions
         ClaimValidationOptions options = builder.Build();
         services.AddHttpContextAccessor();
         services.AddSingleton(options);
-        services.AddSingleton(new SessionKeyStore(options.TimeToLive));
-        services.AddScoped<IClaimManager<TIdentityClaim>, CookieClaimManager<TIdentityClaim>>();
-        services.AddScoped<IClaimRepository<TIdentityClaim>, CookieClaimRepository<TIdentityClaim>>();
+        services.AddSingleton(new SessionKeyStore<NoExtendedKeys>(options.TimeToLive));
+        services.AddScoped<IClaimManager<TIdentityClaim>, CookieClaimManager<TIdentityClaim, NoExtendedKeys>>();
+        services.AddScoped<IClaimRepository<TIdentityClaim>, CookieClaimRepository<TIdentityClaim, NoExtendedKeys>>();
+        return services;
+    }
+
+    public static IServiceCollection AddCookieClaims<TIdentityClaim, TExtendedKeys>(this IServiceCollection services, Action<CookieClaimOptionsBuilder> configureOptions)
+        where TIdentityClaim : IdentityClaim
+        where TExtendedKeys : IExtendedKeys<TExtendedKeys>
+    {
+        CookieClaimOptionsBuilder builder = new();
+        configureOptions(builder);
+        ClaimValidationOptions options = builder.Build();
+        services.AddHttpContextAccessor();
+        services.AddSingleton(options);
+        services.AddSingleton(new SessionKeyStore<TExtendedKeys>(options.TimeToLive));
+        services.AddScoped<IClaimManager<TIdentityClaim>, CookieClaimManager<TIdentityClaim, TExtendedKeys>>();
+        services.AddScoped<IClaimRepository<TIdentityClaim>, CookieClaimRepository<TIdentityClaim, TExtendedKeys>>();
         return services;
     }
 }
