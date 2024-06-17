@@ -15,4 +15,6 @@ public interface IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityCl
     internal bool TryDeserialize(string base64, [NotNullWhen(true)] out ClaimRepositoryData<TIdentityClaim>? data);
 
     internal string Serialize(ClaimRepositoryData<TIdentityClaim> scope);
+
+    bool TryRenewClaims(TIdentityClaim identityClaim);
 }

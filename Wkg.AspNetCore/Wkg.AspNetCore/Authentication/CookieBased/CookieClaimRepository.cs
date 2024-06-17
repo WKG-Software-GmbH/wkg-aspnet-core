@@ -76,7 +76,7 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
     public void Initialize(TIdentityClaim identityClaim)
     {
         IdentityClaim = identityClaim;
-        ExpirationDate = ClaimManager.Options.TimeToLive.HasValue ? DateTime.UtcNow.Add(ClaimManager.Options.TimeToLive.Value) : null;
+        ExpirationDate = DateTime.UtcNow.Add(ClaimManager.Options.TimeToLive);
         IsInitialized = true;
         _hasChanges = true;
     }

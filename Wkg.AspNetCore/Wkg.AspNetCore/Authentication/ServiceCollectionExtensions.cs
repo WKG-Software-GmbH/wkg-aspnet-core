@@ -15,7 +15,7 @@ public static class ServiceCollectionExtensions
         ClaimValidationOptions options = builder.Build();
         services.AddHttpContextAccessor();
         services.AddSingleton(options);
-        services.AddSingleton(new SessionKeyStore());
+        services.AddSingleton(new SessionKeyStore(options.TimeToLive));
         services.AddScoped<IClaimManager<TIdentityClaim>, CookieClaimManager<TIdentityClaim>>();
         services.AddScoped<IClaimRepository<TIdentityClaim>, CookieClaimRepository<TIdentityClaim>>();
         return services;
@@ -24,7 +24,7 @@ public static class ServiceCollectionExtensions
 
 public class CookieClaimOptionsBuilder
 {
-    private TimeSpan? _expiration = TimeSpan.FromHours(12);
+    private TimeSpan _expiration = TimeSpan.FromHours(12);
     private string? _signingKey;
 
     /// <summary>

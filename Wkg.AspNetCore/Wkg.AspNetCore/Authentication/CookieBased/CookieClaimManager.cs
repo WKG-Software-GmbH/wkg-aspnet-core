@@ -14,41 +14,25 @@ using Wkg.Logging;
 
 namespace Wkg.AspNetCore.Authentication.CookieBased;
 
-internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAccessor, ClaimValidationOptions options, SessionKeyStore session)
+internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAccessor, ClaimValidationOptions options, SessionKeyStore sessions)
     : IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityClaim
 {
     public IClaimRepository<TIdentityClaim> CreateRepository(TIdentityClaim identityClaim)
     {
-        CookieClaimRepository<TIdentityClaim> scope = new(contextAccessor, this, identityClaim, options.TimeToLive.HasValue ? DateTime.UtcNow.Add(options.TimeToLive.Value) : null);
+        CookieClaimRepository<TIdentityClaim> scope = new(contextAccessor, this, identityClaim, DateTime.UtcNow.Add(options.TimeToLive));
         return scope;
     }
 
     public IClaimValidationOptions Options => options;
 
-    string IClaimManager<TIdentityClaim>.Serialize(ClaimRepositoryData<TIdentityClaim> scope)
+    string IClaimManager<TIdentityClaim>.Serialize(ClaimRepositoryData<TIdentityClaim> repository)
     {
         using MemoryStream stream = new();
-        JsonSerializer.Serialize(stream, scope);
-        Guid sessionKey;
-        bool retry;
-        do
-        {
-            retry = false;
-            if (!session.SessionKeys.TryGetValue(scope.IdentityClaim.RawValue, out sessionKey))
-            {
-                sessionKey = Guid.NewGuid();
-                if (!session.SessionKeys.TryAdd(scope.IdentityClaim.RawValue, sessionKey))
-                {
-                    retry = true;
-                }
-            }
-        } while (retry);
-        Span<byte> sessionKeyBytes = stackalloc byte[16];
-        if (!sessionKey.TryWriteBytes(sessionKeyBytes))
-        {
-            throw new InvalidOperationException("Failed to write session key bytes.");
-        }
-        PooledArray<byte> keyBuffer = ArrayPool.Rent<byte>(options.SecretBytes.Length + 16);
+        JsonSerializer.Serialize(stream, repository);
+        SessionKey sessionKey = sessions.GetOrCreateSession(repository.IdentityClaim.RawValue);
+        Span<byte> sessionKeyBytes = stackalloc byte[sessionKey.Size];
+        sessionKey.WriteKey(sessionKeyBytes);
+        PooledArray<byte> keyBuffer = ArrayPool.Rent<byte>(options.SecretBytes.Length + sessionKeyBytes.Length);
         Span<byte> keyBufferSpan = keyBuffer.AsSpan();
         Unsafe.CopyBlock(ref keyBufferSpan[0], in options.SecretBytes[0], (uint)options.SecretBytes.Length);
         Unsafe.CopyBlock(ref keyBufferSpan[options.SecretBytes.Length], in sessionKeyBytes[0], (uint)sessionKeyBytes.Length);
@@ -98,20 +82,15 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
             ArrayPool.Return(buffer);
             return false;
         }
-        if (!session.SessionKeys.TryGetValue(data.IdentityClaim.RawValue, out Guid sessionKey))
+        if (!sessions.TryGetSession(data.IdentityClaim.RawValue, out SessionKey? sessionKey))
         {
             Log.WriteWarning("Invalid or expired session key.");
             ArrayPool.Return(buffer);
             return false;
         }
-        Span<byte> sessionKeyBytes = stackalloc byte[16];
-        if (!sessionKey.TryWriteBytes(sessionKeyBytes))
-        {
-            Log.WriteWarning("Invalid or expired session key.");
-            ArrayPool.Return(buffer);
-            return false;
-        }
-        PooledArray<byte> keyBuffer = ArrayPool.Rent<byte>(options.SecretBytes.Length + 16);
+        Span<byte> sessionKeyBytes = stackalloc byte[sessionKey.Size];
+        sessionKey.WriteKey(sessionKeyBytes);
+        PooledArray<byte> keyBuffer = ArrayPool.Rent<byte>(options.SecretBytes.Length + sessionKeyBytes.Length);
         Span<byte> keyBufferSpan = keyBuffer.AsSpan();
         Unsafe.CopyBlock(ref keyBufferSpan[0], in options.SecretBytes[0], (uint)options.SecretBytes.Length);
         Unsafe.CopyBlock(ref keyBufferSpan[options.SecretBytes.Length], in sessionKeyBytes[0], (uint)sessionKeyBytes.Length);
@@ -129,11 +108,22 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         if (data.ExpirationDate.HasValue && data.ExpirationDate.Value < DateTime.UtcNow)
         {
             Log.WriteWarning($"Session key for IdentityClaim {data.IdentityClaim.RawValue} has expired.");
+            sessions.TryRevokeSession(data.IdentityClaim.RawValue);
             return false;
         }
         Log.WriteDebug($"Audit success: Session key for IdentityClaim {data.IdentityClaim.RawValue} has been validated.");
         return true;
     }
 
-    public bool TryRevokeClaims(TIdentityClaim identityClaim) => session.SessionKeys.TryRemove(identityClaim.Subject, out _);
+    public bool TryRevokeClaims(TIdentityClaim identityClaim) => sessions.TryRevokeSession(identityClaim.Subject);
+
+    public bool TryRenewClaims(TIdentityClaim identityClaim)
+    {
+        if (!sessions.TryGetSession(identityClaim.Subject, out SessionKey? sessionKey))
+        {
+            return false;
+        }
+        sessionKey.CreatedAt = Interlocked.Exchange(ref sessionKey.CreatedAt, DateTime.UtcNow.Ticks);
+        return true;
+    }
 }
