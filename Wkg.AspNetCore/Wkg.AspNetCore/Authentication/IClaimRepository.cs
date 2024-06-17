@@ -36,4 +36,6 @@ public interface IClaimRepository<TIdentityClaim> : IClaimRepository
     IClaimManager<TIdentityClaim> ClaimManager { get; }
 
     TIdentityClaim? IdentityClaim { get; }
+
+    void Initialize(TIdentityClaim identityClaim);
 }

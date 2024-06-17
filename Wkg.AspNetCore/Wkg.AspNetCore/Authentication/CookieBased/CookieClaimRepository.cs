@@ -20,11 +20,11 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
     public CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager)
     {
         _context = contextAccessor.HttpContext
-            ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current scope.");
+            ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current repository.");
         ClaimManager = claimManager;
         if (_context.Request.Cookies.TryGetValue(CookieName, out string? cookieValue))
         {
-            if (claimManager.TryDeserialize(cookieValue, out ClaimScopeData<TIdentityClaim>? data))
+            if (claimManager.TryDeserialize(cookieValue, out ClaimRepositoryData<TIdentityClaim>? data))
             {
                 _claims = data.Claims.ToDictionary(c => c.Subject, c => c);
                 _claims.Add(data.IdentityClaim.Subject, data.IdentityClaim);
@@ -47,27 +47,40 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
     internal CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager, TIdentityClaim identityClaim, DateTime? expirationDate)
     {
         _context = contextAccessor.HttpContext
-            ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current scope.");
+            ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current repository.");
         _claims = [];
         ClaimManager = claimManager;
         IdentityClaim = identityClaim;
         ExpirationDate = expirationDate;
+        IsInitialized = true;
         _hasChanges = true;
     }
 
     public IClaimManager<TIdentityClaim> ClaimManager { get; }
 
-    public TIdentityClaim? IdentityClaim { get; }
+    public TIdentityClaim? IdentityClaim { get; private set; }
 
     public DateTime? ExpirationDate { get; set; }
 
-    public bool IsInitialized { get; }
+    [MemberNotNullWhen(true, nameof(IdentityClaim))]
+    public bool IsInitialized { get; private set; }
 
     public bool IsValid => IdentityClaim is not null && (ExpirationDate is null || ExpirationDate > DateTime.UtcNow);
 
     public int Count => _claims.Count;
 
     public bool IsReadOnly => false;
+
+    public void Initialize(TIdentityClaim identityClaim)
+    {
+        if (IsInitialized)
+        {
+            throw new InvalidOperationException("Repository is already initialized.");
+        }
+        IdentityClaim = identityClaim;
+        ExpirationDate = ClaimManager.Options.Expiration.HasValue ? DateTime.UtcNow.Add(ClaimManager.Options.Expiration.Value) : null;
+        IsInitialized = true;
+    }
 
     public Claim this[string subject]
     {
@@ -164,9 +177,13 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
     {
         if (_hasChanges)
         {
-            ClaimScopeData<TIdentityClaim> data = new
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("Unable to serialize uninitialized repository.");
+            }
+            ClaimRepositoryData<TIdentityClaim> data = new
             (
-                IdentityClaim ?? throw new InvalidOperationException("Unable to serialize uninitialized scope."),
+                IdentityClaim,
                 ExpirationDate,
                 [
                     .. _claims.Values.Where(c => !ReferenceEquals(c, IdentityClaim))

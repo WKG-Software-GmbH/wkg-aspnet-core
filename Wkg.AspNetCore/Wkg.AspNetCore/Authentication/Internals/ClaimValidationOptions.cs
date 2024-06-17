@@ -2,7 +2,12 @@
 
 namespace Wkg.AspNetCore.Authentication.Internals;
 
-internal record ClaimValidationOptions(string Secret, TimeSpan? Expiration = null)
+public interface IClaimValidationOptions
+{
+    TimeSpan? Lifetime { get; }
+}
+
+internal record ClaimValidationOptions(string Secret, TimeSpan? Lifetime = null) : IClaimValidationOptions
 {
     public byte[] SecretBytes { get; } = Encoding.UTF8.GetBytes(Secret);
 }
