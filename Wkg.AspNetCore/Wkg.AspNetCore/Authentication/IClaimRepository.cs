@@ -17,6 +17,8 @@ public interface IClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimReposit
 
 public interface IClaimRepository<TIdentityClaim> : ICollection<Claim>, IDisposable where TIdentityClaim : IdentityClaim
 {
+    ClaimRepositoryStatus Status { get; }
+
     IClaimManager<TIdentityClaim> ClaimManager { get; }
 
     DateTime ExpirationDate { get; set; }

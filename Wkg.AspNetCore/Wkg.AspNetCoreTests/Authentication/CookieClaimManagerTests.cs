@@ -70,11 +70,12 @@ public class CookieClaimManagerTests
         Claim<int> claim = new("bloo", 1);
         ClaimRepositoryData<TestIdentityClaim, NoExtendedKeys> originalData = new(new TestIdentityClaim("blah"), now.AddDays(1), [claim]);
         string base64 = manager.Serialize(originalData);
-        Assert.IsTrue(manager.TryDeserialize(base64, out ClaimRepositoryData<TestIdentityClaim, NoExtendedKeys>? data));
+        Assert.IsTrue(manager.TryDeserialize(base64, out ClaimRepositoryData<TestIdentityClaim, NoExtendedKeys>? data, out ClaimRepositoryStatus status));
         Assert.AreEqual(originalData.IdentityClaim.RawValue, data.IdentityClaim.RawValue);
         Assert.AreEqual(originalData.ExpirationDate, data.ExpirationDate);
         Assert.AreEqual(originalData.Claims.Length, data.Claims.Length);
         Assert.IsTrue(data.Claims.All(original => data.Claims.Any(actual => actual.Subject == original.Subject && actual.RawValue == original.RawValue)));
+        Assert.AreEqual(ClaimRepositoryStatus.Valid, status);
     }
 
     [TestMethod]
@@ -86,10 +87,11 @@ public class CookieClaimManagerTests
         string base64 = manager.Serialize(originalData);
         string base64_2 = manager.Serialize(originalData);
         Assert.AreEqual(base64, base64_2);
-        Assert.IsTrue(manager.TryDeserialize(base64, out ClaimRepositoryData<TestIdentityClaim, NoExtendedKeys>? data));
+        Assert.IsTrue(manager.TryDeserialize(base64, out ClaimRepositoryData<TestIdentityClaim, NoExtendedKeys>? data, out ClaimRepositoryStatus status));
         Assert.AreEqual(originalData.IdentityClaim.RawValue, data.IdentityClaim.RawValue);
         Assert.AreEqual(originalData.ExpirationDate, data.ExpirationDate);
         Assert.AreEqual(originalData.Claims.Length, data.Claims.Length);
+        Assert.AreEqual(ClaimRepositoryStatus.Valid, status);
     }
 }
 

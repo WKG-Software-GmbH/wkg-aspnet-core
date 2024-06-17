@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections;
 using System.Diagnostics;
@@ -28,7 +29,7 @@ internal class CookieClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepo
         ClaimManager = claimManager;
         if (_context.Request.Cookies.TryGetValue(CookieName, out string? cookieValue))
         {
-            if (claimManager.TryDeserialize(cookieValue, out ClaimRepositoryData<TIdentityClaim, TExtendedKeys>? data))
+            if (claimManager.TryDeserialize(cookieValue, out ClaimRepositoryData<TIdentityClaim, TExtendedKeys>? data, out ClaimRepositoryStatus status))
             {
                 _claims = data.Claims.ToDictionary(c => c.Subject, c => c);
                 _claims.Add(data.IdentityClaim.Subject, data.IdentityClaim);
@@ -42,9 +43,11 @@ internal class CookieClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepo
                 _context.Response.Cookies.Delete(CookieName);
                 _claims = [];
             }
+            Status = status;
         }
         else
         {
+            Status = ClaimRepositoryStatus.Uninitialized;
             _claims = [];
         }
     }
@@ -60,6 +63,7 @@ internal class CookieClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepo
         ExtendedKeys = TExtendedKeys.Generate();
         IsInitialized = true;
         _hasChanges = true;
+        Status = ClaimRepositoryStatus.Valid;
     }
 
     public IClaimManager<TIdentityClaim, TExtendedKeys> ClaimManager { get; }
@@ -80,7 +84,7 @@ internal class CookieClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepo
     public bool IsInitialized { get; private set; }
 
     [MemberNotNullWhen(true, nameof(IdentityClaim))]
-    public bool IsValid => IsInitialized && IdentityClaim is not null && ExpirationDate > DateTime.UtcNow;
+    public bool IsValid => IsInitialized && Status is ClaimRepositoryStatus.Valid && IdentityClaim is not null && ExpirationDate > DateTime.UtcNow;
 
     IClaimManager<TIdentityClaim> IClaimRepository<TIdentityClaim>.ClaimManager => ClaimManager;
 
@@ -90,12 +94,15 @@ internal class CookieClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepo
 
     public TExtendedKeys? ExtendedKeys { get; private set; }
 
+    public ClaimRepositoryStatus Status { get; private set; }
+
     public void Initialize(TIdentityClaim identityClaim)
     {
         IdentityClaim = identityClaim;
         ExpirationDate = DateTime.UtcNow.Add(ClaimManager.Options.TimeToLive);
         ExtendedKeys = TExtendedKeys.Generate();
         IsInitialized = true;
+        Status = ClaimRepositoryStatus.Valid;
         _hasChanges = true;
     }
 

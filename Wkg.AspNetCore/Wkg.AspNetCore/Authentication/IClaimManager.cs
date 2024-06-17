@@ -10,7 +10,7 @@ public interface IClaimManager<TIdentityClaim, TExtendedKeys> : IClaimManager<TI
 {
     new IClaimRepository<TIdentityClaim, TExtendedKeys> CreateRepository(TIdentityClaim identityClaim);
 
-    internal bool TryDeserialize(string base64, [NotNullWhen(true)] out ClaimRepositoryData<TIdentityClaim, TExtendedKeys>? data);
+    internal bool TryDeserialize(string base64, [NotNullWhen(true)] out ClaimRepositoryData<TIdentityClaim, TExtendedKeys>? data, out ClaimRepositoryStatus status);
 
     internal string Serialize(ClaimRepositoryData<TIdentityClaim, TExtendedKeys> scope);
 }
@@ -24,4 +24,12 @@ public interface IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityCl
     IClaimValidationOptions Options { get; }
 
     bool TryRenewClaims(TIdentityClaim identityClaim);
+}
+
+public enum ClaimRepositoryStatus
+{
+    Uninitialized,
+    Valid,
+    Invalid,
+    Expired,
 }

@@ -63,7 +63,7 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
         return base64;
     }
 
-    bool IClaimManager<TIdentityClaim, TExtendedKeys>.TryDeserialize(string base64, [NotNullWhen(true)] out ClaimRepositoryData<TIdentityClaim, TExtendedKeys>? data)
+    bool IClaimManager<TIdentityClaim, TExtendedKeys>.TryDeserialize(string base64, [NotNullWhen(true)] out ClaimRepositoryData<TIdentityClaim, TExtendedKeys>? data, out ClaimRepositoryStatus status)
     {
         PooledArray<byte> buffer = ArrayPool.Rent<byte>(base64.Length);
         Span<byte> bufferSpan = buffer.AsSpan();
@@ -73,14 +73,16 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
             Log.WriteWarning("Failed to decode base64 string. The provided string contains non-ASCII characters.");
             ArrayPool.Return(buffer);
             data = null;
+            status = ClaimRepositoryStatus.Invalid;
             return false;
         }
-        OperationStatus status = Base64.DecodeFromUtf8InPlace(bufferSpan, out bytesWritten);
-        if (status != OperationStatus.Done || bytesWritten <= HMACSHA512.HashSizeInBytes)
+        OperationStatus base64Status = Base64.DecodeFromUtf8InPlace(bufferSpan, out bytesWritten);
+        if (base64Status != OperationStatus.Done || bytesWritten <= HMACSHA512.HashSizeInBytes)
         {
             Log.WriteWarning("Failed to decode base64 string. The provided string is not a valid base64 string.");
             ArrayPool.Return(buffer);
             data = null;
+            status = ClaimRepositoryStatus.Invalid;
             return false;
         }
         Span<byte> decodedBytes = bufferSpan[..bytesWritten];
@@ -91,18 +93,21 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
         {
             Log.WriteWarning("Failed to deserialize claim scope data.");
             ArrayPool.Return(buffer);
+            status = ClaimRepositoryStatus.Invalid;
             return false;
         }
         if (data.IdentityClaim?.RawValue is null)
         {
             Log.WriteError("IdentityClaim.RawValue is null. Are you sure JSON serialization is working correctly? Rejecting invalid claim scope data.");
             ArrayPool.Return(buffer);
+            status = ClaimRepositoryStatus.Invalid;
             return false;
         }
         if (!sessions.TryGetSession(data.IdentityClaim.RawValue, out SessionKey<TExtendedKeys>? sessionKey))
         {
             Log.WriteWarning("Invalid or expired session key.");
             ArrayPool.Return(buffer);
+            status = ClaimRepositoryStatus.Expired;
             return false;
         }
         Span<byte> sessionKeyBytes = stackalloc byte[sessionKey.Size];
@@ -120,16 +125,19 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
         if (!computedHmac.SequenceEqual(hmac))
         {
             Log.WriteError($"[SECURITY] Session key HMAC mismatch. This may indicate an attempt to tamper with the session data for IdentityClaim {data.IdentityClaim.RawValue}.");
+            status = ClaimRepositoryStatus.Invalid;
             return false;
         }
         if (data.ExpirationDate < DateTime.UtcNow)
         {
             Log.WriteWarning($"Session key for IdentityClaim {data.IdentityClaim.RawValue} has expired.");
             sessions.TryRevokeSession(data.IdentityClaim.RawValue);
+            status = ClaimRepositoryStatus.Expired;
             return false;
         }
         Log.WriteDebug($"Audit success: Session key for IdentityClaim {data.IdentityClaim.RawValue} has been validated.");
         data.ExtendedKeys = sessionKey.ExtendedKeys;
+        status = ClaimRepositoryStatus.Valid;
         return true;
     }
 
