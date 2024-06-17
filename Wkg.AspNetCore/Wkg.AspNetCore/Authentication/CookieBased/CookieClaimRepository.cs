@@ -65,7 +65,8 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
     [MemberNotNullWhen(true, nameof(IdentityClaim))]
     public bool IsInitialized { get; private set; }
 
-    public bool IsValid => IdentityClaim is not null && (ExpirationDate is null || ExpirationDate > DateTime.UtcNow);
+    [MemberNotNullWhen(true, nameof(IdentityClaim))]
+    public bool IsValid => IsInitialized && IdentityClaim is not null && (ExpirationDate is null || ExpirationDate > DateTime.UtcNow);
 
     public int Count => _claims.Count;
 

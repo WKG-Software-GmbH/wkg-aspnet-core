@@ -3,12 +3,15 @@ using Wkg.AspNetCore.Authentication.Claims;
 
 namespace Wkg.AspNetCore.Authentication;
 
-public interface IClaimRepository : ICollection<Claim>
+public interface IClaimRepository<TIdentityClaim> : ICollection<Claim>
+    where TIdentityClaim : IdentityClaim
 {
     DateTime? ExpirationDate { get; set; }
 
+    [MemberNotNullWhen(true, nameof(IdentityClaim))]
     bool IsValid { get; }
 
+    [MemberNotNullWhen(true, nameof(IdentityClaim))]
     bool IsInitialized { get; }
 
     IEnumerable<Claim<TValue>> Claims<TValue>();
@@ -28,11 +31,7 @@ public interface IClaimRepository : ICollection<Claim>
     bool ContainsClaim(string subject);
 
     bool SaveChanges();
-}
 
-public interface IClaimRepository<TIdentityClaim> : IClaimRepository
-    where TIdentityClaim : IdentityClaim
-{
     IClaimManager<TIdentityClaim> ClaimManager { get; }
 
     TIdentityClaim? IdentityClaim { get; }
