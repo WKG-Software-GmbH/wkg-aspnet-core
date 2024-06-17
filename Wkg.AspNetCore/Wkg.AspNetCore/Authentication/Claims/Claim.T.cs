@@ -6,7 +6,7 @@ public class Claim<TValue> : Claim
 {
     private TValue _value;
 
-    public Claim(string subject, TValue value) : base(subject, rawValue: null, requiresSerialization: true)
+    internal Claim(string subject, TValue value) : base(subject, rawValue: null, requiresSerialization: true)
     {
         _value = value;
     }

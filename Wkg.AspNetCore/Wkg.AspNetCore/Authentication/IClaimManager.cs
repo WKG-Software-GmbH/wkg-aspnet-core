@@ -14,5 +14,5 @@ public interface IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityCl
 
     internal string Serialize(ClaimRepositoryData<TIdentityClaim> scope);
 
-    internal IClaimValidationOptions Options { get; }
+    IClaimValidationOptions Options { get; }
 }

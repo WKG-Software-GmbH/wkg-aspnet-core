@@ -78,8 +78,9 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
             throw new InvalidOperationException("Repository is already initialized.");
         }
         IdentityClaim = identityClaim;
-        ExpirationDate = ClaimManager.Options.Lifetime.HasValue ? DateTime.UtcNow.Add(ClaimManager.Options.Lifetime.Value) : null;
+        ExpirationDate = ClaimManager.Options.TimeToLive.HasValue ? DateTime.UtcNow.Add(ClaimManager.Options.TimeToLive.Value) : null;
         IsInitialized = true;
+        _hasChanges = true;
     }
 
     public Claim this[string subject]

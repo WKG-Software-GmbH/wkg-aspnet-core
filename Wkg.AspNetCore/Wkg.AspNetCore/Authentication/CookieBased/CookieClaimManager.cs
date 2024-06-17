@@ -17,13 +17,13 @@ namespace Wkg.AspNetCore.Authentication.CookieBased;
 internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAccessor, ClaimValidationOptions options, SessionKeyStore session)
     : IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityClaim
 {
-    IClaimValidationOptions IClaimManager<TIdentityClaim>.Options => options;
-
     public IClaimRepository<TIdentityClaim> CreateRepository(TIdentityClaim identityClaim)
     {
-        CookieClaimRepository<TIdentityClaim> scope = new(contextAccessor, this, identityClaim, options.Lifetime.HasValue ? DateTime.UtcNow.Add(options.Lifetime.Value) : null);
+        CookieClaimRepository<TIdentityClaim> scope = new(contextAccessor, this, identityClaim, options.TimeToLive.HasValue ? DateTime.UtcNow.Add(options.TimeToLive.Value) : null);
         return scope;
     }
+
+    public IClaimValidationOptions Options => options;
 
     string IClaimManager<TIdentityClaim>.Serialize(ClaimRepositoryData<TIdentityClaim> scope)
     {
