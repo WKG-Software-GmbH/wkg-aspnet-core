@@ -32,7 +32,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(options);
         services.AddSingleton(new SessionKeyStore<TExtendedKeys>(options.TimeToLive));
         services.AddScoped<IClaimManager<TIdentityClaim>, CookieClaimManager<TIdentityClaim, TExtendedKeys>>();
+        services.AddScoped<IClaimManager<TIdentityClaim, TExtendedKeys>, CookieClaimManager<TIdentityClaim, TExtendedKeys>>();
         services.AddScoped<IClaimRepository<TIdentityClaim>, CookieClaimRepository<TIdentityClaim, TExtendedKeys>>();
+        services.AddScoped<IClaimRepository<TIdentityClaim, TExtendedKeys>, CookieClaimRepository<TIdentityClaim, TExtendedKeys>>();
         return services;
     }
 }
