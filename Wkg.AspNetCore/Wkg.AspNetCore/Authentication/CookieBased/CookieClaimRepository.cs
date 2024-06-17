@@ -15,6 +15,7 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
     private readonly HttpContext _context;
     private readonly Dictionary<string, Claim> _claims;
     private bool _hasChanges;
+    private bool _disposedValue;
 
     [ActivatorUtilitiesConstructor]
     public CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager)
@@ -74,10 +75,6 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
 
     public void Initialize(TIdentityClaim identityClaim)
     {
-        if (IsInitialized)
-        {
-            throw new InvalidOperationException("Repository is already initialized.");
-        }
         IdentityClaim = identityClaim;
         ExpirationDate = ClaimManager.Options.TimeToLive.HasValue ? DateTime.UtcNow.Add(ClaimManager.Options.TimeToLive.Value) : null;
         IsInitialized = true;
@@ -177,6 +174,7 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
 
     public bool SaveChanges()
     {
+        ObjectDisposedException.ThrowIf(_disposedValue, this);
         if (_hasChanges)
         {
             if (!IsInitialized)
@@ -203,5 +201,20 @@ internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentit
             return true;
         }
         return false;
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposedValue)
+        {
+            _disposedValue = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

@@ -3,7 +3,7 @@ using Wkg.AspNetCore.Authentication.Claims;
 
 namespace Wkg.AspNetCore.Authentication;
 
-public interface IClaimRepository<TIdentityClaim> : ICollection<Claim>
+public interface IClaimRepository<TIdentityClaim> : ICollection<Claim>, IDisposable
     where TIdentityClaim : IdentityClaim
 {
     DateTime? ExpirationDate { get; set; }

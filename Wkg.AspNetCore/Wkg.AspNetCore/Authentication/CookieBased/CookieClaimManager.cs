@@ -30,9 +30,10 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         using MemoryStream stream = new();
         JsonSerializer.Serialize(stream, scope);
         Guid sessionKey;
-        bool retry = false;
+        bool retry;
         do
         {
+            retry = false;
             if (!session.SessionKeys.TryGetValue(scope.IdentityClaim.RawValue, out sessionKey))
             {
                 sessionKey = Guid.NewGuid();

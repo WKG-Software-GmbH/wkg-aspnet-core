@@ -10,9 +10,9 @@ public interface IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityCl
 
     bool TryRevokeClaims(TIdentityClaim identityClaim);
 
+    IClaimValidationOptions Options { get; }
+
     internal bool TryDeserialize(string base64, [NotNullWhen(true)] out ClaimRepositoryData<TIdentityClaim>? data);
 
     internal string Serialize(ClaimRepositoryData<TIdentityClaim> scope);
-
-    IClaimValidationOptions Options { get; }
 }
