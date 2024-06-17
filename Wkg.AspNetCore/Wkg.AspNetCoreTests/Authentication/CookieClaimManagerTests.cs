@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Security.Cryptography.Xml;
 using Wkg.AspNetCore.Authentication.Claims;
 using Wkg.AspNetCore.Authentication.CookieBased;
 using Wkg.AspNetCore.Authentication.Internals;
@@ -18,7 +17,7 @@ public class CookieClaimManagerTests
     {
         IClaimManager<TestIdentityClaim> manager = CreateClaimManager();
         DateTime now = DateTime.UtcNow;
-        ClaimScopeData<TestIdentityClaim> originalData = new(new TestIdentityClaim("blah"), now.AddDays(1), []);
+        ClaimRepositoryData<TestIdentityClaim> originalData = new(new TestIdentityClaim("blah"), now.AddDays(1), []);
         string base64 = manager.Serialize(originalData);
         string base64_2 = manager.Serialize(originalData);
         Assert.AreEqual(base64, base64_2);
@@ -29,8 +28,8 @@ public class CookieClaimManagerTests
     {
         IClaimManager<TestIdentityClaim> manager = CreateClaimManager();
         DateTime now = DateTime.UtcNow;
-        ClaimScopeData<TestIdentityClaim> data1 = new(new TestIdentityClaim("blah"), now.AddDays(1), []);
-        ClaimScopeData<TestIdentityClaim> data2 = new(new TestIdentityClaim("blah"), now.AddDays(1), []);
+        ClaimRepositoryData<TestIdentityClaim> data1 = new(new TestIdentityClaim("blah"), now.AddDays(1), []);
+        ClaimRepositoryData<TestIdentityClaim> data2 = new(new TestIdentityClaim("blah"), now.AddDays(1), []);
         string base64 = manager.Serialize(data1);
         string base64_2 = manager.Serialize(data2);
         Assert.AreEqual(base64, base64_2);
@@ -42,7 +41,7 @@ public class CookieClaimManagerTests
         IClaimManager<TestIdentityClaim> manager = CreateClaimManager();
         DateTime now = DateTime.UtcNow;
         Claim<int> claim = new("bloo", 1);
-        ClaimScopeData<TestIdentityClaim> originalData = new(new TestIdentityClaim("blah"), now.AddDays(1), [claim]);
+        ClaimRepositoryData<TestIdentityClaim> originalData = new(new TestIdentityClaim("blah"), now.AddDays(1), [claim]);
         string base64 = manager.Serialize(originalData);
         string base64_2 = manager.Serialize(originalData);
         Assert.AreEqual(base64, base64_2);
@@ -56,8 +55,8 @@ public class CookieClaimManagerTests
 
         Claim<int> claim1 = new("bloo", 1);
         Claim<int> claim2 = new("bloo", 1);
-        ClaimScopeData<TestIdentityClaim> data1 = new(new TestIdentityClaim("blah"), now.AddDays(1), [claim1]);
-        ClaimScopeData<TestIdentityClaim> data2 = new(new TestIdentityClaim("blah"), now.AddDays(1), [claim2]);
+        ClaimRepositoryData<TestIdentityClaim> data1 = new(new TestIdentityClaim("blah"), now.AddDays(1), [claim1]);
+        ClaimRepositoryData<TestIdentityClaim> data2 = new(new TestIdentityClaim("blah"), now.AddDays(1), [claim2]);
         string base64 = manager.Serialize(data1);
         string base64_2 = manager.Serialize(data2);
         Assert.AreEqual(base64, base64_2);
@@ -69,9 +68,9 @@ public class CookieClaimManagerTests
         IClaimManager<TestIdentityClaim> manager = CreateClaimManager();
         DateTime now = DateTime.UtcNow;
         Claim<int> claim = new("bloo", 1);
-        ClaimScopeData<TestIdentityClaim> originalData = new(new TestIdentityClaim("blah"), now.AddDays(1), [claim]);
+        ClaimRepositoryData<TestIdentityClaim> originalData = new(new TestIdentityClaim("blah"), now.AddDays(1), [claim]);
         string base64 = manager.Serialize(originalData);
-        Assert.IsTrue(manager.TryDeserialize(base64, out ClaimScopeData<TestIdentityClaim>? data));
+        Assert.IsTrue(manager.TryDeserialize(base64, out ClaimRepositoryData<TestIdentityClaim>? data));
         Assert.AreEqual(originalData.IdentityClaim.RawValue, data.IdentityClaim.RawValue);
         Assert.AreEqual(originalData.ExpirationDate, data.ExpirationDate);
         Assert.AreEqual(originalData.Claims.Length, data.Claims.Length);
@@ -83,11 +82,11 @@ public class CookieClaimManagerTests
     {
         IClaimManager<TestIdentityClaim> manager = CreateClaimManager();
         DateTime now = DateTime.UtcNow;
-        ClaimScopeData<TestIdentityClaim> originalData = new(new TestIdentityClaim("blah"), now.AddDays(1), []);
+        ClaimRepositoryData<TestIdentityClaim> originalData = new(new TestIdentityClaim("blah"), now.AddDays(1), []);
         string base64 = manager.Serialize(originalData);
         string base64_2 = manager.Serialize(originalData);
         Assert.AreEqual(base64, base64_2);
-        Assert.IsTrue(manager.TryDeserialize(base64, out ClaimScopeData<TestIdentityClaim>? data));
+        Assert.IsTrue(manager.TryDeserialize(base64, out ClaimRepositoryData<TestIdentityClaim>? data));
         Assert.AreEqual(originalData.IdentityClaim.RawValue, data.IdentityClaim.RawValue);
         Assert.AreEqual(originalData.ExpirationDate, data.ExpirationDate);
         Assert.AreEqual(originalData.Claims.Length, data.Claims.Length);
