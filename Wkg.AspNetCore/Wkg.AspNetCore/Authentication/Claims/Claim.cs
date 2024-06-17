@@ -61,5 +61,5 @@ public partial class Claim
     protected internal virtual void Serialize() => Pass();
 #pragma warning restore CS8774 // Member must have a non-null value when exiting.
 
-    internal protected virtual void Deserialize() => Pass();
+    protected internal virtual void Deserialize() => Pass();
 }

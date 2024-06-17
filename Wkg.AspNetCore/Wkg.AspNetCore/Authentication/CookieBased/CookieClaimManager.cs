@@ -31,6 +31,13 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
 
     string IClaimManager<TIdentityClaim, TExtendedKeys>.Serialize(ClaimRepositoryData<TIdentityClaim, TExtendedKeys> repository)
     {
+        foreach (Claim claim in repository.Claims)
+        {
+            if (claim.RequiresSerialization)
+            {
+                claim.Serialize();
+            }
+        }
         using MemoryStream stream = new();
         JsonSerializer.Serialize(stream, repository);
         SessionKey<TExtendedKeys> sessionKey = sessions.GetOrCreateSession(repository.IdentityClaim.RawValue, repository.ExtendedKeys);
