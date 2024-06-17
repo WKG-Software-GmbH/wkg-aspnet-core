@@ -80,9 +80,15 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
         Span<byte> hmac = decodedBytes[^HMACSHA512.HashSizeInBytes..];
         Span<byte> content = decodedBytes[..^HMACSHA512.HashSizeInBytes];
         data = JsonSerializer.Deserialize<ClaimRepositoryData<TIdentityClaim, TExtendedKeys>>(content);
-        if (data is null)
+        if (data?.IdentityClaim is null)
         {
             Log.WriteWarning("Failed to deserialize claim scope data.");
+            ArrayPool.Return(buffer);
+            return false;
+        }
+        if (data.IdentityClaim?.RawValue is null)
+        {
+            Log.WriteError("IdentityClaim.RawValue is null. Are you sure JSON serialization is working correctly? Rejecting invalid claim scope data.");
             ArrayPool.Return(buffer);
             return false;
         }
