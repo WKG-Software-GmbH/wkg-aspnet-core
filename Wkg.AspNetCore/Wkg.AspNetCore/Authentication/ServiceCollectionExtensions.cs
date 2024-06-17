@@ -1,4 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Wkg.AspNetCore.Authentication.Claims;
+using Wkg.AspNetCore.Authentication.CookieBased;
+using Wkg.AspNetCore.Authentication.Internals;
 
 namespace Wkg.AspNetCore.Authentication;
 
@@ -14,7 +17,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(options);
         services.AddSingleton(new SessionKeyStore());
         services.AddScoped<IClaimManager<TIdentityClaim>, CookieClaimManager<TIdentityClaim>>();
-        services.AddScoped<IClaimManagerScope<TIdentityClaim>, CookieClaimManagerScope<TIdentityClaim>>();
+        services.AddScoped<IClaimRepository<TIdentityClaim>, CookieClaimRepository<TIdentityClaim>>();
         return services;
     }
 }

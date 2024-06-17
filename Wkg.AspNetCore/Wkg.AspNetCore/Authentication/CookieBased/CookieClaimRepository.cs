@@ -3,10 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Wkg.AspNetCore.Authentication.Claims;
+using Wkg.AspNetCore.Authentication.Internals;
 
-namespace Wkg.AspNetCore.Authentication;
+namespace Wkg.AspNetCore.Authentication.CookieBased;
 
-internal class CookieClaimManagerScope<TIdentityClaim> : IClaimManagerScope<TIdentityClaim> where TIdentityClaim : IdentityClaim
+internal class CookieClaimRepository<TIdentityClaim> : IClaimRepository<TIdentityClaim> where TIdentityClaim : IdentityClaim
 {
     private const string CookieName = "Wkg.AspNetCore.Authentication.CookieClaims";
 
@@ -15,7 +17,7 @@ internal class CookieClaimManagerScope<TIdentityClaim> : IClaimManagerScope<TIde
     private bool _hasChanges;
 
     [ActivatorUtilitiesConstructor]
-    public CookieClaimManagerScope(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager)
+    public CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager)
     {
         _context = contextAccessor.HttpContext
             ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current scope.");
@@ -42,7 +44,7 @@ internal class CookieClaimManagerScope<TIdentityClaim> : IClaimManagerScope<TIde
         }
     }
 
-    internal CookieClaimManagerScope(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager, TIdentityClaim identityClaim, DateTime? expirationDate)
+    internal CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim> claimManager, TIdentityClaim identityClaim, DateTime? expirationDate)
     {
         _context = contextAccessor.HttpContext
             ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current scope.");

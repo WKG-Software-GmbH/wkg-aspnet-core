@@ -1,69 +1,25 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Buffers;
 using System.Buffers.Text;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Wkg.AspNetCore.Authentication.Claims;
+using Wkg.AspNetCore.Authentication.Internals;
 using Wkg.Data.Pooling;
 using Wkg.Logging;
 
-namespace Wkg.AspNetCore.Authentication;
+namespace Wkg.AspNetCore.Authentication.CookieBased;
 
-public interface IClaimManagerScope : ICollection<Claim>
+internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAccessor, ClaimValidationOptions options, SessionKeyStore session)
+    : IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityClaim
 {
-    DateTime? ExpirationDate { get; set; }
-
-    bool IsValid { get; }
-
-    bool IsInitialized { get; }
-
-    IEnumerable<Claim<TValue>> Claims<TValue>();
-
-    bool TryGetClaim<TValue>(string subject, [NotNullWhen(true)] out Claim<TValue>? claim);
-
-    bool TryAddClaim<TValue>(Claim<TValue> claim);
-
-    Claim<TValue>? GetClaimOrDefault<TValue>(string subject);
-
-    Claim<TValue> GetClaim<TValue>(string subject);
-
-    void SetClaim<TValue>(Claim<TValue> claim);
-
-    Claim this[string subject] { get; set; }
-
-    bool ContainsClaim(string subject);
-
-    bool SaveChanges();
-}
-
-public interface IClaimManagerScope<TIdentityClaim> : IClaimManagerScope
-    where TIdentityClaim : IdentityClaim
-{
-    IClaimManager<TIdentityClaim> ClaimManager { get; }
-
-    TIdentityClaim? IdentityClaim { get; }
-}
-
-public interface IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityClaim
-{
-    IClaimManagerScope<TIdentityClaim> CreateScope(TIdentityClaim identityClaim);
-
-    internal bool TryDeserialize(string base64, [NotNullWhen(true)] out ClaimScopeData<TIdentityClaim>? data);
-
-    internal string Serialize(ClaimScopeData<TIdentityClaim> scope);
-
-    bool TryRevokeClaims(TIdentityClaim identityClaim);
-}
-
-internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAccessor, ClaimValidationOptions options, SessionKeyStore session) : IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityClaim
-{
-    public IClaimManagerScope<TIdentityClaim> CreateScope(TIdentityClaim identityClaim)
+    public IClaimRepository<TIdentityClaim> CreateRepository(TIdentityClaim identityClaim)
     {
-        CookieClaimManagerScope<TIdentityClaim> scope = new(contextAccessor, this, identityClaim, options.Expiration.HasValue ? DateTime.UtcNow.Add(options.Expiration.Value) : null);
+        CookieClaimRepository<TIdentityClaim> scope = new(contextAccessor, this, identityClaim, options.Expiration.HasValue ? DateTime.UtcNow.Add(options.Expiration.Value) : null);
         return scope;
     }
 
@@ -71,17 +27,21 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
     {
         using MemoryStream stream = new();
         JsonSerializer.Serialize(stream, scope);
-    RETRY:
-        if (!session.SessionKeys.TryGetValue(scope.IdentityClaim.RawValue, out Guid sessionKey))
+        Guid sessionKey;
+        bool retry = false;
+        do
         {
-            sessionKey = Guid.NewGuid();
-            if (!session.SessionKeys.TryAdd(scope.IdentityClaim.RawValue, sessionKey))
+            if (!session.SessionKeys.TryGetValue(scope.IdentityClaim.RawValue, out sessionKey))
             {
-                goto RETRY;
+                sessionKey = Guid.NewGuid();
+                if (!session.SessionKeys.TryAdd(scope.IdentityClaim.RawValue, sessionKey))
+                {
+                    retry = true;
+                }
             }
-        }
+        } while (retry);
         Span<byte> sessionKeyBytes = stackalloc byte[16];
-        if (!sessionKey.TryWriteBytes(sessionKeyBytes)) 
+        if (!sessionKey.TryWriteBytes(sessionKeyBytes))
         {
             throw new InvalidOperationException("Failed to write session key bytes.");
         }
@@ -173,16 +133,4 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
     }
 
     public bool TryRevokeClaims(TIdentityClaim identityClaim) => session.SessionKeys.TryRemove(identityClaim.Subject, out _);
-}
-
-internal record ClaimValidationOptions(string Secret, TimeSpan? Expiration = null)
-{
-    public byte[] SecretBytes { get; } = Encoding.UTF8.GetBytes(Secret);
-}
-
-internal record ClaimScopeData<TIdentityClaim>(TIdentityClaim IdentityClaim, DateTime? ExpirationDate, Claim[] Claims);
-
-internal record SessionKeyStore()
-{
-    public ConcurrentDictionary<string, Guid> SessionKeys { get; } = [];
 }
