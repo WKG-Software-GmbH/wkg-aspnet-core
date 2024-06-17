@@ -17,13 +17,15 @@ namespace Wkg.AspNetCore.Authentication.CookieBased;
 internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAccessor, ClaimValidationOptions options, SessionKeyStore session)
     : IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityClaim
 {
+    IClaimValidationOptions IClaimManager<TIdentityClaim>.Options => options;
+
     public IClaimRepository<TIdentityClaim> CreateRepository(TIdentityClaim identityClaim)
     {
-        CookieClaimRepository<TIdentityClaim> scope = new(contextAccessor, this, identityClaim, options.Expiration.HasValue ? DateTime.UtcNow.Add(options.Expiration.Value) : null);
+        CookieClaimRepository<TIdentityClaim> scope = new(contextAccessor, this, identityClaim, options.Lifetime.HasValue ? DateTime.UtcNow.Add(options.Lifetime.Value) : null);
         return scope;
     }
 
-    string IClaimManager<TIdentityClaim>.Serialize(ClaimScopeData<TIdentityClaim> scope)
+    string IClaimManager<TIdentityClaim>.Serialize(ClaimRepositoryData<TIdentityClaim> scope)
     {
         using MemoryStream stream = new();
         JsonSerializer.Serialize(stream, scope);
@@ -65,7 +67,7 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         return base64;
     }
 
-    bool IClaimManager<TIdentityClaim>.TryDeserialize(string base64, [NotNullWhen(true)] out ClaimScopeData<TIdentityClaim>? data)
+    bool IClaimManager<TIdentityClaim>.TryDeserialize(string base64, [NotNullWhen(true)] out ClaimRepositoryData<TIdentityClaim>? data)
     {
         PooledArray<byte> buffer = ArrayPool.Rent<byte>(base64.Length);
         Span<byte> bufferSpan = buffer.AsSpan();
@@ -88,7 +90,7 @@ internal class CookieClaimManager<TIdentityClaim>(IHttpContextAccessor contextAc
         Span<byte> decodedBytes = bufferSpan[..bytesWritten];
         Span<byte> hmac = decodedBytes[^HMACSHA512.HashSizeInBytes..];
         Span<byte> content = decodedBytes[..^HMACSHA512.HashSizeInBytes];
-        data = JsonSerializer.Deserialize<ClaimScopeData<TIdentityClaim>>(content);
+        data = JsonSerializer.Deserialize<ClaimRepositoryData<TIdentityClaim>>(content);
         if (data is null)
         {
             Log.WriteWarning("Failed to deserialize claim scope data.");
