@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,6 +12,8 @@ public partial class Claim
 
     public virtual string Subject { get; }
 
+    [DebuggerHidden]
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public virtual string RawValue
     {
         get
@@ -24,7 +27,6 @@ public partial class Claim
                 _serializing = true;
                 Serialize();
                 _serializing = false;
-                RequiresSerialization = false;
             }
             return _rawValue!;
         }
@@ -51,14 +53,14 @@ public partial class Claim
         {
             return claim;
         }
-        TValue? value = JsonSerializer.Deserialize<TValue>(RawValue);
-        return value is null ? null : new Claim<TValue>(Subject, RawValue, value, requiresSerialization: false);
+        TValue? value = JsonSerializer.Deserialize<TValue>(_rawValue!);
+        return value is null ? null : new Claim<TValue>(Subject, _rawValue!, value, requiresSerialization: false);
     }
 
     [MemberNotNull(nameof(RawValue))]
 #pragma warning disable CS8774 // Member must have a non-null value when exiting.
     // justification: This method is overridden in derived classes. Concrete instances of this class always have a non-null value.
-    protected internal virtual void Serialize() => Pass();
+    protected internal virtual void Serialize() => RequiresSerialization = false;
 #pragma warning restore CS8774 // Member must have a non-null value when exiting.
 
     protected internal virtual void Deserialize() => Pass();
