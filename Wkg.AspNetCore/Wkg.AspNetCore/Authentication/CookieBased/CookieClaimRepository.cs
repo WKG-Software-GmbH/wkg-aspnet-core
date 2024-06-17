@@ -57,6 +57,7 @@ internal class CookieClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepo
         ClaimManager = claimManager;
         IdentityClaim = identityClaim;
         ExpirationDate = expirationDate;
+        ExtendedKeys = TExtendedKeys.Generate();
         IsInitialized = true;
         _hasChanges = true;
     }
