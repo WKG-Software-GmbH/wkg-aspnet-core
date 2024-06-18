@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Wkg.AspNetCore.Authentication.Claims;
 using Wkg.AspNetCore.Authentication.Internals;
+using Wkg.Logging;
 
 namespace Wkg.AspNetCore.Authentication.CookieBased;
 
@@ -246,5 +247,23 @@ internal class CookieClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepo
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
+    }
+
+    public void Revoke()
+    {
+        if (IsInitialized)
+        {
+            string oldIdentity = IdentityClaim.RawValue;
+            ClaimManager.TryRevokeClaims(IdentityClaim);
+            _context.Response.Cookies.Delete(CookieName);
+            _claims.Clear();
+            IdentityClaim = null;
+            ExtendedKeys = default;
+            ExpirationDate = default;
+            IsInitialized = false;
+            Status = ClaimRepositoryStatus.Uninitialized;
+            _hasChanges = false;
+            Log.WriteDebug($"[SECURITY] Claim repository for IdentityClaim {oldIdentity} has been revoked.");
+        }
     }
 }

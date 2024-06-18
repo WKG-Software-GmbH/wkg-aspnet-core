@@ -50,4 +50,6 @@ public interface IClaimRepository<TIdentityClaim> : ICollection<Claim>, IDisposa
     TIdentityClaim? IdentityClaim { get; }
 
     void Initialize(TIdentityClaim identityClaim);
+
+    void Revoke();
 }

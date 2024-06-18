@@ -70,7 +70,7 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
         int bytesWritten = Encoding.UTF8.GetBytes(base64, bufferSpan);
         if (bytesWritten != buffer.Length)
         {
-            Log.WriteWarning("Failed to decode base64 string. The provided string contains non-ASCII characters.");
+            Log.WriteWarning("[SECURITY] Failed to decode base64 string. The provided string contains non-ASCII characters.");
             ArrayPool.Return(buffer);
             data = null;
             status = ClaimRepositoryStatus.Invalid;
@@ -79,7 +79,7 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
         OperationStatus base64Status = Base64.DecodeFromUtf8InPlace(bufferSpan, out bytesWritten);
         if (base64Status != OperationStatus.Done || bytesWritten <= HMACSHA512.HashSizeInBytes)
         {
-            Log.WriteWarning("Failed to decode base64 string. The provided string is not a valid base64 string.");
+            Log.WriteWarning("[SECURITY] Failed to decode base64 string. The provided string is not a valid base64 string.");
             ArrayPool.Return(buffer);
             data = null;
             status = ClaimRepositoryStatus.Invalid;
@@ -91,21 +91,21 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
         data = JsonSerializer.Deserialize<ClaimRepositoryData<TIdentityClaim, TExtendedKeys>>(content);
         if (data?.IdentityClaim is null)
         {
-            Log.WriteWarning("Failed to deserialize claim scope data.");
+            Log.WriteWarning("[SECURITY] Failed to deserialize claim scope data.");
             ArrayPool.Return(buffer);
             status = ClaimRepositoryStatus.Invalid;
             return false;
         }
         if (data.IdentityClaim?.RawValue is null)
         {
-            Log.WriteError("IdentityClaim.RawValue is null. Are you sure JSON serialization is working correctly? Rejecting invalid claim scope data.");
+            Log.WriteError("[SECURITY] IdentityClaim.RawValue is null. Are you sure JSON serialization is working correctly? Rejecting invalid claim scope data.");
             ArrayPool.Return(buffer);
             status = ClaimRepositoryStatus.Invalid;
             return false;
         }
         if (!sessions.TryGetSession(data.IdentityClaim.RawValue, out SessionKey<TExtendedKeys>? sessionKey))
         {
-            Log.WriteWarning("Invalid or expired session key.");
+            Log.WriteWarning("[SECURITY] Invalid or expired session key.");
             ArrayPool.Return(buffer);
             status = ClaimRepositoryStatus.Expired;
             return false;
@@ -130,18 +130,18 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
         }
         if (data.ExpirationDate < DateTime.UtcNow)
         {
-            Log.WriteWarning($"Session key for IdentityClaim {data.IdentityClaim.RawValue} has expired.");
+            Log.WriteWarning($"[SECURITY] Session key for IdentityClaim {data.IdentityClaim.RawValue} has expired.");
             sessions.TryRevokeSession(data.IdentityClaim.RawValue);
             status = ClaimRepositoryStatus.Expired;
             return false;
         }
         if (data.Claims.Any(c => c.RawValue is null))
         {
-            Log.WriteWarning($"One or more claims in the session key for IdentityClaim {data.IdentityClaim.RawValue} are null. Is your JSON serialization working correctly? Rejecting invalid claim scope data.");
+            Log.WriteWarning($"[SECURITY] One or more claims in the session key for IdentityClaim {data.IdentityClaim.RawValue} are null. Is your JSON serialization working correctly? Rejecting invalid claim scope data.");
             status = ClaimRepositoryStatus.Invalid;
             return false;
         }
-        Log.WriteDebug($"Audit success: Session key for IdentityClaim {data.IdentityClaim.RawValue} has been validated.");
+        Log.WriteDebug($"[SECURITY] Audit success: Session key for IdentityClaim {data.IdentityClaim.RawValue} has been validated.");
         data.ExtendedKeys = sessionKey.ExtendedKeys;
         status = ClaimRepositoryStatus.Valid;
         return true;
