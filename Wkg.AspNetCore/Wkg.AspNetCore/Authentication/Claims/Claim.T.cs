@@ -3,6 +3,10 @@ using System.Text.Json.Serialization;
 
 namespace Wkg.AspNetCore.Authentication.Claims;
 
+/// <summary>
+/// Represents a verifiable, strongly-typed key-value pair, used to claim a subject related to an authenticated entity.
+/// </summary>
+/// <typeparam name="TValue">The type of the value.</typeparam>
 public class Claim<TValue> : Claim
 {
     private TValue _value;
@@ -17,6 +21,9 @@ public class Claim<TValue> : Claim
         _value = value;
     }
 
+    /// <summary>
+    /// The value of the claim.
+    /// </summary>
     [JsonIgnore]
     public TValue Value
     {
@@ -28,12 +35,18 @@ public class Claim<TValue> : Claim
         }
     }
 
+    /// <inheritdoc />
     protected internal override void Serialize()
     {
         RawValue = JsonSerializer.Serialize(_value);
         RequiresSerialization = false;
     }
 
-    protected internal override void Deserialize() => _value = JsonSerializer.Deserialize<TValue>(RawValue)
-        ?? throw new InvalidOperationException($"Failed to deserialize {nameof(Value)} from {RawValue}.");
+    /// <inheritdoc />
+    protected internal override void Deserialize()
+    {
+        _ = RawValue ?? throw new InvalidOperationException($"Failed to deserialize {nameof(Claim)} from null-value.");
+        _value = JsonSerializer.Deserialize<TValue>(RawValue)
+            ?? throw new InvalidOperationException($"Failed to deserialize {nameof(Value)} from {RawValue}.");
+    }
 }

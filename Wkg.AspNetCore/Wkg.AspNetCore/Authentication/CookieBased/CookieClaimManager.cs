@@ -31,6 +31,7 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
 
     string IClaimManager<TIdentityClaim, TExtendedKeys>.Serialize(ClaimRepositoryData<TIdentityClaim, TExtendedKeys> repository)
     {
+        ArgumentNullException.ThrowIfNull(repository.IdentityClaim.RawValue, nameof(repository.IdentityClaim.RawValue));
         foreach (Claim claim in repository.Claims)
         {
             if (claim.RequiresSerialization)
@@ -147,7 +148,11 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
         return true;
     }
 
-    public bool TryRevokeClaims(TIdentityClaim identityClaim) => sessions.TryRevokeSession(identityClaim.RawValue);
+    public bool TryRevokeClaims(TIdentityClaim identityClaim)
+    {
+        ArgumentNullException.ThrowIfNull(identityClaim.RawValue, nameof(identityClaim.RawValue));
+        return sessions.TryRevokeSession(identityClaim.RawValue);
+    }
 
     public bool TryRenewClaims(TIdentityClaim identityClaim)
     {

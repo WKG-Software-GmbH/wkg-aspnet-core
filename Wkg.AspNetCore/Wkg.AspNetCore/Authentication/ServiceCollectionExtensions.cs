@@ -5,8 +5,18 @@ using Wkg.AspNetCore.Authentication.Internals;
 
 namespace Wkg.AspNetCore.Authentication;
 
+/// <summary>
+/// Provides extension methods for adding cookie-based claims to the service collection.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Registers the services required for cookie-based claim management.
+    /// </summary>
+    /// <typeparam name="TIdentityClaim">The type of the identity claim.</typeparam>
+    /// <param name="services">The service collection to add the services to.</param>
+    /// <param name="configureOptions">A delegate that configures the options for cookie-based claims.</param>
+    /// <returns>The service collection with the added services.</returns>
     public static IServiceCollection AddCookieClaims<TIdentityClaim>(this IServiceCollection services, Action<CookieClaimOptionsBuilder> configureOptions)
         where TIdentityClaim : IdentityClaim
     {
@@ -21,6 +31,14 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Registers the services required for cookie-based claim management with extended keys.
+    /// </summary>
+    /// <typeparam name="TIdentityClaim">The type of the identity claim.</typeparam>
+    /// <typeparam name="TExtendedKeys">The type of the extended keys.</typeparam>
+    /// <param name="services">The service collection to add the services to.</param>
+    /// <param name="configureOptions">A delegate that configures the options for cookie-based claims.</param>
+    /// <returns>The service collection with the added services.</returns>
     public static IServiceCollection AddCookieClaims<TIdentityClaim, TExtendedKeys>(this IServiceCollection services, Action<CookieClaimOptionsBuilder> configureOptions)
         where TIdentityClaim : IdentityClaim
         where TExtendedKeys : IExtendedKeys<TExtendedKeys>
@@ -37,34 +55,4 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IClaimRepository<TIdentityClaim, TExtendedKeys>, CookieClaimRepository<TIdentityClaim, TExtendedKeys>>();
         return services;
     }
-}
-
-public class CookieClaimOptionsBuilder
-{
-    private TimeSpan _expiration = TimeSpan.FromHours(12);
-    private string? _signingKey;
-
-    /// <summary>
-    /// Sets the expiration time for the cookie, default is 12 hours.
-    /// </summary>
-    public CookieClaimOptionsBuilder WithExpiration(TimeSpan expiration)
-    {
-        _expiration = expiration;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the signing key for the cookie.
-    /// </summary>
-    public CookieClaimOptionsBuilder WithSigningKey(string signingKey)
-    {
-        _signingKey = signingKey;
-        return this;
-    }
-
-    internal ClaimValidationOptions Build() => new
-    (
-        _signingKey ?? throw new InvalidOperationException("The signing key is required."),
-        _expiration
-    );
 }
