@@ -147,7 +147,7 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
         return true;
     }
 
-    public bool TryRevokeClaims(TIdentityClaim identityClaim) => sessions.TryRevokeSession(identityClaim.Subject);
+    public bool TryRevokeClaims(TIdentityClaim identityClaim) => sessions.TryRevokeSession(identityClaim.RawValue);
 
     public bool TryRenewClaims(TIdentityClaim identityClaim)
     {

@@ -37,24 +37,3 @@ internal record SessionKeyStore<TExtendedKeys>(TimeSpan TimeToLive) where TExten
 
     public bool TryRevokeSession(string sessionId) => _sessionKeys.TryRemove(sessionId, out _);
 }
-
-internal class SessionKey<TExtendedKeys>(TExtendedKeys extendedKeys) where TExtendedKeys : IExtendedKeys<TExtendedKeys>
-{
-    private readonly Guid _key = Guid.NewGuid();
-    private long _createdAt = DateTime.UtcNow.Ticks;
-
-    public TExtendedKeys ExtendedKeys { get; } = extendedKeys;
-
-    public ref long CreatedAt => ref _createdAt;
-
-    public int Size => 16;
-
-    public void WriteKey(Span<byte> destination)
-    {
-        bool success = _key.TryWriteBytes(destination);
-        if (!success)
-        {
-            throw new InvalidOperationException("Failed to retrieve session key.");
-        }
-    }
-}
