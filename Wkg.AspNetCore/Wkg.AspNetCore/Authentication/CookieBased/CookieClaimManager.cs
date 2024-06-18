@@ -141,7 +141,7 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
             status = ClaimRepositoryStatus.Invalid;
             return false;
         }
-        Log.WriteDebug($"[SECURITY] Audit success: Session key for IdentityClaim {data.IdentityClaim.RawValue} has been validated.");
+        Log.WriteDiagnostic($"[SECURITY] Audit success: Session key for IdentityClaim {data.IdentityClaim.RawValue} has been validated.");
         data.ExtendedKeys = sessionKey.ExtendedKeys;
         status = ClaimRepositoryStatus.Valid;
         return true;
