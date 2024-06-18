@@ -7,43 +7,20 @@ namespace Wkg.AspNetCore.Authentication.Claims;
 
 public partial class Claim
 {
-    private string? _rawValue;
-    private bool _serializing;
-
     public virtual string Subject { get; }
 
-    [DebuggerHidden]
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public virtual string RawValue
-    {
-        get
-        {
-            if (RequiresSerialization)
-            {
-                if (_serializing)
-                {
-                    return _rawValue!;
-                }
-                _serializing = true;
-                Serialize();
-                _serializing = false;
-            }
-            return _rawValue!;
-        }
+    public virtual string RawValue { get; set; }
 
-        protected set => _rawValue = value;
-    }
-
-    [MemberNotNullWhen(false, nameof(RawValue), nameof(_rawValue))]
+    [MemberNotNullWhen(false, nameof(RawValue))]
     internal protected bool RequiresSerialization { get; protected set; }
 
     [JsonConstructor]
-    internal Claim(string subject, string rawValue) => (Subject, _rawValue) = (subject, rawValue);
+    internal Claim(string subject, string rawValue) => (Subject, RawValue) = (subject, rawValue);
 
     internal protected Claim(string subject, string? rawValue, bool requiresSerialization)
     {
         Subject = subject;
-        _rawValue = rawValue;
+        RawValue = rawValue!;
         RequiresSerialization = requiresSerialization;
     }
 
@@ -53,8 +30,8 @@ public partial class Claim
         {
             return claim;
         }
-        TValue? value = JsonSerializer.Deserialize<TValue>(_rawValue!);
-        return value is null ? null : new Claim<TValue>(Subject, _rawValue!, value, requiresSerialization: false);
+        TValue? value = JsonSerializer.Deserialize<TValue>(RawValue!);
+        return value is null ? null : new Claim<TValue>(Subject, RawValue!, value, requiresSerialization: false);
     }
 
     [MemberNotNull(nameof(RawValue))]

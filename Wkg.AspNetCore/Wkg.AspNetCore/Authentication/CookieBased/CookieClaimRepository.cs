@@ -19,7 +19,7 @@ internal class CookieClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepo
     private readonly Dictionary<string, Claim> _claims;
     private bool _hasChanges;
     private bool _disposedValue;
-    private DateTime expirationDate;
+    private DateTime _expirationDate;
 
     [ActivatorUtilitiesConstructor]
     public CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim, TExtendedKeys> claimManager)
@@ -72,10 +72,10 @@ internal class CookieClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepo
 
     public DateTime ExpirationDate
     {
-        get => expirationDate;
+        get => _expirationDate;
         set
         {
-            expirationDate = value;
+            _expirationDate = value;
             _hasChanges = true;
         }
     }
