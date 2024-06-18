@@ -131,7 +131,7 @@ public interface IClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRepos
     TDecryptionKeys? DecryptionKeys { get; }
 
     /// <summary>
-    /// Retrieves the parent <see cref="IClaimManager{TIdentityClaim, TExtendedKeys}"/> instance responsible for managing this repository.
+    /// Retrieves the parent <see cref="IClaimManager{TIdentityClaim, TDecryptionKeys}"/> instance responsible for managing this repository.
     /// </summary>
     new IClaimManager<TIdentityClaim, TDecryptionKeys> ClaimManager { get; }
 

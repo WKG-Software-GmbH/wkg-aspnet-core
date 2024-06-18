@@ -3,13 +3,13 @@
 /// <summary>
 /// Represents a session key with support for user-supplied decryption key data.
 /// </summary>
-/// <typeparam name="TExtendedKeys">The type of the decryption key data.</typeparam>
-public interface ISessionKey<TExtendedKeys> where TExtendedKeys : IDecryptionKeys<TExtendedKeys>
+/// <typeparam name="TDecryptionKeys">The type of the decryption key data.</typeparam>
+public interface ISessionKey<TDecryptionKeys> where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
 {
     /// <summary>
     /// The user-supplied decryption key data.
     /// </summary>
-    TExtendedKeys DecryptionKeys { get; }
+    TDecryptionKeys DecryptionKeys { get; }
 
     /// <summary>
     /// Retrieves a reference to the creation timestamp of the session key.

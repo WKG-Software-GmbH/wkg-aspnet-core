@@ -35,24 +35,24 @@ public static class ServiceCollectionExtensions
     /// Registers the services required for cookie-based claim management with decryption keys.
     /// </summary>
     /// <typeparam name="TIdentityClaim">The type of the identity claim.</typeparam>
-    /// <typeparam name="TExtendedKeys">The type of the decryption keys.</typeparam>
+    /// <typeparam name="TDecryptionKeys">The type of the decryption keys.</typeparam>
     /// <param name="services">The service collection to add the services to.</param>
     /// <param name="configureOptions">A delegate that configures the options for cookie-based claims.</param>
     /// <returns>The service collection with the added services.</returns>
-    public static IServiceCollection AddCookieClaims<TIdentityClaim, TExtendedKeys>(this IServiceCollection services, Action<CookieClaimOptionsBuilder> configureOptions)
+    public static IServiceCollection AddCookieClaims<TIdentityClaim, TDecryptionKeys>(this IServiceCollection services, Action<CookieClaimOptionsBuilder> configureOptions)
         where TIdentityClaim : IdentityClaim
-        where TExtendedKeys : IDecryptionKeys<TExtendedKeys>
+        where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
     {
         CookieClaimOptionsBuilder builder = new();
         configureOptions(builder);
         ClaimValidationOptions options = builder.Build();
         services.AddHttpContextAccessor();
         services.AddSingleton(options);
-        services.AddSingleton(new SessionKeyStore<TExtendedKeys>(options.TimeToLive));
-        services.AddScoped<IClaimManager<TIdentityClaim>, CookieClaimManager<TIdentityClaim, TExtendedKeys>>();
-        services.AddScoped<IClaimManager<TIdentityClaim, TExtendedKeys>, CookieClaimManager<TIdentityClaim, TExtendedKeys>>();
-        services.AddScoped<IClaimRepository<TIdentityClaim>, CookieClaimRepository<TIdentityClaim, TExtendedKeys>>();
-        services.AddScoped<IClaimRepository<TIdentityClaim, TExtendedKeys>, CookieClaimRepository<TIdentityClaim, TExtendedKeys>>();
+        services.AddSingleton(new SessionKeyStore<TDecryptionKeys>(options.TimeToLive));
+        services.AddScoped<IClaimManager<TIdentityClaim>, CookieClaimManager<TIdentityClaim, TDecryptionKeys>>();
+        services.AddScoped<IClaimManager<TIdentityClaim, TDecryptionKeys>, CookieClaimManager<TIdentityClaim, TDecryptionKeys>>();
+        services.AddScoped<IClaimRepository<TIdentityClaim>, CookieClaimRepository<TIdentityClaim, TDecryptionKeys>>();
+        services.AddScoped<IClaimRepository<TIdentityClaim, TDecryptionKeys>, CookieClaimRepository<TIdentityClaim, TDecryptionKeys>>();
         return services;
     }
 }
