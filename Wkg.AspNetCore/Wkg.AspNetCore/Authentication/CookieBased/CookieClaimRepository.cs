@@ -29,7 +29,8 @@ internal class CookieClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepo
         ClaimManager = claimManager;
         if (_context.Request.Cookies.TryGetValue(CookieName, out string? cookieValue))
         {
-            if (claimManager.TryDeserialize(cookieValue, out ClaimRepositoryData<TIdentityClaim, TExtendedKeys>? data, out ClaimRepositoryStatus status))
+            if (claimManager.TryDeserialize(cookieValue, out ClaimRepositoryData<TIdentityClaim, TExtendedKeys>? data, out ClaimRepositoryStatus status) 
+                || status is ClaimRepositoryStatus.Expired && data is not null)
             {
                 _claims = data.Claims.ToDictionary(c => c.Subject, c => c);
                 _claims.Add(data.IdentityClaim.Subject, data.IdentityClaim);
