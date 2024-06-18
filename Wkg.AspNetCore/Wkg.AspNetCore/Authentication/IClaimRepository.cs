@@ -128,7 +128,7 @@ public interface IClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRepos
     /// <summary>
     /// The decryption key data associated with this repository, or <see langword="null"/> if the repository is not yet been initialized.
     /// </summary>
-    TDecryptionKeys? ExtendedKeys { get; }
+    TDecryptionKeys? DecryptionKeys { get; }
 
     /// <summary>
     /// Retrieves the parent <see cref="IClaimManager{TIdentityClaim, TExtendedKeys}"/> instance responsible for managing this repository.
@@ -136,6 +136,6 @@ public interface IClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRepos
     new IClaimManager<TIdentityClaim, TDecryptionKeys> ClaimManager { get; }
 
     /// <inheritdoc cref="IClaimRepository{TIdentityClaim}.Initialize(TIdentityClaim)"/>
-    [MemberNotNull(nameof(ExtendedKeys))]
+    [MemberNotNull(nameof(DecryptionKeys))]
     new void Initialize(TIdentityClaim identityClaim);
 }

@@ -36,7 +36,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
                 _claims.Add(data.IdentityClaim.Subject, data.IdentityClaim);
                 IdentityClaim = data.IdentityClaim;
                 ExpirationDate = data.ExpirationDate;
-                ExtendedKeys = data.DecryptionKeys;
+                DecryptionKeys = data.DecryptionKeys;
             }
             else
             {
@@ -60,7 +60,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
         ClaimManager = claimManager;
         IdentityClaim = identityClaim;
         ExpirationDate = expirationDate;
-        ExtendedKeys = TDecryptionKeys.Generate();
+        DecryptionKeys = TDecryptionKeys.Generate();
         _hasChanges = true;
         Status = ClaimRepositoryStatus.Valid;
     }
@@ -69,7 +69,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
 
     public TIdentityClaim? IdentityClaim { get; private set; }
 
-    public TDecryptionKeys? ExtendedKeys { get; private set; }
+    public TDecryptionKeys? DecryptionKeys { get; private set; }
 
     public ClaimRepositoryStatus Status { get; private set; }
 
@@ -83,8 +83,8 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
         }
     }
 
-    [MemberNotNullWhen(true, nameof(IdentityClaim), nameof(ExtendedKeys))]
-    internal bool IsInitialized => Status is not ClaimRepositoryStatus.Uninitialized && IdentityClaim is not null && ExtendedKeys is not null;
+    [MemberNotNullWhen(true, nameof(IdentityClaim), nameof(DecryptionKeys))]
+    internal bool IsInitialized => Status is not ClaimRepositoryStatus.Uninitialized && IdentityClaim is not null && DecryptionKeys is not null;
 
     [MemberNotNullWhen(true, nameof(IdentityClaim))]
     public bool IsValid => IsInitialized && Status is ClaimRepositoryStatus.Valid && IdentityClaim is not null && ExpirationDate > DateTime.UtcNow;
@@ -101,7 +101,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
     {
         IdentityClaim = identityClaim;
         ExpirationDate = DateTime.UtcNow.Add(ClaimManager.Options.TimeToLive);
-        ExtendedKeys = TDecryptionKeys.Generate();
+        DecryptionKeys = TDecryptionKeys.Generate();
         Status = ClaimRepositoryStatus.Valid;
         _hasChanges = true;
     }
@@ -215,7 +215,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
                 ]
             )
             {
-                DecryptionKeys = ExtendedKeys
+                DecryptionKeys = DecryptionKeys
             };
             ClaimManager.TryRenewClaims(IdentityClaim);
             string cookieValue = ClaimManager.Serialize(data);
@@ -256,7 +256,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
             _context.Response.Cookies.Delete(CookieName);
             _claims.Clear();
             IdentityClaim = null;
-            ExtendedKeys = default;
+            DecryptionKeys = default;
             ExpirationDate = default;
             Status = ClaimRepositoryStatus.Uninitialized;
             _hasChanges = false;
