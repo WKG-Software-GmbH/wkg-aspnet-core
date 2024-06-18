@@ -1,11 +1,11 @@
 ﻿namespace Wkg.AspNetCore.Authentication.Internals;
 
-internal class SessionKey<TExtendedKeys>(TExtendedKeys extendedKeys) : ISessionKey<TExtendedKeys> where TExtendedKeys : IExtendedKeys<TExtendedKeys>
+internal class SessionKey<TDecryptionKeys>(TDecryptionKeys decryptionKeys) : ISessionKey<TDecryptionKeys> where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
 {
     private readonly Guid _key = Guid.NewGuid();
     private long _createdAt = DateTime.UtcNow.Ticks;
 
-    public TExtendedKeys ExtendedKeys { get; } = extendedKeys;
+    public TDecryptionKeys DecryptionKeys { get; } = decryptionKeys;
 
     public ref long CreatedAt => ref _createdAt;
 

@@ -3,7 +3,7 @@ using Wkg.AspNetCore.Authentication.Claims;
 
 namespace Wkg.AspNetCore.Authentication.Internals;
 
-internal record ClaimRepositoryData<TIdentityClaim, TExtendedKeys>
+internal record ClaimRepositoryData<TIdentityClaim, TDecryptionKeys>
 (
     TIdentityClaim IdentityClaim, 
     DateTime ExpirationDate, 
@@ -11,5 +11,5 @@ internal record ClaimRepositoryData<TIdentityClaim, TExtendedKeys>
 )
 {
     [JsonIgnore]
-    public TExtendedKeys ExtendedKeys { get; set; } = default!;
+    public TDecryptionKeys DecryptionKeys { get; set; } = default!;
 }

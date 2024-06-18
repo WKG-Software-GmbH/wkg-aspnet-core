@@ -5,7 +5,7 @@
 /// Implementations of this interface should be immutable.
 /// </summary>
 /// <typeparam name="TSelf">The type of the implementing class or struct.</typeparam>
-public interface IExtendedKeys<TSelf> where TSelf : IExtendedKeys<TSelf>
+public interface IDecryptionKeys<TSelf> where TSelf : IDecryptionKeys<TSelf>
 {
     /// <summary>
     /// Generates a new instance of the implementing class or struct and initializes it with cryptographically secure key data.

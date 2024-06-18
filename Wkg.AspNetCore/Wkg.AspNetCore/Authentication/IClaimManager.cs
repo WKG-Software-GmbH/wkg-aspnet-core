@@ -37,22 +37,22 @@ public interface IClaimManager<TIdentityClaim> where TIdentityClaim : IdentityCl
 }
 
 /// <summary>
-/// Represents a central authority for creating and revoking <see cref="IClaimRepository{TIdentityClaim, TExtendedKeys}"/> instances with extended key data.
+/// Represents a central authority for creating and revoking <see cref="IClaimRepository{TIdentityClaim, TDecryptionKeys}"/> instances with decryption keys.
 /// </summary>
 /// <typeparam name="TIdentityClaim">The type of identity claim.</typeparam>
-/// <typeparam name="TExtendedKeys">The type of extended keys.</typeparam>
-public interface IClaimManager<TIdentityClaim, TExtendedKeys> : IClaimManager<TIdentityClaim>
+/// <typeparam name="TDecryptionKeys">The type of the decryption keys.</typeparam>
+public interface IClaimManager<TIdentityClaim, TDecryptionKeys> : IClaimManager<TIdentityClaim>
     where TIdentityClaim : IdentityClaim
-    where TExtendedKeys : IExtendedKeys<TExtendedKeys>
+    where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
 {
     /// <summary>
-    /// Creates a new <see cref="IClaimRepository{TIdentityClaim, TExtendedKeys}"/> instance for the specified <paramref name="identityClaim"/>.
+    /// Creates a new <see cref="IClaimRepository{TIdentityClaim, TDecryptionKeys}"/> instance for the specified <paramref name="identityClaim"/>.
     /// </summary>
     /// <param name="identityClaim">The identity claim of the repository.</param>
-    /// <returns>A new instance of <see cref="IClaimRepository{TIdentityClaim, TExtendedKeys}"/>.</returns>
-    new IClaimRepository<TIdentityClaim, TExtendedKeys> CreateRepository(TIdentityClaim identityClaim);
+    /// <returns>A new instance of <see cref="IClaimRepository{TIdentityClaim, TDecryptionKeys}"/>.</returns>
+    new IClaimRepository<TIdentityClaim, TDecryptionKeys> CreateRepository(TIdentityClaim identityClaim);
 
-    internal bool TryDeserialize(string base64, [NotNullWhen(true)] out ClaimRepositoryData<TIdentityClaim, TExtendedKeys>? data, out ClaimRepositoryStatus status);
+    internal bool TryDeserialize(string base64, [NotNullWhen(true)] out ClaimRepositoryData<TIdentityClaim, TDecryptionKeys>? data, out ClaimRepositoryStatus status);
 
-    internal string Serialize(ClaimRepositoryData<TIdentityClaim, TExtendedKeys> scope);
+    internal string Serialize(ClaimRepositoryData<TIdentityClaim, TDecryptionKeys> scope);
 }

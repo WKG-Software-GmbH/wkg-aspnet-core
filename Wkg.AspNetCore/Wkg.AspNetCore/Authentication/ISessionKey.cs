@@ -1,15 +1,15 @@
 ﻿namespace Wkg.AspNetCore.Authentication;
 
 /// <summary>
-/// Represents a session key with support for user-supplied extended key data.
+/// Represents a session key with support for user-supplied decryption key data.
 /// </summary>
-/// <typeparam name="TExtendedKeys">The type of the extended key data.</typeparam>
-public interface ISessionKey<TExtendedKeys> where TExtendedKeys : IExtendedKeys<TExtendedKeys>
+/// <typeparam name="TExtendedKeys">The type of the decryption key data.</typeparam>
+public interface ISessionKey<TExtendedKeys> where TExtendedKeys : IDecryptionKeys<TExtendedKeys>
 {
     /// <summary>
-    /// The user-supplied extended key data.
+    /// The user-supplied decryption key data.
     /// </summary>
-    TExtendedKeys ExtendedKeys { get; }
+    TExtendedKeys DecryptionKeys { get; }
 
     /// <summary>
     /// Retrieves a reference to the creation timestamp of the session key.

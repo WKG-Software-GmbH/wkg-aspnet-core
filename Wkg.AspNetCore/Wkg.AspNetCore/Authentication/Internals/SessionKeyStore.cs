@@ -4,13 +4,13 @@ using Wkg.Logging;
 
 namespace Wkg.AspNetCore.Authentication.Internals;
 
-internal record SessionKeyStore<TExtendedKeys>(TimeSpan TimeToLive) where TExtendedKeys : IExtendedKeys<TExtendedKeys>
+internal record SessionKeyStore<TDecryptionKeys>(TimeSpan TimeToLive) where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
 {
     private long _lastHousekeeping = DateTime.UtcNow.Ticks;
 
-    private readonly ConcurrentDictionary<string, SessionKey<TExtendedKeys>> _sessionKeys = [];
+    private readonly ConcurrentDictionary<string, SessionKey<TDecryptionKeys>> _sessionKeys = [];
 
-    public bool TryGetSession(string sessionId, [NotNullWhen(true)] out SessionKey<TExtendedKeys>? sessionKey)
+    public bool TryGetSession(string sessionId, [NotNullWhen(true)] out SessionKey<TDecryptionKeys>? sessionKey)
     {
         if (!_sessionKeys.TryGetValue(sessionId, out sessionKey))
         {
@@ -28,13 +28,13 @@ internal record SessionKeyStore<TExtendedKeys>(TimeSpan TimeToLive) where TExten
         return false;
     }
 
-    public SessionKey<TExtendedKeys> GetOrCreateSession(string sessionId, TExtendedKeys extendedKeys)
+    public SessionKey<TDecryptionKeys> GetOrCreateSession(string sessionId, TDecryptionKeys decryptionKeys)
     {
-        SessionKey<TExtendedKeys> sessionKey = _sessionKeys.GetOrAdd(sessionId, _ => new SessionKey<TExtendedKeys>(extendedKeys));
+        SessionKey<TDecryptionKeys> sessionKey = _sessionKeys.GetOrAdd(sessionId, _ => new SessionKey<TDecryptionKeys>(decryptionKeys));
         if (Interlocked.Read(ref sessionKey.CreatedAt) + TimeToLive.Ticks < DateTime.UtcNow.Ticks)
         {
             _sessionKeys.TryRemove(sessionId, out _);
-            sessionKey = GetOrCreateSession(sessionId, extendedKeys);
+            sessionKey = GetOrCreateSession(sessionId, decryptionKeys);
         }
         TryRunHousekeeping();
         return sessionKey;
@@ -60,7 +60,7 @@ internal record SessionKeyStore<TExtendedKeys>(TimeSpan TimeToLive) where TExten
     public void RunHousekeeping()
     {
         Interlocked.Exchange(ref _lastHousekeeping, DateTime.UtcNow.Ticks);
-        foreach (KeyValuePair<string, SessionKey<TExtendedKeys>> session in _sessionKeys)
+        foreach (KeyValuePair<string, SessionKey<TDecryptionKeys>> session in _sessionKeys)
         {
             if (Interlocked.Read(ref session.Value.CreatedAt) + TimeToLive.Ticks < DateTime.UtcNow.Ticks)
             {

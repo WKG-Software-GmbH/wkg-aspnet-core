@@ -25,23 +25,23 @@ public static class ServiceCollectionExtensions
         ClaimValidationOptions options = builder.Build();
         services.AddHttpContextAccessor();
         services.AddSingleton(options);
-        services.AddSingleton(new SessionKeyStore<NoExtendedKeys>(options.TimeToLive));
-        services.AddScoped<IClaimManager<TIdentityClaim>, CookieClaimManager<TIdentityClaim, NoExtendedKeys>>();
-        services.AddScoped<IClaimRepository<TIdentityClaim>, CookieClaimRepository<TIdentityClaim, NoExtendedKeys>>();
+        services.AddSingleton(new SessionKeyStore<NoDecryptionKeys>(options.TimeToLive));
+        services.AddScoped<IClaimManager<TIdentityClaim>, CookieClaimManager<TIdentityClaim, NoDecryptionKeys>>();
+        services.AddScoped<IClaimRepository<TIdentityClaim>, CookieClaimRepository<TIdentityClaim, NoDecryptionKeys>>();
         return services;
     }
 
     /// <summary>
-    /// Registers the services required for cookie-based claim management with extended keys.
+    /// Registers the services required for cookie-based claim management with decryption keys.
     /// </summary>
     /// <typeparam name="TIdentityClaim">The type of the identity claim.</typeparam>
-    /// <typeparam name="TExtendedKeys">The type of the extended keys.</typeparam>
+    /// <typeparam name="TExtendedKeys">The type of the decryption keys.</typeparam>
     /// <param name="services">The service collection to add the services to.</param>
     /// <param name="configureOptions">A delegate that configures the options for cookie-based claims.</param>
     /// <returns>The service collection with the added services.</returns>
     public static IServiceCollection AddCookieClaims<TIdentityClaim, TExtendedKeys>(this IServiceCollection services, Action<CookieClaimOptionsBuilder> configureOptions)
         where TIdentityClaim : IdentityClaim
-        where TExtendedKeys : IExtendedKeys<TExtendedKeys>
+        where TExtendedKeys : IDecryptionKeys<TExtendedKeys>
     {
         CookieClaimOptionsBuilder builder = new();
         configureOptions(builder);

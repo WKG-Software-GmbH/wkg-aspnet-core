@@ -117,23 +117,23 @@ public interface IClaimRepository<TIdentityClaim> : ICollection<Claim>, IDisposa
 }
 
 /// <summary>
-/// Represents a repository of claims that are associated with a specific <typeparamref name="TIdentityClaim"/> instance with support for extended keys.
+/// Represents a repository of claims that are associated with a specific <typeparamref name="TIdentityClaim"/> instance with support for decryption keys.
 /// </summary>
 /// <typeparam name="TIdentityClaim">The type of identity claim.</typeparam>
-/// <typeparam name="TExtendedKeys">The type of extended key data.</typeparam>
-public interface IClaimRepository<TIdentityClaim, TExtendedKeys> : IClaimRepository<TIdentityClaim>
+/// <typeparam name="TDecryptionKeys">The type of decryption key data.</typeparam>
+public interface IClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRepository<TIdentityClaim>
     where TIdentityClaim : IdentityClaim
-    where TExtendedKeys : IExtendedKeys<TExtendedKeys>
+    where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
 {
     /// <summary>
-    /// The extended key data associated with this repository, or <see langword="null"/> if the repository is not yet been initialized.
+    /// The decryption key data associated with this repository, or <see langword="null"/> if the repository is not yet been initialized.
     /// </summary>
-    TExtendedKeys? ExtendedKeys { get; }
+    TDecryptionKeys? ExtendedKeys { get; }
 
     /// <summary>
     /// Retrieves the parent <see cref="IClaimManager{TIdentityClaim, TExtendedKeys}"/> instance responsible for managing this repository.
     /// </summary>
-    new IClaimManager<TIdentityClaim, TExtendedKeys> ClaimManager { get; }
+    new IClaimManager<TIdentityClaim, TDecryptionKeys> ClaimManager { get; }
 
     /// <inheritdoc cref="IClaimRepository{TIdentityClaim}.Initialize(TIdentityClaim)"/>
     [MemberNotNull(nameof(ExtendedKeys))]
