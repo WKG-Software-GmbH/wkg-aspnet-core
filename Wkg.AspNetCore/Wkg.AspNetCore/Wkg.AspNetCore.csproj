@@ -22,7 +22,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.5" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.5" />
-      <PackageReference Include="Wkg" Version="[8.1.15850,8.2.0)" />
+      <PackageReference Include="Wkg" Version="[8.1.15929,8.2.0)" />
     </ItemGroup>
 
     <!--Nuget packaging-->
