@@ -105,7 +105,7 @@ internal class CookieClaimManager<TIdentityClaim, TExtendedKeys>(IHttpContextAcc
         }
         if (!sessions.TryGetSession(data.IdentityClaim.RawValue, out SessionKey<TExtendedKeys>? sessionKey))
         {
-            Log.WriteWarning("[SECURITY] Invalid or expired session key.");
+            Log.WriteWarning($"[SECURITY] Invalid or expired session key: {data.IdentityClaim.RawValue}.");
             ArrayPool.Return(buffer);
             status = ClaimRepositoryStatus.Expired;
             return false;
