@@ -14,20 +14,20 @@ using Wkg.Logging;
 
 namespace Wkg.AspNetCore.Authentication.CookieBased;
 
-internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextAccessor contextAccessor, ClaimValidationOptions options, SessionKeyStore<TDecryptionKeys> sessions)
+internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextAccessor contextAccessor, CookieClaimOptions cookieOptions, SessionKeyStore<TDecryptionKeys> sessions)
     : IClaimManager<TIdentityClaim, TDecryptionKeys>
     where TIdentityClaim : IdentityClaim 
     where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
 {
     public IClaimRepository<TIdentityClaim, TDecryptionKeys> CreateRepository(TIdentityClaim identityClaim)
     {
-        CookieClaimRepository<TIdentityClaim, TDecryptionKeys> scope = new(contextAccessor, this, identityClaim, DateTime.UtcNow.Add(options.TimeToLive));
+        CookieClaimRepository<TIdentityClaim, TDecryptionKeys> scope = new(contextAccessor, this, identityClaim, DateTime.UtcNow.Add(cookieOptions.ValidationOptions.TimeToLive), cookieOptions);
         return scope;
     }
 
     IClaimRepository<TIdentityClaim> IClaimManager<TIdentityClaim>.CreateRepository(TIdentityClaim identityClaim) => CreateRepository(identityClaim);
 
-    public IClaimValidationOptions Options => options;
+    public IClaimValidationOptions Options => cookieOptions.ValidationOptions;
 
     string IClaimManager<TIdentityClaim, TDecryptionKeys>.Serialize(ClaimRepositoryData<TIdentityClaim, TDecryptionKeys> repository)
     {
@@ -39,6 +39,7 @@ internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextA
                 claim.Serialize();
             }
         }
+        ClaimValidationOptions options = cookieOptions.ValidationOptions;
         using MemoryStream stream = new();
         // write JSON data to stream
         JsonSerializer.Serialize(stream, repository);
@@ -134,6 +135,7 @@ internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextA
             status = ClaimRepositoryStatus.Expired;
             return false;
         }
+        ClaimValidationOptions options = cookieOptions.ValidationOptions;
         // now validate the HMAC
         // rent a buffer large enough to hold the server secret and the session key
         PooledArray<byte> keyBuffer = ArrayPool.Rent<byte>(options.SecretBytes.Length + sessionKey.Size);

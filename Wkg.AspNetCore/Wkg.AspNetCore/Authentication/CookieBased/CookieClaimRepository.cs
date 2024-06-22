@@ -17,13 +17,16 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
 
     private readonly HttpContext _context;
     private readonly Dictionary<string, Claim> _claims;
+    private readonly CookieClaimOptions _cookieOptions;
+
     private bool _hasChanges;
     private bool _disposedValue;
     private DateTime _expirationDate;
 
     [ActivatorUtilitiesConstructor]
-    public CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim, TDecryptionKeys> claimManager)
+    public CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim, TDecryptionKeys> claimManager, CookieClaimOptions cookieOptions)
     {
+        _cookieOptions = cookieOptions;
         _context = contextAccessor.HttpContext
             ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current repository.");
         ClaimManager = claimManager;
@@ -52,8 +55,9 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
         }
     }
 
-    internal CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim, TDecryptionKeys> claimManager, TIdentityClaim identityClaim, DateTime expirationDate)
+    internal CookieClaimRepository(IHttpContextAccessor contextAccessor, IClaimManager<TIdentityClaim, TDecryptionKeys> claimManager, TIdentityClaim identityClaim, DateTime expirationDate, CookieClaimOptions cookieOptions)
     {
+        _cookieOptions = cookieOptions;
         _context = contextAccessor.HttpContext
             ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current repository.");
         _claims = [];
@@ -222,7 +226,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
             _context.Response.Cookies.Append(CookieName, cookieValue, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = _cookieOptions.SecureOnly,
                 SameSite = SameSiteMode.Strict,
                 Expires = ExpirationDate
             });
