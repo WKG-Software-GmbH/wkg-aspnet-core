@@ -10,7 +10,7 @@ namespace Wkg.AspNetCore.Authentication.Tests;
 public class CookieClaimManagerTests
 {
     private static CookieClaimManager<TestIdentityClaim, NoDecryptionKeys> CreateClaimManager() => 
-        new(new HttpContextAccessor(), new ClaimValidationOptions("secret-key", TimeSpan.FromHours(12)), new SessionKeyStore<NoDecryptionKeys>(TimeSpan.FromHours(12)));
+        new(new HttpContextAccessor(), new CookieClaimOptions(false, new ClaimValidationOptions("secret-key", TimeSpan.FromHours(12))), new SessionKeyStore<NoDecryptionKeys>(TimeSpan.FromHours(12)));
 
     [TestMethod]
     public void TestDeterministic1()
