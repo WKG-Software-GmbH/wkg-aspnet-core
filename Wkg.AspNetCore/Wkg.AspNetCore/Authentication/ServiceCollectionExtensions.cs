@@ -50,7 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddSingleton(options);
         services.AddSingleton(options.ValidationOptions);
-        services.AddSingleton(new SessionKeyStore<NoDecryptionKeys>(options.ValidationOptions.TimeToLive));
+        services.AddSingleton(new SessionKeyStore<TDecryptionKeys>(options.ValidationOptions.TimeToLive));
         services.AddScoped<IClaimManager<TIdentityClaim>, CookieClaimManager<TIdentityClaim, TDecryptionKeys>>();
         services.AddScoped<IClaimManager<TIdentityClaim, TDecryptionKeys>, CookieClaimManager<TIdentityClaim, TDecryptionKeys>>();
         services.AddScoped<IClaimRepository<TIdentityClaim>, CookieClaimRepository<TIdentityClaim, TDecryptionKeys>>();
