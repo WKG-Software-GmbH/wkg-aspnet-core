@@ -5,7 +5,7 @@ using Wkg.Logging;
 
 namespace Wkg.AspNetCore.ErrorHandling;
 
-public class ErrorHandler : IErrorHandler
+public class DefaultErrorHandler : IErrorHandler
 {
     public virtual IActionResult Try(RequestAction<IActionResult> action) =>
         Try<IActionResult>(action);

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Data;
+using Wkg.AspNetCore.ErrorHandling;
 
 namespace Wkg.AspNetCore.Transactions.Configuration;
 
@@ -15,6 +16,7 @@ public static class ServiceCollectionExtensions
         TransactionManagerOptions options = new(optionsBuilder.TransactionIsolationLevel);
 
         services.AddSingleton(options);
+        services.TryAddSingleton<IErrorHandler, DefaultErrorHandler>();
         services.TryAddScoped<IDbContextDescriptor, DbContextDescriptor>();
         services.TryAddScoped<ITransactionScopeManager<TDbContext>, TransactionScopeManager<TDbContext>>();
         services.TryAddTransient<ITransactionScope<TDbContext>, TransactionScope<TDbContext>>();
