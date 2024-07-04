@@ -1,13 +1,16 @@
 ﻿using Wkg.AspNetCore.Abstractions;
 using Wkg.AspNetCore.Abstractions.Managers;
+using Wkg.AspNetCore.ErrorHandling;
 
 namespace Wkg.AspNetCore.Configuration.ManagerBindings;
 
-internal class DefaultManagerBindings(ManagerBindingOptions _options, IServiceProvider _scopedServiceProvider) : IManagerBindings
+internal class DefaultManagerBindings(ManagerBindingOptions _options, IServiceProvider _scopedServiceProvider, IErrorHandler errorHandler) : IManagerBindings
 {
     private Dictionary<Type, ManagerBase>? _scopedManagerCache;
 
-    public TManager ActivateManagerUnsafe<TManager>(IMvcContext context) where TManager : ManagerBase
+    IErrorHandler IManagerBindings.ErrorHandler => errorHandler;
+
+    public TManager ActivateManager<TManager>(IMvcContext context) where TManager : ManagerBase
     {
         _scopedManagerCache ??= [];
         if (_scopedManagerCache.TryGetValue(typeof(TManager), out ManagerBase? cachedManager))
@@ -19,8 +22,6 @@ internal class DefaultManagerBindings(ManagerBindingOptions _options, IServicePr
         return manager;
     }
 
-    TManager IManagerBindings.ActivateManager<TManager>(IMvcContext<TManager> context) => ActivateManagerCore<TManager>(context);
-
     private TManager ActivateManagerCore<TManager>(IMvcContext context) where TManager : ManagerBase
     {
         if (_options.Map.TryGetValue(typeof(TManager), out ManagerFactory? factory))
@@ -29,6 +30,7 @@ internal class DefaultManagerBindings(ManagerBindingOptions _options, IServicePr
             object managerObject = factory.Invoke(_scopedServiceProvider);
             // reinterpret_cast because we know the type is correct by convention (the map is built from the same types)
             TManager manager = managerObject.ReinterpretAs<TManager>();
+            manager.Bindings = this;
             manager.Context = context;
             return manager;
         }

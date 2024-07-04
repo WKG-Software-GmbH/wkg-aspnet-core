@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Wkg.AspNetCore.Abstractions.Managers;
+namespace Wkg.AspNetCore.Transactions;
 
 /// <summary>
 /// Represents a service descriptor for a database context.

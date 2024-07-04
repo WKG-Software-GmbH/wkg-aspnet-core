@@ -8,26 +8,26 @@ namespace Wkg.AspNetCore.Abstractions.RazorPages;
 /// Base class for Razor Pages implemented through a manager.
 /// </summary>
 /// <typeparam name="TManager">The type of the implemented manager.</typeparam>
-public abstract class ManagerPageModel<TManager> : ErrorHandlingPageModel, IMvcContext<TManager>
+public abstract class ManagerPageModel<TManager> : WkgPageModel, IMvcContext<TManager>
     where TManager : ManagerBase
 {
+    private readonly IManagerBindings _managerBindings;
+
     /// <summary>
     /// The manager associated with this page.
     /// </summary>
     protected TManager Manager { get; }
 
     /// <summary>
-    /// The manager bindings used to activate the manager.
-    /// </summary>
-    protected IManagerBindings ManagerBindings { get; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="ManagerController{TManager}"/> class.
     /// </summary>
     /// <param name="managerBindings">The manager bindings.</param>
-    protected ManagerPageModel(IManagerBindings managerBindings)
+    protected ManagerPageModel(IManagerBindings managerBindings) : base(managerBindings.ErrorHandler)
     {
-        Manager = managerBindings.ActivateManager(this);
-        ManagerBindings = managerBindings;
+        Manager = managerBindings.ActivateManager<TManager>(this);
+        _managerBindings = managerBindings;
     }
+
+    protected TOtherManager CreateManager<TOtherManager>() where TOtherManager : ManagerBase =>
+        _managerBindings.ActivateManager<TOtherManager>(this);
 }

@@ -1,5 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Wkg.AspNetCore.Abstractions.Managers.Results;
+using Wkg.AspNetCore.Configuration.ManagerBindings;
+using Wkg.AspNetCore.ErrorHandling;
 
 namespace Wkg.AspNetCore.Abstractions.Managers;
 
@@ -12,6 +14,12 @@ public abstract class ManagerBase
     /// Gets the context of the manager.
     /// </summary>
     internal protected IMvcContext Context { get; internal set; } = null!;
+
+    internal IManagerBindings Bindings { get; set; } = null!;
+
+    protected IErrorHandler ErrorHandler => Bindings.ErrorHandler;
+
+    protected TManager GetManager<TManager>() where TManager : ManagerBase => Bindings.ActivateManager<TManager>(Context);
 
     /// <inheritdoc cref="ManagerResult.Success()"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

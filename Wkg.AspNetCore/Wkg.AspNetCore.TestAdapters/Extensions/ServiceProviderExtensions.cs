@@ -6,7 +6,7 @@ namespace Wkg.AspNetCore.TestAdapters.Extensions;
 
 internal static class ServiceProviderExtensions
 {
-    public static T Activate<T>(this ServiceProvider serviceProvider) where T : class
+    public static T Activate<T>(this IServiceProvider serviceProvider) where T : class
     {
         Type type = typeof(T);
         ConstructorInfo[] constructors = type.GetConstructors();

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Wkg.AspNetCore.Transactions;
 
 namespace Wkg.AspNetCore.TestAdapters;
 
@@ -35,7 +36,7 @@ public abstract class TestBase
     /// Creates the <see cref="ServiceProvider"/> that is used to resolve dependencies.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> that can be used to register dependencies.</param>
-    protected abstract ServiceProvider CreateServiceProvider(IServiceCollection services);
+    protected abstract void ConfigureServices(IServiceCollection services);
 
     private protected virtual void OnInitialized() { }
 
@@ -46,8 +47,9 @@ public abstract class TestBase
             if (ServiceProvider is null)
             {
                 // initialize once and only once
-                IServiceCollection services = new ServiceCollection();
-                ServiceProvider = CreateServiceProvider(services);
+                ServiceCollection services = new();
+                ConfigureServices(services);
+                ServiceProvider = services.BuildServiceProvider();
                 OnInitialized();
             }
         }

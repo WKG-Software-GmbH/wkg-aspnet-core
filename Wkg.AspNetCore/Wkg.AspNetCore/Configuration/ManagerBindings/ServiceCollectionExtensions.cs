@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Wkg.AspNetCore.Abstractions;
 using Wkg.AspNetCore.Abstractions.Managers;
+using Wkg.AspNetCore.Transactions.Configuration;
 using Wkg.Reflection;
 using Wkg.Reflection.Extensions;
 
@@ -21,8 +22,6 @@ public static class ServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> for fluent configuration.</returns>
     public static IServiceCollection AddManagers(this IServiceCollection services)
     {
-        services.AddDbAbstractions();
-
         // collect all manager types used by concrete MvcContext types (controllers, razor pages, etc.)
         IEnumerable<Type> managers = AppDomain.CurrentDomain
             // get all assemblies
