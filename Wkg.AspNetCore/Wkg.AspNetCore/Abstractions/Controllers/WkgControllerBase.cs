@@ -9,9 +9,12 @@ namespace Wkg.AspNetCore.Abstractions.Controllers;
 /// <summary>
 /// Provides a base class for API controllers to handle exceptions.
 /// </summary>
-public abstract class WkgControllerBase(IErrorHandler errorHandler) : ControllerBase, IMvcContext
+public abstract class WkgControllerBase(IErrorSentry errorSentry) : ControllerBase, IMvcContext
 {
-    protected IErrorHandler ErrorHandler { get; } = errorHandler;
+    /// <summary>
+    /// Gets the <see cref="IErrorSentry"/> associated with this context.
+    /// </summary>
+    protected IErrorSentry ErrorSentry { get; } = errorSentry;
 
     /// <summary>
     /// Handles the specified failed <see cref="ManagerResult"/> by returning the appropriate error response.

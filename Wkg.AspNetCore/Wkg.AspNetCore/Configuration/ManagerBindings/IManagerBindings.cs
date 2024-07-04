@@ -17,5 +17,5 @@ public interface IManagerBindings
     /// <returns>An instance of the manager associated with the specified context.</returns>
     public TManager ActivateManager<TManager>(IMvcContext context) where TManager : ManagerBase;
 
-    internal IErrorHandler ErrorHandler { get; }
+    internal IErrorSentry ErrorSentry { get; }
 }

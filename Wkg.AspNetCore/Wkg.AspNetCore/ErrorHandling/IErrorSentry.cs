@@ -4,7 +4,13 @@ using Wkg.AspNetCore.RequestActions;
 
 namespace Wkg.AspNetCore.ErrorHandling;
 
-public interface IErrorHandler
+/// <summary>
+/// Provides means to execute actions in a guarded scope, intercepting exceptions and handling them according to the underlying implementation.
+/// </summary>
+/// <remarks>
+/// Common use cases include intercepting exceptions, logging, wrapping, and rethrowing.
+/// </remarks>
+public interface IErrorSentry
 {
     /// <summary>
     /// Performs the necessary actions to handle the intercepted <see cref="Exception"/> and returns an <see cref="ApiProxyException"/> corresponding to the intercepted <see cref="Exception"/>.
@@ -19,14 +25,14 @@ public interface IErrorHandler
     /// <param name="action">The action to be executed with error handling.</param>
     /// <returns>The result of the specified <paramref name="action"/>.</returns>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="action"/>.</exception>
-    IActionResult Try(RequestAction<IActionResult> action);
+    IActionResult Watch(RequestAction<IActionResult> action);
 
     /// <summary>
     /// Executes the specified <paramref name="action"/> with error handling.
     /// </summary>
     /// <param name="action">The action to be executed with error handling.</param>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="action"/>.</exception>
-    void Try(RequestAction action);
+    void Watch(RequestAction action);
 
     /// <summary>
     /// Executes the specified <paramref name="action"/> with error handling and returns the result.
@@ -35,7 +41,7 @@ public interface IErrorHandler
     /// <param name="action">The action to be executed with error handling.</param>
     /// <returns>The result of the specified <paramref name="action"/>.</returns>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="action"/>.</exception>
-    TResult Try<TResult>(RequestAction<TResult> action);
+    TResult Watch<TResult>(RequestAction<TResult> action);
 
     /// <summary>
     /// Executes the specified <paramref name="task"/> with error handling and returns the result.
@@ -43,7 +49,7 @@ public interface IErrorHandler
     /// <param name="task">The action to be executed with error handling.</param>
     /// <returns>The asynchronous result of the specified <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="task"/>.</exception>
-    Task<IActionResult> TryAsync(RequestTask<IActionResult> task);
+    Task<IActionResult> WatchAsync(RequestTask<IActionResult> task);
 
     /// <summary>
     /// Executes the specified <paramref name="task"/> with error handling.
@@ -51,7 +57,7 @@ public interface IErrorHandler
     /// <param name="task">The action to be executed with error handling.</param>
     /// <returns>The <see cref="Task"/> representing the asynchronous action being performed.</returns>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="task"/>.</exception>
-    Task TryAsync(RequestTask task);
+    Task WatchAsync(RequestTask task);
 
     /// <summary>
     /// Executes the specified <paramref name="task"/> with error handling and returns the result.
@@ -60,5 +66,5 @@ public interface IErrorHandler
     /// <param name="task">The action to be executed with error handling.</param>
     /// <returns>The asynchronous result of the specified <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="task"/>.</exception>
-    Task<TResult> TryAsync<TResult>(RequestTask<TResult> task);
+    Task<TResult> WatchAsync<TResult>(RequestTask<TResult> task);
 }

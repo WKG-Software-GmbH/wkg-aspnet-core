@@ -7,7 +7,7 @@ namespace Wkg.AspNetCore.Abstractions.Controllers;
 /// Provides a base class for API controllers that require database access.
 /// </summary>
 /// <typeparam name="TDbContext">The type of the database context.</typeparam>
-public abstract class DatabaseController<TDbContext>(ITransactionManager transactionManager) : WkgControllerBase(transactionManager.ErrorHandler) where TDbContext : DbContext
+public abstract class DatabaseController<TDbContext>(ITransactionManager transactionManager) : WkgControllerBase(transactionManager.ErrorSentry) where TDbContext : DbContext
 {
     /// <summary>
     /// Gets the transaction manager for the database context.

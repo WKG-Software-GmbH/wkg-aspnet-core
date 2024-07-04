@@ -22,12 +22,17 @@ public abstract class ManagerPageModel<TManager> : WkgPageModel, IMvcContext<TMa
     /// Initializes a new instance of the <see cref="ManagerController{TManager}"/> class.
     /// </summary>
     /// <param name="managerBindings">The manager bindings.</param>
-    protected ManagerPageModel(IManagerBindings managerBindings) : base(managerBindings.ErrorHandler)
+    protected ManagerPageModel(IManagerBindings managerBindings) : base(managerBindings.ErrorSentry)
     {
         Manager = managerBindings.ActivateManager<TManager>(this);
         _managerBindings = managerBindings;
     }
 
+    /// <summary>
+    /// Creates a new manager of the specified type, flowing the current context (e.g. user, request, database transaction) as needed.
+    /// </summary>
+    /// <typeparam name="TOtherManager">The type of the manager to create.</typeparam>
+    /// <returns>An instance of the manager of the specified type.</returns>
     protected TOtherManager CreateManager<TOtherManager>() where TOtherManager : ManagerBase =>
         _managerBindings.ActivateManager<TOtherManager>(this);
 }

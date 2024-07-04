@@ -2,19 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Data;
 
-namespace Wkg.AspNetCore.Transactions;
-
-public interface ITransactionScopeManager<TDbContext> where TDbContext : DbContext
-{
-    /// <summary>
-    /// Gets or sets the <see cref="IsolationLevel"/> to be used for all transactions of this manager.
-    /// </summary>
-    internal IsolationLevel TransactionIsolationLevel { get; }
-
-    internal IDbContextDescriptor DbContextDescriptor { get; }
-
-    public ITransactionScope<TDbContext> CreateScope();
-}
+namespace Wkg.AspNetCore.Transactions.Internals;
 
 internal class TransactionScopeManager<TDbContext>(IDbContextDescriptor dbContextDescriptor, TransactionManagerOptions options, IServiceProvider serviceProvider) : ITransactionScopeManager<TDbContext>
     where TDbContext : DbContext
@@ -23,8 +11,6 @@ internal class TransactionScopeManager<TDbContext>(IDbContextDescriptor dbContex
 
     IDbContextDescriptor ITransactionScopeManager<TDbContext>.DbContextDescriptor => dbContextDescriptor;
 
-    public ITransactionScope<TDbContext> CreateScope() => 
+    public ITransactionScope<TDbContext> CreateScope() =>
         serviceProvider.GetRequiredService<ITransactionScope<TDbContext>>();
 }
-
-internal record TransactionManagerOptions(IsolationLevel TransactionIsolationLevel);

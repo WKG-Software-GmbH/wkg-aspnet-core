@@ -4,11 +4,11 @@ using Wkg.AspNetCore.ErrorHandling;
 
 namespace Wkg.AspNetCore.Configuration.ManagerBindings;
 
-internal class DefaultManagerBindings(ManagerBindingOptions _options, IServiceProvider _scopedServiceProvider, IErrorHandler errorHandler) : IManagerBindings
+internal class DefaultManagerBindings(ManagerBindingOptions _options, IServiceProvider _scopedServiceProvider, IErrorSentry errorSentry) : IManagerBindings
 {
     private Dictionary<Type, ManagerBase>? _scopedManagerCache;
 
-    IErrorHandler IManagerBindings.ErrorHandler => errorHandler;
+    IErrorSentry IManagerBindings.ErrorSentry => errorSentry;
 
     public TManager ActivateManager<TManager>(IMvcContext context) where TManager : ManagerBase
     {

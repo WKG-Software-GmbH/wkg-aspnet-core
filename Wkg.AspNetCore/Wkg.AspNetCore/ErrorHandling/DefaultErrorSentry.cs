@@ -5,18 +5,18 @@ using Wkg.Logging;
 
 namespace Wkg.AspNetCore.ErrorHandling;
 
-public class DefaultErrorHandler : IErrorHandler
+public class DefaultErrorSentry : IErrorSentry
 {
-    public virtual IActionResult Try(RequestAction<IActionResult> action) =>
-        Try<IActionResult>(action);
+    public virtual IActionResult Watch(RequestAction<IActionResult> action) =>
+        Watch<IActionResult>(action);
 
-    public virtual void Try(RequestAction action) => Try<VoidResult>(() =>
+    public virtual void Watch(RequestAction action) => Watch<VoidResult>(() =>
     {
         action.Invoke();
         return default;
     });
 
-    public virtual TResult Try<TResult>(RequestAction<TResult> action)
+    public virtual TResult Watch<TResult>(RequestAction<TResult> action)
     {
         try
         {
@@ -28,16 +28,16 @@ public class DefaultErrorHandler : IErrorHandler
         }
     }
 
-    public virtual Task<IActionResult> TryAsync(RequestTask<IActionResult> task) =>
-        TryAsync<IActionResult>(task);
+    public virtual Task<IActionResult> WatchAsync(RequestTask<IActionResult> task) =>
+        WatchAsync<IActionResult>(task);
 
-    public virtual Task TryAsync(RequestTask task) => TryAsync<VoidResult>(async () =>
+    public virtual Task WatchAsync(RequestTask task) => WatchAsync<VoidResult>(async () =>
     {
         await task.Invoke();
         return default;
     });
 
-    public async Task<TResult> TryAsync<TResult>(RequestTask<TResult> task)
+    public async Task<TResult> WatchAsync<TResult>(RequestTask<TResult> task)
     {
         try
         {

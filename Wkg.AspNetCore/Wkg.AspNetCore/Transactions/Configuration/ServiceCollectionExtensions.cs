@@ -1,13 +1,24 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Data;
 using Wkg.AspNetCore.ErrorHandling;
+using Wkg.AspNetCore.Transactions.Internals;
 
 namespace Wkg.AspNetCore.Transactions.Configuration;
 
+/// <summary>
+/// Provides extension methods for configuring transaction management services.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Adds database transaction management services to the specified <see cref="IServiceCollection"/>, 
+    /// allowing usage of scoped transactions that may flow across multiple compontents within a shared scope.
+    /// </summary>
+    /// <typeparam name="TDbContext">The type of the database context to be used for transactions.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <param name="configureOptions">The optional configuration action for the transaction manager options.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for fluent configuration.</returns>
     public static IServiceCollection AddTransactionManagement<TDbContext>(this IServiceCollection services, Action<TransactionManagerOptionsBuilder>? configureOptions = null) where TDbContext : DbContext
     {
         TransactionManagerOptionsBuilder optionsBuilder = new();
@@ -16,7 +27,7 @@ public static class ServiceCollectionExtensions
         TransactionManagerOptions options = new(optionsBuilder.TransactionIsolationLevel);
 
         services.AddSingleton(options);
-        services.TryAddSingleton<IErrorHandler, DefaultErrorHandler>();
+        services.TryAddSingleton<IErrorSentry, DefaultErrorSentry>();
         services.TryAddScoped<IDbContextDescriptor, DbContextDescriptor>();
         services.TryAddScoped<ITransactionScopeManager<TDbContext>, TransactionScopeManager<TDbContext>>();
         services.TryAddTransient<ITransactionScope<TDbContext>, TransactionScope<TDbContext>>();
@@ -24,24 +35,5 @@ public static class ServiceCollectionExtensions
         services.TryAddScoped<ITransactionManager, TransactionManager>();
 
         return services;
-    }
-}
-
-public class TransactionManagerOptionsBuilder
-{
-    internal IsolationLevel TransactionIsolationLevel { get; private set; } = IsolationLevel.ReadCommitted;
-
-    /// <summary>
-    /// Sets the default <see cref="IsolationLevel"/> to be used by <see cref="ITransactionManager{TDbContext}"/> instances for all database transactions.
-    /// </summary>
-    /// <param name="isolationLevel">The <see cref="IsolationLevel"/> to be used.</param>
-    /// <returns>The same <see cref="TransactionManagerOptionsBuilder"/> instance for fluent configuration.</returns>
-    /// <remarks>
-    /// Isolation levels only apply when <see cref="ITransactionManager{TDbContext}"/> instances are used to perform database transactions.
-    /// </remarks>
-    public TransactionManagerOptionsBuilder UseIsolationLevel(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
-    {
-        TransactionIsolationLevel = isolationLevel;
-        return this;
     }
 }

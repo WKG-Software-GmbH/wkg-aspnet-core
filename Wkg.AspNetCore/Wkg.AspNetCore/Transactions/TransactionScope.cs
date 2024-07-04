@@ -5,18 +5,19 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using Wkg.AspNetCore.ErrorHandling;
-using Wkg.AspNetCore.TransactionManagement;
 using Wkg.AspNetCore.Transactions.Actions;
+using Wkg.AspNetCore.Transactions.Continuations;
+using Wkg.AspNetCore.Transactions.Internals;
 
 namespace Wkg.AspNetCore.Transactions;
 
-internal partial class TransactionScope<TDbContext>(ITransactionScopeManager<TDbContext> transactionManager, IErrorHandler errorHandler) 
+internal partial class TransactionScope<TDbContext>(ITransactionScopeManager<TDbContext> transactionManager, IErrorSentry errorSentry) 
     : ITransactionScope<TDbContext> where TDbContext : DbContext
 {
     private static readonly ScopedTransaction _scopedTransactionInstance = new();
 
     private TDbContext? _dbContext;
-    private TransactionalContinuationType _continuationType = TransactionalContinuationType.ReadOnly;
+    private TransactionResult _continuationType = TransactionResult.ReadOnly;
     private IDbContextTransaction? _transaction;
     private bool _isDisposed;
     private bool _isGuarded;
@@ -24,6 +25,8 @@ internal partial class TransactionScope<TDbContext>(ITransactionScopeManager<TDb
     internal TDbContext DbContext => _dbContext ??= transactionManager.DbContextDescriptor.GetDbContext<TDbContext>();
 
     public IsolationLevel IsolationLevel => transactionManager.TransactionIsolationLevel;
+
+    public TransactionResult TransactionState => _continuationType;
 
     private protected TResult RunInScope<TResult>(DatabaseRequestAction<TDbContext, TResult> action)
     {
@@ -61,8 +64,8 @@ internal partial class TransactionScope<TDbContext>(ITransactionScopeManager<TDb
         }
         catch (Exception e)
         {
-            _continuationType |= TransactionalContinuationType.ExceptionalRollback;
-            throw errorHandler.AfterHandled(e);
+            _continuationType |= TransactionResult.ExceptionalRollback;
+            throw errorSentry.AfterHandled(e);
         }
         finally
         {
@@ -102,8 +105,8 @@ internal partial class TransactionScope<TDbContext>(ITransactionScopeManager<TDb
         }
         catch (Exception e)
         {
-            _continuationType |= TransactionalContinuationType.ExceptionalRollback;
-            throw errorHandler.AfterHandled(e);
+            _continuationType |= TransactionResult.ExceptionalRollback;
+            throw errorSentry.AfterHandled(e);
         }
         finally
         {
@@ -125,7 +128,7 @@ internal partial class TransactionScope<TDbContext>(ITransactionScopeManager<TDb
         _isDisposed = true;
         if (_transaction is not null)
         {
-            if (_continuationType is TransactionalContinuationType.Commit)
+            if (_continuationType is TransactionResult.Commit)
             {
                 await CommitAsync(_transaction);
             }
@@ -133,6 +136,7 @@ internal partial class TransactionScope<TDbContext>(ITransactionScopeManager<TDb
             {
                 await RollbackAsync(_transaction);
             }
+            _continuationType |= TransactionResult.Finalized;
             _transaction.Dispose();
         }
     }
@@ -142,7 +146,7 @@ internal partial class TransactionScope<TDbContext>(ITransactionScopeManager<TDb
     {
         ConcurrencyViolationException ex = new(SR.ConcurrencyViolation_AsyncInSyncContext);
         ExceptionDispatchInfo.SetCurrentStackTrace(ex);
-        throw errorHandler.AfterHandled(ex);
+        throw errorSentry.AfterHandled(ex);
     }
 
     [DoesNotReturn]
@@ -150,6 +154,6 @@ internal partial class TransactionScope<TDbContext>(ITransactionScopeManager<TDb
     {
         ConcurrencyViolationException ex = new(SR.ConsistencyViolation_ManualTransactionManagement);
         ExceptionDispatchInfo.SetCurrentStackTrace(ex);
-        throw errorHandler.AfterHandled(ex);
+        throw errorSentry.AfterHandled(ex);
     }
 }

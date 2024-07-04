@@ -2,7 +2,7 @@
 
 namespace Wkg.AspNetCore.Abstractions.Services;
 
-public abstract class WkgServiceBase(IErrorHandler errorHandler)
+public abstract class WkgServiceBase(IErrorSentry errorSentry)
 {
-    protected IErrorHandler ErrorHandler { get; } = errorHandler;
+    protected IErrorSentry ErrorSentry { get; } = errorSentry;
 }

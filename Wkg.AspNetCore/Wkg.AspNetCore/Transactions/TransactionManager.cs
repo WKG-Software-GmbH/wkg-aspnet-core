@@ -3,9 +3,9 @@ using Wkg.AspNetCore.ErrorHandling;
 
 namespace Wkg.AspNetCore.Transactions;
 
-internal class TransactionManager(IServiceProvider serviceProvider, IErrorHandler errorHandler) : ITransactionManager
+internal class TransactionManager(IServiceProvider serviceProvider, IErrorSentry errorSentry) : ITransactionManager
 {
     ITransactionManager<TDbContext> ITransactionManager.GetInstance<TDbContext>() => serviceProvider.GetRequiredService<ITransactionManager<TDbContext>>();
 
-    IErrorHandler ITransactionManager.ErrorHandler => errorHandler;
+    IErrorSentry ITransactionManager.ErrorSentry => errorSentry;
 }

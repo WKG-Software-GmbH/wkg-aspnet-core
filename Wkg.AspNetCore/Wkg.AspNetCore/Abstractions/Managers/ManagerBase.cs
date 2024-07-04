@@ -17,9 +17,17 @@ public abstract class ManagerBase
 
     internal IManagerBindings Bindings { get; set; } = null!;
 
-    protected IErrorHandler ErrorHandler => Bindings.ErrorHandler;
+    /// <summary>
+    /// Gets the <see cref="IErrorSentry"/> associated with this context.
+    /// </summary>
+    protected IErrorSentry ErrorSentry => Bindings.ErrorSentry;
 
-    protected TManager GetManager<TManager>() where TManager : ManagerBase => Bindings.ActivateManager<TManager>(Context);
+    /// <summary>
+    /// Creates a new manager of the specified type, flowing the current context (e.g. user, request, database transaction) as needed.
+    /// </summary>
+    /// <typeparam name="TManager">The type of the manager to create.</typeparam>
+    /// <returns>An instance of the manager of the specified type.</returns>
+    protected TManager CreateManager<TManager>() where TManager : ManagerBase => Bindings.ActivateManager<TManager>(Context);
 
     /// <inheritdoc cref="ManagerResult.Success()"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
