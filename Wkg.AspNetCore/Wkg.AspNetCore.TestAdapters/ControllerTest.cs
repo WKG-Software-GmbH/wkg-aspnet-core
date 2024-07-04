@@ -11,8 +11,8 @@ public abstract class ControllerTest<TController, TDatabaseLoader> : Transaction
     where TController : ControllerBase
     where TDatabaseLoader : IDatabaseLoader
 {
-    /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.ActivateAndRun(Action{TComponent})"/>/>
-    protected virtual void UsingController(Action<TController> unitTest) => ActivateAndRun(unitTest);
+    /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.ActivateAndRunAsync(Action{TComponent})"/>/>
+    protected virtual Task UsingController(Action<TController> unitTest) => ActivateAndRunAsync(unitTest);
 
     /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.ActivateAndRunAsync(Func{TComponent, Task})"/>/>
     protected virtual Task UsingControllerAsync(Func<TController, Task> unitTestAsync) => ActivateAndRunAsync(unitTestAsync);

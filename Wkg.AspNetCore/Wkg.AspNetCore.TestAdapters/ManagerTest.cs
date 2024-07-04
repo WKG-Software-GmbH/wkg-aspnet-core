@@ -11,8 +11,8 @@ public abstract class ManagerTest<TManager, TDatabaseLoader> : TransactionAwareT
     where TManager : ManagerBase
     where TDatabaseLoader : IDatabaseLoader
 {
-    /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.ActivateAndRun(Action{TComponent})"/>/>
-    protected virtual void UsingManager(Action<TManager> unitTest) => ActivateAndRun(unitTest);
+    /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.ActivateAndRunAsync(Action{TComponent})"/>/>
+    protected virtual Task UsingManager(Action<TManager> unitTest) => ActivateAndRunAsync(unitTest);
 
     /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.ActivateAndRunAsync(Func{TComponent, Task})"/>/>
     protected virtual Task UsingManagerAsync(Func<TManager, Task> unitTestAsync) => ActivateAndRunAsync(unitTestAsync);

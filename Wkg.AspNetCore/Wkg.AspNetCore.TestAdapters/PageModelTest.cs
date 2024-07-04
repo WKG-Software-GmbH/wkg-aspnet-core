@@ -11,8 +11,8 @@ public abstract class PageModelTest<TPageModel, TDatabaseLoader> : TransactionAw
     where TPageModel : ControllerBase
     where TDatabaseLoader : IDatabaseLoader
 {
-    /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.ActivateAndRun(Action{TComponent})"/>/>
-    protected virtual void UsingPageModel(Action<TPageModel> unitTest) => ActivateAndRun(unitTest);
+    /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.ActivateAndRunAsync(Action{TComponent})"/>/>
+    protected virtual Task UsingPageModel(Action<TPageModel> unitTest) => ActivateAndRunAsync(unitTest);
 
     /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.ActivateAndRunAsync(Func{TComponent, Task})"/>/>
     protected virtual Task UsingPageModelAsync(Func<TPageModel, Task> unitTestAsync) => ActivateAndRunAsync(unitTestAsync);

@@ -27,10 +27,10 @@ public abstract class TransactionAwareTest<TComponent, TDatabaseLoader> : TestBa
     /// <remarks>
     /// Any transactional context created by the component will be rolled back after the unit test has been executed.
     /// </remarks>
-    private protected virtual void ActivateAndRun(Action<TComponent> unitTest)
+    private protected virtual async Task ActivateAndRunAsync(Action<TComponent> unitTest)
     {
         IServiceScopeFactory scopeFactory = ServiceProvider.GetRequiredService<IServiceScopeFactory>();
-        using IServiceScope scope = scopeFactory.CreateScope();
+        await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         TComponent component = scope.ServiceProvider.Activate<TComponent>();
         unitTest.Invoke(component);
     }
@@ -45,7 +45,7 @@ public abstract class TransactionAwareTest<TComponent, TDatabaseLoader> : TestBa
     private protected virtual async Task ActivateAndRunAsync(Func<TComponent, Task> unitTestAsync)
     {
         IServiceScopeFactory scopeFactory = ServiceProvider.GetRequiredService<IServiceScopeFactory>();
-        using IServiceScope scope = scopeFactory.CreateScope();
+        await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         TComponent component = scope.ServiceProvider.Activate<TComponent>();
         await unitTestAsync.Invoke(component);
     }
