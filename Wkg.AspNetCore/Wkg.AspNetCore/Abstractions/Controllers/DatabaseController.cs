@@ -9,5 +9,8 @@ namespace Wkg.AspNetCore.Abstractions.Controllers;
 /// <typeparam name="TDbContext">The type of the database context.</typeparam>
 public abstract class DatabaseController<TDbContext>(ITransactionManager transactionManager) : WkgControllerBase(transactionManager.ErrorHandler) where TDbContext : DbContext
 {
+    /// <summary>
+    /// Gets the transaction manager for the database context.
+    /// </summary>
     protected ITransactionManager<TDbContext> Transaction { get; } = transactionManager.GetInstance<TDbContext>();
 }
