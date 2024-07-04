@@ -11,11 +11,11 @@ variables:
   TEST_ADAPTER_DIRECTORY: "Wkg.AspNetCore/Wkg.AspNetCore.TestAdapters"
   TEST_ADAPTER_PROJECT: "${TEST_ADAPTER_DIRECTORY}/Wkg.AspNetCore.TestAdapters.csproj"
   MAJOR_VERSION: "8"
-  MINOR_VERSION: "1"
+  MINOR_VERSION: "2"
 
 include:
   - project: 'wkg/gitlab-templates'
-    ref: 'v1.2.4'
+    ref: 'v1.2.10'
     file:
       - '/jobs/build_dotnet_8.yml'
       - '/jobs/test_dotnet_8.yml'
