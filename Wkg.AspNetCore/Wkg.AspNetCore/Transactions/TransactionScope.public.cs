@@ -19,7 +19,7 @@ partial class TransactionScope<TDbContext>
     public void ExecuteReadOnly(ReadOnlyDatabaseRequestAction<TDbContext> action) => Execute((dbContext, transaction) =>
     {
         action.Invoke(dbContext);
-        return transaction.Rollback<VoidResult>(default);
+        return new TransactionalContinuation<VoidResult>(TransactionalContinuationType.ReadOnly, default);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,8 +30,11 @@ partial class TransactionScope<TDbContext>
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TResult ExecuteReadOnly<TResult>(ReadOnlyDatabaseRequestAction<TDbContext, TResult> action) =>
-        Execute((dbContext, transaction) => transaction.Rollback(action.Invoke(dbContext)));
+    public TResult ExecuteReadOnly<TResult>(ReadOnlyDatabaseRequestAction<TDbContext, TResult> action) => Execute((dbContext, transaction) =>
+    {
+        TResult result = action.Invoke(dbContext);
+        return new TransactionalContinuation<TResult>(TransactionalContinuationType.ReadOnly, result);
+    });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TResult Execute<TResult>(DatabaseRequestAction<TDbContext, TResult> action) =>
@@ -49,7 +52,7 @@ partial class TransactionScope<TDbContext>
     public Task ExecuteReadOnlyAsync(ReadOnlyDatabaseRequestTask<TDbContext> task) => ExecuteAsync(async (dbContext, transaction) =>
     {
         await task.Invoke(dbContext);
-        return transaction.Rollback<VoidResult>(default);
+        return new TransactionalContinuation<VoidResult>(TransactionalContinuationType.ReadOnly, default);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -60,10 +63,10 @@ partial class TransactionScope<TDbContext>
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Task<TResult> ExecuteReadOnlyAsync<TResult>(ReadOnlyDatabaseRequestTask<TDbContext, TResult> task) => ExecuteAsync(async (dbContext, transaction) =>
+    public Task<TResult> ExecuteReadOnlyAsync<TResult>(ReadOnlyDatabaseRequestTask<TDbContext, TResult> task) => ExecuteAsync<TResult>(async (dbContext, transaction) =>
     {
         TResult result = await task.Invoke(dbContext);
-        return transaction.Rollback(result);
+        return new TransactionalContinuation<TResult>(TransactionalContinuationType.ReadOnly, result);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

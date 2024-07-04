@@ -61,7 +61,7 @@ internal partial class TransactionScope<TDbContext>(ITransactionScopeManager<TDb
         }
         catch (Exception e)
         {
-            _continuationType = TransactionalContinuationType.ExceptionalRollback;
+            _continuationType |= TransactionalContinuationType.ExceptionalRollback;
             throw errorHandler.AfterHandled(e);
         }
         finally
@@ -102,7 +102,7 @@ internal partial class TransactionScope<TDbContext>(ITransactionScopeManager<TDb
         }
         catch (Exception e)
         {
-            _continuationType = TransactionalContinuationType.ExceptionalRollback;
+            _continuationType |= TransactionalContinuationType.ExceptionalRollback;
             throw errorHandler.AfterHandled(e);
         }
         finally
