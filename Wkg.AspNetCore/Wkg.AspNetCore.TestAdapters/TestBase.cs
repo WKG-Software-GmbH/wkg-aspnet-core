@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Wkg.AspNetCore.Transactions;
 
 namespace Wkg.AspNetCore.TestAdapters;
 
@@ -38,7 +37,10 @@ public abstract class TestBase
     /// <param name="services">The <see cref="IServiceCollection"/> that can be used to register dependencies.</param>
     protected abstract void ConfigureServices(IServiceCollection services);
 
-    private protected virtual void OnInitialized() { }
+    /// <summary>
+    /// Called when the <see cref="ServiceProvider"/> has been initialized.
+    /// </summary>
+    protected virtual void OnInitialized() => Pass();
 
     private void EnsureIsInitialized()
     {

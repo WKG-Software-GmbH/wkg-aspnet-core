@@ -13,7 +13,8 @@ public abstract class DbContextTest<TDbContext, TDatabaseLoader> : TestBase
     where TDbContext : DbContext
     where TDatabaseLoader : IDatabaseLoader
 {
-    private protected override void OnInitialized()
+    /// <inheritdoc/>
+    protected override void OnInitialized()
     {
         base.OnInitialized();
         TDatabaseLoader.InitializeDatabase(ServiceProvider);

@@ -12,9 +12,8 @@ public abstract class TransactionAwareTest<TComponent, TDatabaseLoader> : TestBa
     where TComponent : class
     where TDatabaseLoader : IDatabaseLoader
 {
-    private protected TransactionAwareTest() => Pass();
-
-    private protected override void OnInitialized()
+    /// <inheritdoc/>
+    protected override void OnInitialized()
     {
         base.OnInitialized();
         TDatabaseLoader.InitializeDatabase(ServiceProvider);
@@ -27,7 +26,7 @@ public abstract class TransactionAwareTest<TComponent, TDatabaseLoader> : TestBa
     /// <remarks>
     /// Any transactional context created by the component will be rolled back after the unit test has been executed.
     /// </remarks>
-    private protected virtual async Task ActivateAndRunAsync(Action<TComponent> unitTest)
+    protected virtual async Task ActivateAndRunAsync(Action<TComponent> unitTest)
     {
         IServiceScopeFactory scopeFactory = ServiceProvider.GetRequiredService<IServiceScopeFactory>();
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
@@ -42,7 +41,7 @@ public abstract class TransactionAwareTest<TComponent, TDatabaseLoader> : TestBa
     /// <remarks>
     /// Any transactional context created by the component will be rolled back after the unit test has been executed.
     /// </remarks>
-    private protected virtual async Task ActivateAndRunAsync(Func<TComponent, Task> unitTestAsync)
+    protected virtual async Task ActivateAndRunAsync(Func<TComponent, Task> unitTestAsync)
     {
         IServiceScopeFactory scopeFactory = ServiceProvider.GetRequiredService<IServiceScopeFactory>();
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();

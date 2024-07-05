@@ -40,7 +40,7 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
     /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
-    IActionResult ExecuteReadOnly(ReadOnlyDatabaseRequestAction<TDbContext, IActionResult> action);
+    IActionResult RunReadOnly(ReadOnlyDatabaseRequestAction<TDbContext, IActionResult> action);
 
     /// <summary>
     /// Executes the specified <paramref name="action"/> in an isolated database transaction with automatic error handling.
@@ -48,7 +48,7 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
     /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
-    IActionResult Execute(DatabaseRequestAction<TDbContext, IActionResult> action);
+    IActionResult Run(DatabaseRequestAction<TDbContext, IActionResult> action);
 
     /// <summary>
     /// Executes the specified <paramref name="action"/> in an isolated readonly database transaction with automatic error handling.
@@ -61,7 +61,7 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
     /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
-    void ExecuteReadOnly(ReadOnlyDatabaseRequestAction<TDbContext> action);
+    void RunReadOnly(ReadOnlyDatabaseRequestAction<TDbContext> action);
 
     /// <summary>
     /// Executes the specified <paramref name="action"/> in an isolated database transaction with automatic error handling.
@@ -69,7 +69,7 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <param name="action">The action to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
     /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
-    void Execute(DatabaseRequestAction<TDbContext> action);
+    void Run(DatabaseRequestAction<TDbContext> action);
 
     /// <summary>
     /// Executes the specified <paramref name="action"/> in an isolated readonly database transaction with automatic error handling.
@@ -84,7 +84,7 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <returns>The result of the <paramref name="action"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
     /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
-    TResult ExecuteReadOnly<TResult>(ReadOnlyDatabaseRequestAction<TDbContext, TResult> action);
+    TResult RunReadOnly<TResult>(ReadOnlyDatabaseRequestAction<TDbContext, TResult> action);
 
     /// <summary>
     /// Executes the specified <paramref name="action"/> in an isolated database transaction with automatic error handling.
@@ -94,7 +94,7 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <returns>The result of the <paramref name="action"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="action"/> throws an exception.</exception>
     /// <exception cref="ConcurrencyViolationException">if <paramref name="action"/> is a <see cref="Task"/>-returning method.</exception>
-    TResult Execute<TResult>(DatabaseRequestAction<TDbContext, TResult> action);
+    TResult Run<TResult>(DatabaseRequestAction<TDbContext, TResult> action);
 
     /// <summary>
     /// Executes the specified asynchronous <paramref name="task"/> in an isolated readonly database transaction with automatic error handling.
@@ -107,7 +107,7 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <param name="task">The action to be executed in the isolated environment.</param>
     /// <returns>The asynchronous result of the <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    Task<IActionResult> ExecuteReadOnlyAsync(ReadOnlyDatabaseRequestTask<TDbContext, IActionResult> task);
+    Task<IActionResult> RunReadOnlyAsync(ReadOnlyDatabaseRequestTask<TDbContext, IActionResult> task);
 
     /// <summary>
     /// Executes the specified asynchronous <paramref name="task"/> in an isolated database transaction with automatic error handling.
@@ -115,7 +115,7 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <param name="task">The action to be executed in the isolated environment.</param>
     /// <returns>The asynchronous result of the <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    Task<IActionResult> ExecuteAsync(DatabaseRequestTask<TDbContext, IActionResult> task);
+    Task<IActionResult> RunAsync(DatabaseRequestTask<TDbContext, IActionResult> task);
 
     /// <summary>
     /// Executes the specified asynchronous <paramref name="task"/> in an isolated readonly database transaction with automatic error handling.
@@ -128,7 +128,7 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <param name="task">The action to be executed in the isolated environment.</param>
     /// <returns>The asynchronous result of the <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    Task ExecuteReadOnlyAsync(ReadOnlyDatabaseRequestTask<TDbContext> task);
+    Task RunReadOnlyAsync(ReadOnlyDatabaseRequestTask<TDbContext> task);
 
     /// <summary>
     /// Executes the specified asynchronous <paramref name="task"/> in an isolated database transaction with automatic error handling.
@@ -136,7 +136,7 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <param name="task">The action to be executed in the isolated environment.</param>
     /// <returns>The asynchronous result of the <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    Task ExecuteAsync(DatabaseRequestTask<TDbContext> task);
+    Task RunAsync(DatabaseRequestTask<TDbContext> task);
 
     /// <summary>
     /// Executes the specified asynchronous <paramref name="task"/> in an isolated readonly database transaction with automatic error handling.
@@ -149,7 +149,7 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <typeparam name="TResult">The result of the <paramref name="task"/>.</typeparam>
     /// <param name="task">The asynchronous Task to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    Task<TResult> ExecuteReadOnlyAsync<TResult>(ReadOnlyDatabaseRequestTask<TDbContext, TResult> task);
+    Task<TResult> RunReadOnlyAsync<TResult>(ReadOnlyDatabaseRequestTask<TDbContext, TResult> task);
 
     /// <summary>
     /// Executes the specified asynchronous <paramref name="task"/> in an isolated database transaction with automatic error handling.
@@ -157,5 +157,5 @@ public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : 
     /// <typeparam name="TResult">The result of the <paramref name="task"/>.</typeparam>
     /// <param name="task">The asynchronous Task to be executed in the isolated environment.</param>
     /// <exception cref="ApiProxyException">if the <paramref name="task"/> throws an exception.</exception>
-    Task<TResult> ExecuteAsync<TResult>(DatabaseRequestTask<TDbContext, TResult> task);
+    Task<TResult> RunAsync<TResult>(DatabaseRequestTask<TDbContext, TResult> task);
 }
