@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System.Data;
 using Wkg.AspNetCore.Exceptions;
 using Wkg.AspNetCore.Transactions.Actions;
 using Wkg.AspNetCore.Transactions.Continuations;
@@ -7,21 +9,25 @@ using Wkg.AspNetCore.Transactions.Continuations;
 namespace Wkg.AspNetCore.Transactions;
 
 /// <summary>
-/// Represents a transaction scope that can be used to execute database requests in an isolated environment.
-/// A transaction scope may flow through multiple layers of the application and is used to ensure that all database interactions within the scope are executed in a single transaction.
-/// The transaction is automatically committed or rolled back when the scope is disposed.
+/// Represents a transaction that can be used to execute database requests in an isolated environment.
+/// A transaction may flow through multiple layers of the application and is used to ensure that all database interactions within its scope are executed in a single database transaction.
+/// The transaction is automatically committed or rolled back when the instance is disposed.
 /// </summary>
-/// <remarks>
-/// In ASP.NET Core applications, transaction scopes are typically used to group all database interactions that are executed as part of a single HTTP request.
-/// </remarks>
-/// <typeparam name="TDbContext"></typeparam>
-public interface ITransactionScope<TDbContext> : IAsyncDisposable where TDbContext : DbContext
+/// <typeparam name="TDbContext">The type of the database context to be used for the transaction.</typeparam>
+public interface ITransaction<TDbContext> : IAsyncDisposable where TDbContext : DbContext
 {
     /// <summary>
-    /// Represents the state of the transaction scope.
-    /// This state defines to the action that will be taken when the scope is disposed.
+    /// Represents the state of the transaction.
+    /// This state defines to the action that will be taken when the transaction is disposed.
     /// </summary>
-    TransactionResult TransactionState { get; }
+    TransactionState State { get; }
+
+    /// <summary>
+    /// Retrieves the <see cref="System.Data.IsolationLevel"/> of this transaction.
+    /// </summary>
+    IsolationLevel IsolationLevel { get; internal set; }
+
+    internal AsyncServiceScope? SlavedScope { get; set; }
 
     /// <summary>
     /// Executes the specified <paramref name="action"/> in an isolated readonly database transaction with automatic error handling.

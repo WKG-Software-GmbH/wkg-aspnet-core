@@ -5,7 +5,7 @@ using Wkg.AspNetCore.RequestActions;
 namespace Wkg.AspNetCore.ErrorHandling;
 
 /// <summary>
-/// Provides means to execute actions in a guarded scope, intercepting exceptions and handling them according to the underlying implementation.
+/// Provides means to execute actions in a monitored scope, intercepting exceptions and handling them according to the underlying implementation.
 /// </summary>
 /// <remarks>
 /// Common use cases include intercepting exceptions, logging, wrapping, and rethrowing.
@@ -20,50 +20,50 @@ public interface IErrorSentry
     ApiProxyException AfterHandled(Exception e);
 
     /// <summary>
-    /// Executes the specified <paramref name="action"/> with error handling and returns the result.
+    /// Executes the specified <paramref name="action"/>, observes and intercepts any unhandled exceptions, and returns the result.
     /// </summary>
-    /// <param name="action">The action to be executed with error handling.</param>
+    /// <param name="action">The action to be executed in a monitored scope.</param>
     /// <returns>The result of the specified <paramref name="action"/>.</returns>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="action"/>.</exception>
     IActionResult Watch(RequestAction<IActionResult> action);
 
     /// <summary>
-    /// Executes the specified <paramref name="action"/> with error handling.
+    /// Executes the specified <paramref name="action"/> and observes and intercepts any unhandled exceptions.
     /// </summary>
-    /// <param name="action">The action to be executed with error handling.</param>
+    /// <param name="action">The action to be executed in a monitored scope.</param>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="action"/>.</exception>
     void Watch(RequestAction action);
 
     /// <summary>
-    /// Executes the specified <paramref name="action"/> with error handling and returns the result.
+    /// Executes the specified <paramref name="action"/>, observes and intercepts any unhandled exceptions, and returns the result.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="action">The action to be executed with error handling.</param>
+    /// <param name="action">The action to be executed in a monitored scope.</param>
     /// <returns>The result of the specified <paramref name="action"/>.</returns>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="action"/>.</exception>
     TResult Watch<TResult>(RequestAction<TResult> action);
 
     /// <summary>
-    /// Executes the specified <paramref name="task"/> with error handling and returns the result.
+    /// Executes the specified <paramref name="task"/>, observes and intercepts any unhandled exceptions, and returns the result.
     /// </summary>
-    /// <param name="task">The action to be executed with error handling.</param>
+    /// <param name="task">The action to be executed in a monitored scope.</param>
     /// <returns>The asynchronous result of the specified <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="task"/>.</exception>
     Task<IActionResult> WatchAsync(RequestTask<IActionResult> task);
 
     /// <summary>
-    /// Executes the specified <paramref name="task"/> with error handling.
+    /// Executes the specified <paramref name="task"/> and observes and intercepts any unhandled exceptions.
     /// </summary>
-    /// <param name="task">The action to be executed with error handling.</param>
+    /// <param name="task">The action to be executed in a monitored scope.</param>
     /// <returns>The <see cref="Task"/> representing the asynchronous action being performed.</returns>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="task"/>.</exception>
     Task WatchAsync(RequestTask task);
 
     /// <summary>
-    /// Executes the specified <paramref name="task"/> with error handling and returns the result.
+    /// Executes the specified <paramref name="task"/>, observes and intercepts any unhandled exceptions, and returns the result.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="task">The action to be executed with error handling.</param>
+    /// <param name="task">The action to be executed in a monitored scope.</param>
     /// <returns>The asynchronous result of the specified <paramref name="task"/>.</returns>
     /// <exception cref="ApiProxyException"> if an exception occurs during the execution of the specified <paramref name="task"/>.</exception>
     Task<TResult> WatchAsync<TResult>(RequestTask<TResult> task);

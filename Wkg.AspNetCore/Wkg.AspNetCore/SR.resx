@@ -123,4 +123,7 @@
   <data name="ConsistencyViolation_ManualTransactionManagement" xml:space="preserve">
     <value>You are attempting to manually manage transactions on a DbContext instance that is slaved to an ITransactionManager. This is not allowed!</value>
   </data>
+  <data name="InvalidOperation_TransactionAlreadyStarted" xml:space="preserve">
+    <value>Attempted to update transaction properties after the transaction has already started.</value>
+  </data>
 </root>

@@ -7,7 +7,7 @@
 /// Continuations are designed to be OR-combinable using the bitwise OR operator, so higher priority continuations can override lower priority continuations.
 /// </remarks>
 [Flags]
-public enum TransactionResult : uint
+public enum TransactionState : uint
 {
     /// <summary>
     /// Unless otherwise specified, the transaction should be rolled back as no changes are expected to be made, yielding to higher priority continuations as necessary.

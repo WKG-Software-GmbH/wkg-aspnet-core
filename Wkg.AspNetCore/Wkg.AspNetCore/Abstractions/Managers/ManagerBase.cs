@@ -6,7 +6,7 @@ using Wkg.AspNetCore.ErrorHandling;
 namespace Wkg.AspNetCore.Abstractions.Managers;
 
 /// <summary>
-/// Provides a base class for all ASP managers.
+/// Provides a base class for all ASP.NET Core managers.
 /// </summary>
 public abstract class ManagerBase
 {

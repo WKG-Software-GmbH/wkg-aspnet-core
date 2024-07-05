@@ -10,8 +10,11 @@ namespace Wkg.AspNetCore.Abstractions.Services;
 /// <remarks>
 /// Initializes a new instance of the <see cref="DatabaseService{TDbContext}"/> class.
 /// </remarks>
-/// <param name="transactionManager">The DI service that provides transaction management.</param>
-public abstract class DatabaseService<TDbContext>(ITransactionManager transactionManager) : WkgServiceBase(transactionManager.ErrorSentry) where TDbContext : DbContext
+/// <param name="transactionService">The DI service that provides transaction management.</param>
+public abstract class DatabaseService<TDbContext>(ITransactionServiceHandle transactionService) : WkgServiceBase(transactionService.ErrorSentry) where TDbContext : DbContext
 {
-    protected ITransactionManager<TDbContext> Transaction { get; } = transactionManager.GetInstance<TDbContext>();
+    /// <summary>
+    /// Gets the transaction service responsible for managing the database context associated with this context.
+    /// </summary>
+    protected ITransactionService<TDbContext> Transaction { get; } = transactionService.GetInstance<TDbContext>();
 }

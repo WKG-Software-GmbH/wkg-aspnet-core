@@ -3,14 +3,14 @@
 internal class ScopedTransaction : IScopedTransaction
 {
     public ITransactionalContinuation Commit() =>
-        new TransactionalContinuation(TransactionResult.Commit);
+        new TransactionalContinuation(TransactionState.Commit);
 
     public ITransactionalContinuation Rollback() =>
-        new TransactionalContinuation(TransactionResult.Rollback);
+        new TransactionalContinuation(TransactionState.Rollback);
 
     public ITransactionalContinuation<TResult> Commit<TResult>(TResult result) =>
-        new TransactionalContinuation<TResult>(TransactionResult.Commit, result);
+        new TransactionalContinuation<TResult>(TransactionState.Commit, result);
 
     public ITransactionalContinuation<TResult> Rollback<TResult>(TResult result) =>
-        new TransactionalContinuation<TResult>(TransactionResult.Rollback, result);
+        new TransactionalContinuation<TResult>(TransactionState.Rollback, result);
 }

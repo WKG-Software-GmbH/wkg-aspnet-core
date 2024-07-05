@@ -2,5 +2,5 @@
 
 internal readonly record struct TransactionalContinuation
 (
-    TransactionResult NextAction
+    TransactionState NextAction
 ) : ITransactionalContinuation;

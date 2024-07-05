@@ -77,5 +77,14 @@ namespace Wkg.AspNetCore {
                 return ResourceManager.GetString("ConsistencyViolation_ManualTransactionManagement", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempted to update transaction properties after the transaction has already started..
+        /// </summary>
+        internal static string InvalidOperation_TransactionAlreadyStarted {
+            get {
+                return ResourceManager.GetString("InvalidOperation_TransactionAlreadyStarted", resourceCulture);
+            }
+        }
     }
 }

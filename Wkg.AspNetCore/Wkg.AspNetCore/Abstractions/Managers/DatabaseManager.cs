@@ -10,11 +10,12 @@ namespace Wkg.AspNetCore.Abstractions.Managers;
 /// <remarks>
 /// Initializes a new instance of the <see cref="DatabaseManager{TDbContext}"/> class.
 /// </remarks>
-/// <param name="transactionManager">The DI descriptor of the transaction manager.</param>
-public abstract class DatabaseManager<TDbContext>(ITransactionManager transactionManager) : ManagerBase where TDbContext : DbContext
+/// <param name="transactionService">The DI descriptor of the transaction service.</param>
+public abstract class DatabaseManager<TDbContext>(ITransactionServiceHandle transactionService) : ManagerBase where TDbContext : DbContext
 {
+
     /// <summary>
-    /// Gets the transaction manager for the database context.
+    /// Gets the transaction service responsible for managing the database context associated with this context.
     /// </summary>
-    protected ITransactionManager<TDbContext> Transaction { get; } = transactionManager.GetInstance<TDbContext>();
+    protected ITransactionService<TDbContext> Transaction { get; } = transactionService.GetInstance<TDbContext>();
 }

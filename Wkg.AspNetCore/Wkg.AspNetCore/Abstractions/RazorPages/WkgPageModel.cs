@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Diagnostics.CodeAnalysis;
-using Wkg.AspNetCore.Abstractions.Managers;
+using Wkg.AspNetCore.Abstractions.Internals;
 using Wkg.AspNetCore.Abstractions.Managers.Results;
 using Wkg.AspNetCore.ErrorHandling;
 

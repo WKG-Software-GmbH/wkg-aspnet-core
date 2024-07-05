@@ -5,17 +5,26 @@ using Wkg.Logging;
 
 namespace Wkg.AspNetCore.ErrorHandling;
 
+/// <summary>
+/// A default implementation of the <see cref="IErrorSentry"/> interface, logging and rethrowing exceptions using the WKG logging framework.
+/// </summary>
+/// <remarks>
+/// This class is intended to be used as a base class for custom error sentry implementations.
+/// </remarks>
 public class DefaultErrorSentry : IErrorSentry
 {
+    /// <inheritdoc/>
     public virtual IActionResult Watch(RequestAction<IActionResult> action) =>
         Watch<IActionResult>(action);
 
+    /// <inheritdoc/>
     public virtual void Watch(RequestAction action) => Watch<VoidResult>(() =>
     {
         action.Invoke();
         return default;
     });
 
+    /// <inheritdoc/>
     public virtual TResult Watch<TResult>(RequestAction<TResult> action)
     {
         try
@@ -28,15 +37,18 @@ public class DefaultErrorSentry : IErrorSentry
         }
     }
 
+    /// <inheritdoc/>
     public virtual Task<IActionResult> WatchAsync(RequestTask<IActionResult> task) =>
         WatchAsync<IActionResult>(task);
 
+    /// <inheritdoc/>
     public virtual Task WatchAsync(RequestTask task) => WatchAsync<VoidResult>(async () =>
     {
         await task.Invoke();
         return default;
     });
 
+    /// <inheritdoc/>
     public async Task<TResult> WatchAsync<TResult>(RequestTask<TResult> task)
     {
         try
@@ -60,6 +72,7 @@ public class DefaultErrorSentry : IErrorSentry
         // write to all configured loggers
         Log.WriteException(exception, LogLevel.Fatal);
 
+    /// <inheritdoc/>
     public virtual ApiProxyException AfterHandled(Exception e)
     {
         if (e is ApiProxyException apiProxyException)

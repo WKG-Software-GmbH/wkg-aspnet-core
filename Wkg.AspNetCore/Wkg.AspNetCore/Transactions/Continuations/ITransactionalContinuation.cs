@@ -5,5 +5,5 @@
 /// </summary>
 public interface ITransactionalContinuation
 {
-    internal TransactionResult NextAction { get; }
+    internal TransactionState NextAction { get; }
 }

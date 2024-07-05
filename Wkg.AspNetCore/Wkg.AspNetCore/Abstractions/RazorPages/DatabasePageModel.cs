@@ -7,10 +7,14 @@ namespace Wkg.AspNetCore.Abstractions.RazorPages;
 /// Provides a base class for Razor Pages that require database access.
 /// </summary>
 /// <typeparam name="TDbContext">The type of the database context.</typeparam>
-public abstract class DatabasePageModel<TDbContext>(ITransactionManager transactionManager) : WkgPageModel(transactionManager.ErrorSentry) where TDbContext : DbContext
+/// <remarks>
+/// Initializes a new instance of the <see cref="DatabasePageModel{TDbContext}"/> class.
+/// </remarks>
+/// <param name="transactionService">The DI descriptor of the transaction service.</param>
+public abstract class DatabasePageModel<TDbContext>(ITransactionServiceHandle transactionService) : WkgPageModel(transactionService.ErrorSentry) where TDbContext : DbContext
 {
     /// <summary>
-    /// Gets the transaction manager for the database context.
+    /// Gets the transaction service responsible for managing the database context associated with this context.
     /// </summary>
-    protected ITransactionManager<TDbContext> Transaction { get; } = transactionManager.GetInstance<TDbContext>();
+    protected ITransactionService<TDbContext> Transaction { get; } = transactionService.GetInstance<TDbContext>();
 }

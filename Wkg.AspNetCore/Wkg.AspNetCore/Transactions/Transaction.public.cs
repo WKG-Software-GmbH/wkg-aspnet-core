@@ -5,7 +5,7 @@ using Wkg.AspNetCore.Transactions.Continuations;
 
 namespace Wkg.AspNetCore.Transactions;
 
-partial class TransactionScope<TDbContext>
+partial class Transaction<TDbContext>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IActionResult ExecuteReadOnly(ReadOnlyDatabaseRequestAction<TDbContext, IActionResult> action) =>
@@ -19,7 +19,7 @@ partial class TransactionScope<TDbContext>
     public void ExecuteReadOnly(ReadOnlyDatabaseRequestAction<TDbContext> action) => Execute((dbContext, transaction) =>
     {
         action.Invoke(dbContext);
-        return new TransactionalContinuation<VoidResult>(TransactionResult.ReadOnly, default);
+        return new TransactionalContinuation<VoidResult>(TransactionState.ReadOnly, default);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -33,7 +33,7 @@ partial class TransactionScope<TDbContext>
     public TResult ExecuteReadOnly<TResult>(ReadOnlyDatabaseRequestAction<TDbContext, TResult> action) => Execute((dbContext, transaction) =>
     {
         TResult result = action.Invoke(dbContext);
-        return new TransactionalContinuation<TResult>(TransactionResult.ReadOnly, result);
+        return new TransactionalContinuation<TResult>(TransactionState.ReadOnly, result);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -52,7 +52,7 @@ partial class TransactionScope<TDbContext>
     public Task ExecuteReadOnlyAsync(ReadOnlyDatabaseRequestTask<TDbContext> task) => ExecuteAsync(async (dbContext, transaction) =>
     {
         await task.Invoke(dbContext);
-        return new TransactionalContinuation<VoidResult>(TransactionResult.ReadOnly, default);
+        return new TransactionalContinuation<VoidResult>(TransactionState.ReadOnly, default);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -66,7 +66,7 @@ partial class TransactionScope<TDbContext>
     public Task<TResult> ExecuteReadOnlyAsync<TResult>(ReadOnlyDatabaseRequestTask<TDbContext, TResult> task) => ExecuteAsync<TResult>(async (dbContext, transaction) =>
     {
         TResult result = await task.Invoke(dbContext);
-        return new TransactionalContinuation<TResult>(TransactionResult.ReadOnly, result);
+        return new TransactionalContinuation<TResult>(TransactionState.ReadOnly, result);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
