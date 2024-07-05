@@ -28,10 +28,10 @@ public abstract class ManagerController<TManager> : WkgControllerBase, IMvcConte
     }
 
     /// <summary>
-    /// Creates a new manager of the specified type, flowing the current context (e.g. user, request, database transaction) as needed.
+    /// Retrieves a manager instance of the specified type, flowing the current context (e.g. user, request, database transaction) as needed.
     /// </summary>
     /// <typeparam name="TOtherManager">The type of the manager to create.</typeparam>
     /// <returns>An instance of the manager of the specified type.</returns>
-    protected TOtherManager CreateManager<TOtherManager>() where TOtherManager : ManagerBase => 
+    protected TOtherManager GetManager<TOtherManager>() where TOtherManager : ManagerBase => 
         _managerBindings.ActivateManager<TOtherManager>(this);
 }
