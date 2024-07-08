@@ -1,10 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
 using Wkg.AspNetCore.Abstractions.Managers.Results;
+using Wkg.AspNetCore.Configuration.ManagerBindings;
+using Wkg.AspNetCore.ErrorHandling;
 
 namespace Wkg.AspNetCore.Abstractions.Managers;
 
 /// <summary>
-/// Provides a base class for all ASP managers.
+/// Provides a base class for all ASP.NET Core managers.
 /// </summary>
 public abstract class ManagerBase
 {
@@ -12,6 +14,20 @@ public abstract class ManagerBase
     /// Gets the context of the manager.
     /// </summary>
     internal protected IMvcContext Context { get; internal set; } = null!;
+
+    internal IManagerBindings Bindings { get; set; } = null!;
+
+    /// <summary>
+    /// Gets the <see cref="IErrorSentry"/> associated with this context.
+    /// </summary>
+    protected IErrorSentry ErrorSentry => Bindings.ErrorSentry;
+
+    /// <summary>
+    /// Retrieves a manager instance of the specified type, flowing the current context (e.g. user, request, database transaction) as needed.
+    /// </summary>
+    /// <typeparam name="TManager">The type of the manager to create.</typeparam>
+    /// <returns>An instance of the manager of the specified type.</returns>
+    protected TManager GetManager<TManager>() where TManager : ManagerBase => Bindings.ActivateManager<TManager>(Context);
 
     /// <inheritdoc cref="ManagerResult.Success()"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

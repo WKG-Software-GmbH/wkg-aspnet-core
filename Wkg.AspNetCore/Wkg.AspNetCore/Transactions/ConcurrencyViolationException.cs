@@ -1,4 +1,4 @@
-﻿namespace Wkg.AspNetCore.Abstractions.Managers;
+﻿namespace Wkg.AspNetCore.Transactions;
 
 /// <summary>
 /// Represents an exception that is thrown when a concurrency violation is detected.

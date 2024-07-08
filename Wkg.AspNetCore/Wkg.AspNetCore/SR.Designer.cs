@@ -68,5 +68,23 @@ namespace Wkg.AspNetCore {
                 return ResourceManager.GetString("ConcurrencyViolation_AsyncInSyncContext", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are attempting to manually manage transactions on a DbContext instance that is slaved to an ITransactionManager. This is not allowed!.
+        /// </summary>
+        internal static string ConsistencyViolation_ManualTransactionManagement {
+            get {
+                return ResourceManager.GetString("ConsistencyViolation_ManualTransactionManagement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempted to update transaction properties after the transaction has already started..
+        /// </summary>
+        internal static string InvalidOperation_TransactionAlreadyStarted {
+            get {
+                return ResourceManager.GetString("InvalidOperation_TransactionAlreadyStarted", resourceCulture);
+            }
+        }
     }
 }

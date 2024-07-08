@@ -1,7 +1,7 @@
-﻿namespace Wkg.AspNetCore.TransactionManagement;
+﻿namespace Wkg.AspNetCore.Transactions.Continuations;
 
 internal readonly record struct TransactionalContinuation<TResult>
 (
-    TransactionalContinuationType NextAction, 
+    TransactionState NextAction,
     TResult Result
 ) : ITransactionalContinuation<TResult>;

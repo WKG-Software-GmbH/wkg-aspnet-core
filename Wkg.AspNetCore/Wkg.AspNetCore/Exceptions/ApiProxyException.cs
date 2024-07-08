@@ -3,7 +3,7 @@
 namespace Wkg.AspNetCore.Exceptions;
 
 /// <summary>
-/// Represents an <see cref="Exception"/> that is (re-)thrown when an unhandled error was intercepted by an <see cref="ErrorHandlingController"/> instance.
+/// Represents an <see cref="Exception"/> that is (re-)thrown when an unhandled error was intercepted by an <see cref="WkgControllerBase"/> instance.
 /// </summary>
 /// <remarks>
 /// Initializes a new instance of the <see cref="ApiProxyException"/> class.

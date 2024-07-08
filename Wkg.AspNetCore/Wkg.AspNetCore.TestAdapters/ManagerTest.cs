@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Wkg.AspNetCore.Abstractions.Controllers;
-using Wkg.AspNetCore.Abstractions.Managers;
-using Wkg.AspNetCore.Interop;
+﻿using Wkg.AspNetCore.Abstractions.Managers;
 
 namespace Wkg.AspNetCore.TestAdapters;
 
@@ -14,9 +11,9 @@ public abstract class ManagerTest<TManager, TDatabaseLoader> : TransactionAwareT
     where TManager : ManagerBase
     where TDatabaseLoader : IDatabaseLoader
 {
-    /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.RunTestUsingTransactionHook(Action{TComponent})"/>/>
-    protected virtual void UsingManager(Action<TManager> unitTest) => RunTestUsingTransactionHook(unitTest);
+    /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.ActivateAndRunAsync(Action{TComponent})"/>/>
+    protected virtual Task UsingManager(Action<TManager> unitTest) => ActivateAndRunAsync(unitTest);
 
-    /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.RunTestUsingTransactionHookAsync(Func{TComponent, Task})"/>/>
-    protected virtual Task UsingManagerAsync(Func<TManager, Task> unitTestAsync) => RunTestUsingTransactionHookAsync(unitTestAsync);
+    /// <inheritdoc cref="TransactionAwareTest{TComponent, TDatabaseLoader}.ActivateAndRunAsync(Func{TComponent, Task})"/>/>
+    protected virtual Task UsingManagerAsync(Func<TManager, Task> unitTestAsync) => ActivateAndRunAsync(unitTestAsync);
 }

@@ -1,4 +1,4 @@
-﻿using Wkg.AspNetCore.Interop;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Wkg.AspNetCore.TestAdapters.Extensions;
 
 namespace Wkg.AspNetCore.TestAdapters;
@@ -12,20 +12,12 @@ public abstract class TransactionAwareTest<TComponent, TDatabaseLoader> : TestBa
     where TComponent : class
     where TDatabaseLoader : IDatabaseLoader
 {
-    private protected TransactionAwareTest() => Pass();
-
-    private protected override void OnInitialized()
+    /// <inheritdoc/>
+    protected override void OnInitialized()
     {
         base.OnInitialized();
         TDatabaseLoader.InitializeDatabase(ServiceProvider);
     }
-
-    private static IUnitTestTransactionHook? GetTransactionHookOrDefault(TComponent component) => component switch
-    {
-        IUnitTestTransactionHook hook => hook,
-        IUnitTestTransactionHookProxy proxy => proxy.TransactionHookImplementation,
-        _ => null
-    };
 
     /// <summary>
     /// Executes the specified unit test against the component in a transactional context.
@@ -34,22 +26,12 @@ public abstract class TransactionAwareTest<TComponent, TDatabaseLoader> : TestBa
     /// <remarks>
     /// Any transactional context created by the component will be rolled back after the unit test has been executed.
     /// </remarks>
-    private protected virtual void RunTestUsingTransactionHook(Action<TComponent> unitTest)
+    protected virtual async Task ActivateAndRunAsync(Action<TComponent> unitTest)
     {
-        TComponent component = ServiceProvider.Activate<TComponent>();
-        IUnitTestTransactionHook? transactionHook = GetTransactionHookOrDefault(component);
-        if (transactionHook is not null)
-        {
-            transactionHook.ExternalTransactionManagement__UNIT_TEST_HOOK = true;
-        }
-        try
-        {
-            unitTest.Invoke(component);
-        }
-        finally
-        {
-            transactionHook?.RollbackTransaction__UNIT_TEST_HOOK();
-        }
+        IServiceScopeFactory scopeFactory = ServiceProvider.GetRequiredService<IServiceScopeFactory>();
+        await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
+        TComponent component = scope.ServiceProvider.Activate<TComponent>();
+        unitTest.Invoke(component);
     }
 
     /// <summary>
@@ -59,24 +41,11 @@ public abstract class TransactionAwareTest<TComponent, TDatabaseLoader> : TestBa
     /// <remarks>
     /// Any transactional context created by the component will be rolled back after the unit test has been executed.
     /// </remarks>
-    private protected virtual async Task RunTestUsingTransactionHookAsync(Func<TComponent, Task> unitTestAsync)
+    protected virtual async Task ActivateAndRunAsync(Func<TComponent, Task> unitTestAsync)
     {
-        TComponent component = ServiceProvider.Activate<TComponent>();
-        IUnitTestTransactionHook? transactionHook = GetTransactionHookOrDefault(component);
-        if (transactionHook is not null)
-        {
-            transactionHook.ExternalTransactionManagement__UNIT_TEST_HOOK = true;
-        }
-        try
-        {
-            await unitTestAsync.Invoke(component);
-        }
-        finally
-        {
-            if (transactionHook is not null)
-            {
-                await transactionHook.RollbackTransactionAsync__UNIT_TEST_HOOK();
-            }
-        }
+        IServiceScopeFactory scopeFactory = ServiceProvider.GetRequiredService<IServiceScopeFactory>();
+        await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
+        TComponent component = scope.ServiceProvider.Activate<TComponent>();
+        await unitTestAsync.Invoke(component);
     }
 }
