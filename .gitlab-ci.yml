@@ -39,6 +39,12 @@ test-library:
 
 increase-version:
   extends: .increase-version
+  only:
+    - main
+    - master
+    - /^rc-.*$/
+    - /^dev-.*$/ 
+    - /^diag-.*$/ 
 
 deploy-library:
   extends: .deploy-baget
