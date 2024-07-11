@@ -48,13 +48,14 @@ public abstract class WkgControllerBase(IErrorSentry errorSentry) : ControllerBa
     /// <summary>
     /// Handles the specified <see cref="ManagerResult"/> by returning the appropriate error response.
     /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="result">The result to handle.</param>
     /// <param name="includeDetails">Indicates whether the error response should include details, such as the error message.
     /// <para><see langword="WARNING"/>: This parameter should be set to <see langword="true"/> only in development environments.</para></param>
     /// <returns>The appropriate API response.</returns>
     /// <exception cref="Exception">thrown when the result is an internal server error, delegating the respose to the error handling middleware.</exception>
     /// <exception cref="ArgumentException">thrown when the result code is not a valid result code.</exception>
-    protected virtual IActionResult Handle(ManagerResult result, bool includeDetails = false)
+    protected virtual IActionResult Handle<TResult>(ManagerResult<TResult> result, bool includeDetails = false)
     {
         IErrorState details = includeDetails
             ? ErrorState.CreateErrorState(result.ErrorMessage)
@@ -62,7 +63,7 @@ public abstract class WkgControllerBase(IErrorSentry errorSentry) : ControllerBa
 
         return result.StatusCode switch
         {
-            ManagerResultCode.Success => Ok(),
+            ManagerResultCode.Success => Ok(result.GetOrThrow()),
             ManagerResultCode.BadRequest => BadRequest(details),
             ManagerResultCode.Unauthorized => Unauthorized(details),
             ManagerResultCode.Forbidden => Forbid(),

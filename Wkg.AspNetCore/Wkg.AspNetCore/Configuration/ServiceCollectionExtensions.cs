@@ -1,8 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Wkg.AspNetCore.Abstractions.Controllers;
-using Wkg.AspNetCore.Abstractions.RazorPages;
-using Wkg.AspNetCore.Transactions;
 
 namespace Wkg.AspNetCore.Configuration;
 
