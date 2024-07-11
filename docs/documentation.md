@@ -8,6 +8,13 @@
       - [Introducing Manager Classes](#introducing-manager-classes)
       - [Communicating Results with `ManagerResult`](#communicating-results-with-managerresult)
         - [Converting Between Result Types](#converting-between-result-types)
+      - [Consuming Multiple Manager Classes](#consuming-multiple-manager-classes)
+    - [`Authentication` Namespace](#authentication-namespace)
+      - [WKG Claims](#wkg-claims)
+        - [Cookie-based Claims](#cookie-based-claims)
+    - [`ErrorHandling` Namespace](#errorhandling-namespace)
+    - [`Transactions` Namespace](#transactions-namespace)
+    - [`Validation` Namespace](#validation-namespace)
 
 ## Components
 
@@ -219,3 +226,17 @@ public class UserManager(IUserService userService, IRoleService roleService) : M
     }
 }
 ```
+
+#### Consuming Multiple Manager Classes
+
+### `Authentication` Namespace
+
+#### WKG Claims
+
+##### Cookie-based Claims
+
+### `ErrorHandling` Namespace
+
+### `Transactions` Namespace
+
+### `Validation` Namespace
