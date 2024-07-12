@@ -1,4 +1,4 @@
-﻿namespace Wkg.AspNetCore.Authentication;
+﻿namespace Wkg.AspNetCore.Authentication.Jwt;
 
 /// <summary>
 /// Represents an abstract structure that extends the key data of a session key with additional user-defined data.

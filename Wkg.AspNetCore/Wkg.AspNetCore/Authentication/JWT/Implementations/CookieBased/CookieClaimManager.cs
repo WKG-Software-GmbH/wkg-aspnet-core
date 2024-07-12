@@ -1,21 +1,20 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Wkg.AspNetCore.Authentication.Claims;
-using Wkg.AspNetCore.Authentication.Internals;
-using Wkg.AspNetCore.Authentication.Jwt;
+using Wkg.AspNetCore.Authentication.Jwt.Claims;
+using Wkg.AspNetCore.Authentication.Jwt.Internals;
+using Wkg.AspNetCore.Authentication.Jwt.SigningFunctions.Implementations;
 using Wkg.Data.Pooling;
 using Wkg.Logging;
 
-namespace Wkg.AspNetCore.Authentication.CookieBased;
+namespace Wkg.AspNetCore.Authentication.Jwt.Implementations.CookieBased;
 
-internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextAccessor contextAccessor, CookieClaimOptions cookieOptions, SessionKeyStore<TDecryptionKeys> sessions)
+internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextAccessor contextAccessor, CookieClaimOptions cookieOptions, SessionKeyStore<TDecryptionKeys> sessions, IJwtSigningFunction signingFunction)
     : IClaimManager<TIdentityClaim, TDecryptionKeys>
-    where TIdentityClaim : IdentityClaim 
+    where TIdentityClaim : IdentityClaim
     where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
 {
     public IClaimRepository<TIdentityClaim, TDecryptionKeys> CreateRepository(TIdentityClaim identityClaim)
@@ -39,9 +38,9 @@ internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextA
             }
         }
         ClaimValidationOptions options = cookieOptions.ValidationOptions;
-        JwtHeader header = new("HS512");
+        JwtHeader header = new(signingFunction.Name);
         using MemoryStream stream = new();
-        
+
         // write JWT header to stream
         JsonSerializer.Serialize(stream, header);
         long headerLength = stream.Position;
@@ -71,25 +70,13 @@ internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextA
         stream.Write(payloadBase64.AsSpan());
         // retrieve session key
         SessionKey<TDecryptionKeys> sessionKey = sessions.GetOrCreateSession(repository.IdentityClaim.RawValue, repository.DecryptionKeys);
-        // allocate buffer for HMAC key data (server secret + session key)
-        PooledArray<byte> keyBuffer = ArrayPool.Rent<byte>(options.SecretBytes.Length + sessionKey.Size);
-        Span<byte> keyBufferSpan = keyBuffer.AsSpan();
-        // copy server secret and session key into buffer
-        Unsafe.CopyBlock(ref keyBufferSpan[0], in options.SecretBytes[0], (uint)options.SecretBytes.Length);
-        // we can directly write the session key into the correct position in the buffer
-        sessionKey.WriteKey(keyBufferSpan[^sessionKey.Size..]);
         // allocate result buffer for HMAC
-        Span<byte> hmac = stackalloc byte[HMACSHA512.HashSizeInBytes];
-        // don't forget to reset the Stream position to avoid computing the HMAC over 0 bytes
-        stream.Position = 0;
+        Span<byte> signature = stackalloc byte[signingFunction.SignatureLengthInBytes];
         // compute Hash-based Message Authentication Code (HMAC) using server secret and session key
-        int bytesWritten = HMACSHA512.HashData(keyBufferSpan, stream, hmac);
-        Debug.Assert(bytesWritten == HMACSHA512.HashSizeInBytes);
-        // we somewhat want to protect the key data from being exposed in memory, so at least clear these temporary copies of it
-        // the buffer can be reused for the next HMAC computation
-        ArrayPool.Return(keyBuffer, clearArray: true);
+        int bytesWritten = signingFunction.Sign(sessionKey, stream, signature);
+        Debug.Assert(bytesWritten == signingFunction.SignatureLengthInBytes);
         // base64 url encode the HMAC
-        PooledArray<byte> hmacBase64 = Base64UrlEncoder.Base64UrlEncode(hmac);
+        PooledArray<byte> hmacBase64 = Base64UrlEncoder.Base64UrlEncode(signature);
         // convert the stream to a base64 string using another pooled buffer large enough to hold the entire stream
         PooledArray<byte> result = ArrayPool.Rent<byte>((int)stream.Length + hmacBase64.Length + 1);
         Span<byte> resultSpan = result.AsSpan();
@@ -157,7 +144,7 @@ internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextA
             status = ClaimRepositoryStatus.Invalid;
             goto FAIL_INVALID_FORMAT;
         }
-        if (jwtHeader.Algorithm is not "HS512")
+        if (jwtHeader.Algorithm != signingFunction.Name)
         {
             Log.WriteWarning("[SECURITY] Unsupported JWT algorithm. Rejecting invalid claim scope data.");
             status = ClaimRepositoryStatus.Invalid;
@@ -165,14 +152,14 @@ internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextA
         }
         // okay, now validate the HMAC
         // first we need to url-decode the expected HMAC
-        Span<byte> expectedHmacEncoded = bufferSpan[(headerSize + payloadSize + 2)..];
-        if (!Base64UrlEncoder.TryBase64UrlDecodeInPlace(expectedHmacEncoded, out Span<byte> expectedHmac))
+        Span<byte> expectedSignatureBase64 = bufferSpan[(headerSize + payloadSize + 2)..];
+        if (!Base64UrlEncoder.TryBase64UrlDecodeInPlace(expectedSignatureBase64, out Span<byte> expectedSignature))
         {
             Log.WriteWarning("[SECURITY] Failed to decode JWT HMAC. The provided string is not a valid base64 string.");
             status = ClaimRepositoryStatus.Invalid;
             goto FAIL_INVALID_FORMAT;
         }
-        if (expectedHmac.Length != HMACSHA512.HashSizeInBytes)
+        if (expectedSignature.Length != signingFunction.SignatureLengthInBytes)
         {
             Log.WriteWarning("[SECURITY] Invalid JWT HMAC length. Rejecting invalid claim scope data.");
             status = ClaimRepositoryStatus.Invalid;
@@ -213,25 +200,14 @@ internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextA
             status = ClaimRepositoryStatus.Expired;
             goto FAIL_INVALID_PAYLOAD;
         }
-        ClaimValidationOptions options = cookieOptions.ValidationOptions;
-        // now validate the HMAC
-        // rent a buffer large enough to hold the server secret and the session key
-        PooledArray<byte> keyBuffer = ArrayPool.Rent<byte>(options.SecretBytes.Length + sessionKey.Size);
-        // copy the server secret into the buffer
-        Span<byte> keyBufferSpan = keyBuffer.AsSpan();
-        Unsafe.CopyBlock(ref keyBufferSpan[0], in options.SecretBytes[0], (uint)options.SecretBytes.Length);
-        // and write the session key into the correct position in the buffer
-        sessionKey.WriteKey(keyBufferSpan[^sessionKey.Size..]);
         // the computed HMAC will fit on the stack
-        Span<byte> computedHmac = stackalloc byte[HMACSHA512.HashSizeInBytes];
+        Span<byte> signature = stackalloc byte[signingFunction.SignatureLengthInBytes];
         // compute the HMAC using the server secret and the session key
         ReadOnlySpan<byte> headerAndPayload = bufferSpan[..(headerSize + payloadSize + 1)];
-        bytesWritten = HMACSHA512.HashData(keyBufferSpan, headerAndPayload, computedHmac);
-        Debug.Assert(bytesWritten == HMACSHA512.HashSizeInBytes);
-        // try to reduce the risk of leaking the key data to other parts of the application by clearing the buffer
-        ArrayPool.Return(keyBuffer, clearArray: true);
+        bytesWritten = signingFunction.Sign(sessionKey, headerAndPayload, signature);
+        Debug.Assert(bytesWritten == signingFunction.SignatureLengthInBytes);
         // compare the computed HMAC with the one from the base64 string
-        if (!computedHmac.SequenceEqual(expectedHmac))
+        if (!signature.SequenceEqual(expectedSignature))
         {
             Log.WriteError($"[SECURITY] Session key HMAC mismatch. This may indicate an attempt to tamper with the session data for IdentityClaim {data.IdentityClaim.RawValue}.");
             status = ClaimRepositoryStatus.Invalid;

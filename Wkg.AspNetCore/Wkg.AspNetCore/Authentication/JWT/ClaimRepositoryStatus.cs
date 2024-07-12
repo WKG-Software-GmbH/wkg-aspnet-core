@@ -1,6 +1,6 @@
-﻿using Wkg.AspNetCore.Authentication.Claims;
+﻿using Wkg.AspNetCore.Authentication.Jwt.Claims;
 
-namespace Wkg.AspNetCore.Authentication;
+namespace Wkg.AspNetCore.Authentication.Jwt;
 
 /// <summary>
 /// Represents the status of an <see cref="IClaimRepository{TIdentityClaim}"/>.

@@ -2,7 +2,7 @@
 using System.Text;
 using Wkg.Logging;
 
-namespace Wkg.AspNetCore.Authentication.Internals;
+namespace Wkg.AspNetCore.Authentication.Jwt.Internals;
 
 internal static class HexViewer
 {

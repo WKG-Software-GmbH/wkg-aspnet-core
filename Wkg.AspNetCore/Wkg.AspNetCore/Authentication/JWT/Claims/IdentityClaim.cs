@@ -1,4 +1,6 @@
-﻿namespace Wkg.AspNetCore.Authentication.Claims;
+﻿using Wkg.AspNetCore.Authentication.Claims;
+
+namespace Wkg.AspNetCore.Authentication.Jwt.Claims;
 
 /// <summary>
 /// Represents a verifiable claim that is used to identify a user.

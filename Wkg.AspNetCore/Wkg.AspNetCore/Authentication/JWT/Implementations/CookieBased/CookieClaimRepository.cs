@@ -4,10 +4,11 @@ using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Wkg.AspNetCore.Authentication.Claims;
-using Wkg.AspNetCore.Authentication.Internals;
+using Wkg.AspNetCore.Authentication.Jwt.Claims;
+using Wkg.AspNetCore.Authentication.Jwt.Internals;
 using Wkg.Logging;
 
-namespace Wkg.AspNetCore.Authentication.CookieBased;
+namespace Wkg.AspNetCore.Authentication.Jwt.Implementations.CookieBased;
 
 internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRepository<TIdentityClaim, TDecryptionKeys>
     where TIdentityClaim : IdentityClaim
@@ -32,7 +33,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
         ClaimManager = claimManager;
         if (_context.Request.Cookies.TryGetValue(CookieName, out string? cookieValue))
         {
-            if (claimManager.TryDeserialize(cookieValue, out ClaimRepositoryData<TIdentityClaim, TDecryptionKeys>? data, out ClaimRepositoryStatus status) 
+            if (claimManager.TryDeserialize(cookieValue, out ClaimRepositoryData<TIdentityClaim, TDecryptionKeys>? data, out ClaimRepositoryStatus status)
                 || status is ClaimRepositoryStatus.Expired && data is not null)
             {
                 _claims = data.Claims.ToDictionary(c => c.Subject, c => c);

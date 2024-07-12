@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Wkg.AspNetCore.Authentication.Claims;
-using Wkg.AspNetCore.Authentication.CookieBased;
-using Wkg.AspNetCore.Authentication.Internals;
+using Wkg.AspNetCore.Authentication.Jwt.Claims;
+using Wkg.AspNetCore.Authentication.Jwt.Implementations.CookieBased;
+using Wkg.AspNetCore.Authentication.Jwt.Internals;
 
-namespace Wkg.AspNetCore.Authentication;
+namespace Wkg.AspNetCore.Authentication.Jwt;
 
 /// <summary>
 /// Provides extension methods for adding cookie-based claims to the service collection.
@@ -17,12 +17,12 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection to add the services to.</param>
     /// <param name="configureOptions">A delegate that configures the options for cookie-based claims.</param>
     /// <returns>The service collection with the added services.</returns>
-    public static IServiceCollection AddCookieClaims<TIdentityClaim>(this IServiceCollection services, Action<CookieClaimOptionsBuilder> configureOptions)
+    public static IServiceCollection AddJwtClaims<TIdentityClaim>(this IServiceCollection services, Action<CookieClaimOptionsBuilder> configureOptions)
         where TIdentityClaim : IdentityClaim
     {
         CookieClaimOptionsBuilder builder = new();
         configureOptions(builder);
-        CookieClaimOptions options = builder.Build();
+        CookieClaimOptions options = builder.Build(services);
         services.AddHttpContextAccessor();
         services.AddSingleton(options);
         services.AddSingleton(options.ValidationOptions);
@@ -40,13 +40,13 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection to add the services to.</param>
     /// <param name="configureOptions">A delegate that configures the options for cookie-based claims.</param>
     /// <returns>The service collection with the added services.</returns>
-    public static IServiceCollection AddCookieClaims<TIdentityClaim, TDecryptionKeys>(this IServiceCollection services, Action<CookieClaimOptionsBuilder> configureOptions)
+    public static IServiceCollection AddJwtClaims<TIdentityClaim, TDecryptionKeys>(this IServiceCollection services, Action<CookieClaimOptionsBuilder> configureOptions)
         where TIdentityClaim : IdentityClaim
         where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
     {
         CookieClaimOptionsBuilder builder = new();
         configureOptions(builder);
-        CookieClaimOptions options = builder.Build();
+        CookieClaimOptions options = builder.Build(services);
         services.AddHttpContextAccessor();
         services.AddSingleton(options);
         services.AddSingleton(options.ValidationOptions);

@@ -1,4 +1,4 @@
-﻿namespace Wkg.AspNetCore.Authentication.Internals;
+﻿namespace Wkg.AspNetCore.Authentication.Jwt.Internals;
 
 internal class SessionKey<TDecryptionKeys>(TDecryptionKeys decryptionKeys) : ISessionKey<TDecryptionKeys> where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
 {

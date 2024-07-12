@@ -1,16 +1,25 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wkg.AspNetCore.Authentication.Claims;
-using Wkg.AspNetCore.Authentication.CookieBased;
-using Wkg.AspNetCore.Authentication.Internals;
+using Wkg.AspNetCore.Authentication.Jwt;
+using Wkg.AspNetCore.Authentication.Jwt.Claims;
+using Wkg.AspNetCore.Authentication.Jwt.Implementations.CookieBased;
+using Wkg.AspNetCore.Authentication.Jwt.Internals;
+using Wkg.AspNetCore.Authentication.Jwt.SigningFunctions;
+using Wkg.AspNetCore.Authentication.Jwt.SigningFunctions.Implementations;
 
 namespace Wkg.AspNetCore.Authentication.Tests;
 
 [TestClass]
 public class CookieClaimManagerTests
 {
-    private static CookieClaimManager<TestIdentityClaim, NoDecryptionKeys> CreateClaimManager() => 
-        new(new HttpContextAccessor(), new CookieClaimOptions(false, new ClaimValidationOptions("secret-key", TimeSpan.FromHours(12))), new SessionKeyStore<NoDecryptionKeys>(TimeSpan.FromHours(12)));
+    private static CookieClaimManager<TestIdentityClaim, NoDecryptionKeys> CreateClaimManager() => new
+    (
+        new HttpContextAccessor(), 
+        new CookieClaimOptions(false, new ClaimValidationOptions(TimeSpan.FromHours(12))), 
+        new SessionKeyStore<NoDecryptionKeys>(TimeSpan.FromHours(12)),
+        new HmacSha512SigningFunction(new HmacOptions("secret-key"))
+    );
 
     [TestMethod]
     public void TestDeterministic1()

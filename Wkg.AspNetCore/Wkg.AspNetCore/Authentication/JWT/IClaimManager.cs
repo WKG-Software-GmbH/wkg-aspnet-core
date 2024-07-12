@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Wkg.AspNetCore.Authentication.Claims;
-using Wkg.AspNetCore.Authentication.Internals;
+using Wkg.AspNetCore.Authentication.Jwt.Claims;
+using Wkg.AspNetCore.Authentication.Jwt.Internals;
 
-namespace Wkg.AspNetCore.Authentication;
+namespace Wkg.AspNetCore.Authentication.Jwt;
 
 /// <summary>
 /// Represents a central authority for creating and revoking <see cref="IClaimRepository{TIdentityClaim}"/> instances.

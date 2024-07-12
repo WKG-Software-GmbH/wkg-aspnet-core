@@ -1,4 +1,4 @@
-﻿namespace Wkg.AspNetCore.Authentication;
+﻿namespace Wkg.AspNetCore.Authentication.Jwt;
 
 /// <summary>
 /// Represents the options for claim validation.

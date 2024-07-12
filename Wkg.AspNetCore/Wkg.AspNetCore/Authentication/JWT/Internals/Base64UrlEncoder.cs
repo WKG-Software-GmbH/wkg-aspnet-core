@@ -3,7 +3,7 @@ using System.Buffers.Text;
 using System.Diagnostics;
 using Wkg.Data.Pooling;
 
-namespace Wkg.AspNetCore.Authentication.Jwt;
+namespace Wkg.AspNetCore.Authentication.Jwt.Internals;
 
 internal static class Base64UrlEncoder
 {
@@ -89,7 +89,8 @@ internal static class Base64UrlEncoder
         }
         // strip padding characters
         int padding = 0;
-        for (; padding < resultSpan.Length && resultSpan[^(padding + 1)] == (byte)'='; padding++) { }
+        for (; padding < resultSpan.Length && resultSpan[^(padding + 1)] == (byte)'='; padding++)
+        { }
         _ = buffer.TryResizeUnsafe(resultSpan.Length - padding, out buffer);
         return buffer;
     }

@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Wkg.AspNetCore.Authentication.Claims;
+using Wkg.AspNetCore.Authentication.Jwt.Claims;
 
-namespace Wkg.AspNetCore.Authentication;
+namespace Wkg.AspNetCore.Authentication.Jwt;
 
 /// <summary>
 /// Represents a repository of claims that are associated with a specific <typeparamref name="TIdentityClaim"/> instance.

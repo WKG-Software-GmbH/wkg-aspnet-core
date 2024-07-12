@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Wkg.Logging;
 
-namespace Wkg.AspNetCore.Authentication.Internals;
+namespace Wkg.AspNetCore.Authentication.Jwt.Internals;
 
 internal record SessionKeyStore<TDecryptionKeys>(TimeSpan TimeToLive) where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
 {
