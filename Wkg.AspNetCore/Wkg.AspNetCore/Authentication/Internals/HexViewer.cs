@@ -20,6 +20,10 @@ internal static class HexViewer
 
     public static void PrintBuffer(Span<byte> buffer, string? bufferName = null)
     {
+        if (Log.CurrentLogger.MinimumLogLevel > LogLevel.Diagnostic)
+        {
+            return;
+        }
         StringBuilder sb = new();
         sb.AppendLine($"Buffer {bufferName}:");
         const int bytesPerLine = 16;
