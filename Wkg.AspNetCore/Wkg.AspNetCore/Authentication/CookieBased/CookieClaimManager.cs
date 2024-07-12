@@ -150,7 +150,7 @@ internal class CookieClaimManager<TIdentityClaim, TDecryptionKeys>(IHttpContextA
             status = ClaimRepositoryStatus.Invalid;
             goto FAIL_INVALID_FORMAT;
         }
-        JwtHeader? jwtHeader = JsonSerializer.Deserialize<JwtHeader>(encodedHeader);
+        JwtHeader? jwtHeader = JsonSerializer.Deserialize<JwtHeader>(header);
         if (jwtHeader is null)
         {
             Log.WriteWarning("[SECURITY] Invalid JWT header format. Rejecting invalid claim scope data.");
