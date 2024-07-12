@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using Wkg.AspNetCore.Authentication.Claims;
 using Wkg.AspNetCore.Authentication.Internals;
-using Wkg.AspNetCore.Authentication.JWT;
+using Wkg.AspNetCore.Authentication.Jwt;
 using Wkg.Data.Pooling;
 using Wkg.Logging;
 

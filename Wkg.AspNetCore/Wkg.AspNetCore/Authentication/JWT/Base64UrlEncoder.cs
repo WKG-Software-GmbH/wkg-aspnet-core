@@ -3,7 +3,7 @@ using System.Buffers.Text;
 using System.Diagnostics;
 using Wkg.Data.Pooling;
 
-namespace Wkg.AspNetCore.Authentication.JWT;
+namespace Wkg.AspNetCore.Authentication.Jwt;
 
 internal static class Base64UrlEncoder
 {
@@ -22,15 +22,42 @@ internal static class Base64UrlEncoder
                 input[i] = (byte)'/';
             }
         }
-        OperationStatus status = Base64.DecodeFromUtf8InPlace(input, out int base64decodedLength);
+        // remove partial data at the end of the buffer and decode that separately
+        int padding = input.Length % 4;
+        Span<byte> inputWithoutPadding = input[..^padding];
+        OperationStatus status = Base64.DecodeFromUtf8InPlace(inputWithoutPadding, out int base64decodedLength);
         if (status is not OperationStatus.Done)
         {
-            output = default;
-            return false;
+            goto FAILURE;
+        }
+        int paddingDecodedLength = 0;
+        if (padding > 0)
+        {
+            Span<byte> paddingSpan = stackalloc byte[4];
+            for (int i = 0; i < paddingSpan.Length; i++)
+            {
+                if (i < padding)
+                {
+                    paddingSpan[i] = input[^(padding - i)];
+                }
+                else
+                {
+                    paddingSpan[i] = (byte)'=';
+                }
+            }
+            status = Base64.DecodeFromUtf8InPlace(paddingSpan, out paddingDecodedLength);
+            if (status is not OperationStatus.Done)
+            {
+                goto FAILURE;
+            }
+            paddingSpan[..paddingDecodedLength].CopyTo(input[base64decodedLength..]);
         }
         // the decoded length is always smaller than the encoded length, so crop it to the actual length
-        output = input[..base64decodedLength];
+        output = input[..(base64decodedLength + paddingDecodedLength)];
         return true;
+    FAILURE:
+        output = default;
+        return false;
     }
 
     public static PooledArray<byte> Base64UrlEncode(ReadOnlySpan<byte> input)
@@ -60,6 +87,10 @@ internal static class Base64UrlEncoder
                 resultSpan[i] = (byte)'_';
             }
         }
+        // strip padding characters
+        int padding = 0;
+        for (; padding < resultSpan.Length && resultSpan[^(padding + 1)] == (byte)'='; padding++) { }
+        _ = buffer.TryResizeUnsafe(resultSpan.Length - padding, out buffer);
         return buffer;
     }
 }
