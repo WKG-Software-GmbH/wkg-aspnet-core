@@ -68,7 +68,7 @@ public class WeatherController(IManagerBindings managerBindings) : ManagerContro
 // logic related to rendering the page.
 public class WeatherPageModel(IManagerBindings managerBindings) : ManagerPageModel<WeatherManager>(managerBindings)
 {
-    public WeatherForecast WeatherForecast { get; private set; } = nulL!;
+    public WeatherForecast WeatherForecast { get; private set; } = null!;
 
     public async Task<IActionResult> OnGetAsync(string userId)
     {
@@ -140,7 +140,7 @@ public class WeatherController(IManagerBindings managerBindings) : ManagerContro
 // WeatherPage.cshtml.cs
 public class WeatherPageModel(IManagerBindings managerBindings) : ManagerPageModel<WeatherManager>(managerBindings)
 {
-    public WeatherForecast WeatherForecast { get; private set; } = nulL!;
+    public WeatherForecast WeatherForecast { get; private set; } = null!;
 
     public async Task<IActionResult> OnGetAsync(string? userId)
     {
@@ -229,9 +229,60 @@ public class UserManager(IUserService userService, IRoleService roleService) : M
 
 #### Consuming Multiple Manager Classes
 
+In some cases, a business operation may require the coordination of multiple manager classes to complete. This may be especially true for Razor pages, which may need to interact with multiple manager classes to render a page. To facilitate this, the `ManagerPageModel` and `ManagerController` base classes provide a factory method for retrieving manager instances other than the primary manager instance, allowing controllers and pages to consume multiple manager classes as needed.
+
+Similarly, manager classes may interact with each other by retrieving instances of other manager classes from the `IManagerBindings` service, which is registered with the DI container by the `AddManagers` extension method. The `ManagerBindings` service provides a way to activate manager classes and resolve their dependencies, allowing manager classes to interact with each other without creating circular dependencies.
+
+The following example demonstrates how a page model can consume multiple manager classes to render a page:
+
+```csharp
+// DashboardPage.cshtml.cs
+public class DashboardPageModel(IManagerBindings managerBindings) : ManagerPageModel<WeatherManager>(managerBindings)
+{
+    public WeatherForecast WeatherForecast { get; private set; } = null!;
+    public UVIndex UVIndex { get; private set; } = null!;
+    public AirQualityIndex AirQualityIndex { get; private set; } = null!;
+
+    public async Task<IActionResult> OnGetAsync(string? userId)
+    {
+        // interact with the primary manager instance
+        ManagerResult<WeatherForecast> weatherResult = await Manager.GetWeatherForecastAsync(userId);
+        if (!weatherResult.TryGetResult(out WeatherForecast? weatherForecast))
+        {
+            return HandleNonSuccess(weatherResult);
+        }
+        WeatherForecast = weatherForecast;
+        // interact with other manager instances
+        UVIndexManager uvManager = GetManager<UVIndexManager>();
+        ManagerResult<UVIndex> uvResult = await uvManager.GetUVIndexAsync(userId);
+        if (!uvResult.TryGetResult(out UVIndex? uvIndex))
+        {
+            return HandleNonSuccess(uvResult);
+        }
+        UVIndex = uvIndex;
+
+        AirQualityIndexManager airQualityManager = GetManager<AirQualityIndexManager>();
+        ManagerResult<AirQualityIndex> airQualityResult = await airQualityManager.GetAirQualityIndexAsync(userId);
+        if (!airQualityResult.TryGetResult(out AirQualityIndex? airQualityIndex))
+        {
+            return HandleNonSuccess(airQualityResult);
+        }
+        AirQualityIndex = airQualityIndex;
+
+        return Page();
+    }
+}
+```
+
+In this example, the `DashboardPageModel` class consumes multiple manager classes in addition to the primary `WeatherManager` instance to render a dashboard page. The `GetManager<TManager>` method is provided by the `ManagerPageModel` base class to retrieve instances of other manager classes from the `IManagerBindings` service, allowing the page model to interact with multiple manager classes as needed.
+
+> :information_source: **Note:** Subsequent calls to `GetManager<TManager>` will return the same instance of the manager class, ensuring that the same manager instance is used consistently throughout the page model's lifecycle. All manager instances are resolved from the DI container and are subject to the same lifetime management as other scoped services.
+
 ### `Authentication` Namespace
 
 #### WKG Claims
+
+JWT bearer token-based authentication is a convenient way to store user claims in a secure and tamper-proof manner. However, not all technologies or services support bearer tokens, and some may require cookie-based authentication instead. To address this, `Wkg.AspNetCore` introduces the concept of **WKG claims**, which are claims that are stored in a cookie and can be accessed by the application without the need for a bearer token. (TODO)
 
 ##### Cookie-based Claims
 
