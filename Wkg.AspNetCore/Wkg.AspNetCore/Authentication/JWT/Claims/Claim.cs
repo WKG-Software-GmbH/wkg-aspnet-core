@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Wkg.AspNetCore.Authentication.Claims;
+namespace Wkg.AspNetCore.Authentication.Jwt.Claims;
 
 /// <summary>
 /// Represents a verifiable key-value pair, used to claim a subject related to an authenticated entity.

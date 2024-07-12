@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Wkg.AspNetCore.Authentication.Claims;
-using Wkg.AspNetCore.Authentication.Jwt;
 using Wkg.AspNetCore.Authentication.Jwt.Claims;
+using Wkg.AspNetCore.Authentication.Jwt;
 using Wkg.AspNetCore.Authentication.Jwt.Implementations.CookieBased;
 using Wkg.AspNetCore.Authentication.Jwt.Internals;
 using Wkg.AspNetCore.Authentication.Jwt.SigningFunctions;

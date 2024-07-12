@@ -1,4 +1,4 @@
-﻿namespace Wkg.AspNetCore.Authentication.Claims;
+﻿namespace Wkg.AspNetCore.Authentication.Jwt.Claims;
 
 partial class Claim
 {

@@ -1,8 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using Wkg.AspNetCore.Authentication.Jwt.Claims;
 
-namespace Wkg.AspNetCore.Authentication.Claims;
+namespace Wkg.AspNetCore.Authentication.Jwt.Claims;
 
 /// <summary>
 /// Represents a verifiable, strongly-typed claim that is used to identify a user.

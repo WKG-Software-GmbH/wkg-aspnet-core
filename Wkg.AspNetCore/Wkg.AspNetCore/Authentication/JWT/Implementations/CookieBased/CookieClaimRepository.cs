@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Wkg.AspNetCore.Authentication.Claims;
 using Wkg.AspNetCore.Authentication.Jwt.Claims;
 using Wkg.AspNetCore.Authentication.Jwt.Internals;
 using Wkg.Logging;

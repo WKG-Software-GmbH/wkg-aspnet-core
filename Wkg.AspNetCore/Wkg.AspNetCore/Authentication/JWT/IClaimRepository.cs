@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Wkg.AspNetCore.Authentication.Claims;
 using Wkg.AspNetCore.Authentication.Jwt.Claims;
 
 namespace Wkg.AspNetCore.Authentication.Jwt;

@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
-using Wkg.AspNetCore.Authentication.Claims;
 using Wkg.AspNetCore.Authentication.Jwt.Claims;
 using Wkg.AspNetCore.Authentication.Jwt.Internals;
 using Wkg.AspNetCore.Authentication.Jwt.SigningFunctions.Implementations;
