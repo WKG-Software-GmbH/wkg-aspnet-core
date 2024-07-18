@@ -12,7 +12,10 @@
     - [`ErrorHandling` Namespace](#errorhandling-namespace)
     - [`Transactions` Namespace](#transactions-namespace)
       - [Configuration](#configuration)
-      - [Consuming Transactions](#consuming-transactions)
+      - [Using Transactions](#using-transactions)
+      - [Consuming `ITransactionService` Directly](#consuming-itransactionservice-directly)
+      - [Creating Custom Transaction Scopes](#creating-custom-transaction-scopes)
+    - [`Validation` Namespace](#validation-namespace)
 
 ## Components
 
@@ -317,7 +320,7 @@ builder.Services.AddTransactionManagement<WeatherDbContext>(options => options
     .UseIsolationLevel(IsolationLevel.ReadCommitted));
 ```
 
-#### Consuming Transactions
+#### Using Transactions
 
 In order to consume transactions, `Wkg.AspNetCore` provides additional abstractions and implementations for manager classes and services. The `DatabaseManager<TDbContext>` class serves as a convenient base class for manager classes that interact with a database context, allowing them to automatically participate in the transaction scope created for the current HTTP request. Similar base classes are provided for controllers and Razor pages.
 
@@ -355,7 +358,8 @@ The `UpdateLocationAsync` method uses the `RunAsync` method of the default reque
 
 The `GetLocationAsync` method uses the `RunReadOnlyAsync` method of the transaction instance to operate in a read-only context, where no changes are expected to be made to the database, preferring to roll back the transaction if necessary, but allowing higher-priority read/write operations to override this behavior.
 
-> :warning: **Caution**: The `RunReadOnlyAsync` method only specifies that the current lambda expression does not require a defined outcome for the transaction, as it is intended to be read-only. However, no guarantees are made about the final outcome of the transaction, as higher-priority read/write operations may still commit the transaction. As such, read-only operations should not rely on the transaction being rolled back, but should instead focus on returning the desired result. Therefore common sense is recommended when using this method, as performing write operations in a read-only context may lead to unexpected results, based on side effects from other operations on the same transaction.
+> :warning: **Caution**
+> The `RunReadOnlyAsync` method only specifies that the current lambda expression does not require a defined outcome for the transaction, as it is intended to be read-only. However, no guarantees are made about the final outcome of the transaction, as higher-priority read/write operations may still commit the transaction. As such, read-only operations should not rely on the transaction being rolled back, but should instead focus on returning the desired result. Therefore common sense is recommended when using this method, as performing write operations in a read-only context may lead to unexpected results, based on side effects from other operations on the same transaction.
 
 Once the transaction scope is disposed, the transaction's outcome is determined by the deferred transaction states returned by all lambda expressions executed within the scope. The transaction is then committed or rolled back based on the aggregate transaction state. This aggregate `TransactionState`, exposed through the `State` property of an `ITransaction<TDbContext>` instance, can consist of one or multiple of the following flags, where higher-priority flags override lower-priority flags. Every deferred transaction state corresponds to one of these flags:
 
@@ -368,3 +372,58 @@ Once the transaction scope is disposed, the transaction's outcome is determined 
 | 8 | `Finalized` | The underlying transaction was executed against the database with the specified final flags and cannot be further modified. |
 
 > :bulb: **Tip**: Due to the deferred nature of transaction states, recursive calls to `RunAsync` or `RunReadOnlyAsync` are supported, allowing for nested transaction scopes. As always, the final outcome of the transaction is determined by the highest-priority deferred transaction state returned by all lambda expressions executed within the scope.
+
+#### Consuming `ITransactionService` Directly
+
+While the provided database manager, controller, and page base classes usually suffice for most scenarios, there may be cases where transactions need to be consumed directly in services or other classes. In such cases, the `ITransactionService<TDbContext>` interface can also be directly injected into theses classes, allowing them to create and manage transactions as needed.
+
+```csharp
+// WeatherService.cs
+public class WeatherService(ITransactionService<WeatherDbContext> transaction)
+{
+    public Task<WeatherForecast> GetWeatherForecastAsync(string location) => transaction.Scoped.RunReadOnlyAsync(async dbContext =>
+    {
+        return await dbContext.WeatherForecasts.FirstOrDefaultAsync(f => f.Location == location);
+    });
+}
+```
+
+#### Creating Custom Transaction Scopes
+
+In some cases, it may be necessary to create custom transaction scopes that can be manually managed. The `ITransactionService` interface provides this functionality through the `BeginTransaction` method, which creates a new database context and transaction scope that can be used independently of the shared transaction scope created for the current HTTP request. This allows for more fine-grained control over transaction lifetimes and scopes, as well as for the creation of parallel transactions. This can be useful in scenarios where multiple transactions need to be executed concurrently, where transactions need to be managed outside of the context of a single HTTP request, or where transactions need to be explicitly committed or rolled back independently of the shared transaction scope.
+    
+```csharp
+// ErrorLoggingService.cs
+public class ErrorLoggingService(ITransactionServiceHandle transactionSeviceHandle) : DatabaseService<WeatherDbContext>(transactionSeviceHandle)
+{
+    public async Task LogErrorAsync(string message)
+    {
+        // create a new transaction scope for logging the error and commit it independently of the primary transaction scope
+        await using ITransaction<WeatherDbContext> manualTransaction = Transaction.BeginTransaction();
+        await transaction.RunAsync(async (dbContext, transaction) => 
+        {
+            await dbContext.Errors.AddAsync(new Error { Message = message });
+            await dbContext.SaveChangesAsync();
+            return transaction.Commit();
+        });
+    }
+}
+```
+
+In this example, the `ErrorLoggingService` class uses the `BeginTransaction` method of the `ITransactionService` interface to create a new transaction scope for logging errors. This allows the service to manage the transaction independently of the shared transaction scope created for the current HTTP request, ensuring that the error is logged even if the primary transaction scope is rolled back. The `RunAsync` method is then used to execute the logging operation within the new transaction scope, committing the transaction once the operation is complete.
+
+> :warning: **Caution**
+> Ensure that custom transaction scopes are always properly disposed to prevent resource leaks and to ensure that the transaction is actually completed against the database. Failing to dispose a transaction scope may result in the transaction being rolled back regardless of the desired outcome.
+
+> :warning: **Caution** 
+> In most cases, it is recommended to use the shared transaction scope created for the current HTTP request to ensure consistency and integrity across all database operations. Custom transaction scopes should only be used when absolutely necessary, as they reqire the creation of a new dependency injection scope.
+
+### `Validation` Namespace
+
+The `Validation` namespace provides additional data validation attributes based on the `Wkg.Data.Validation` framework, providing more refined validation than the built-in data annotations. These attributes can be used to validate input data in ASP\.NET Core applications, ensuring that only valid data is accepted by the application.
+
+| Attribute | Description |
+| --- | --- |
+| `ValidEmailAddressAttribute` | Specifies that a data field value must be a valid email address conforming to the email address format specified in RFC 5322. |
+| `ValidPhoneNumberAttribute` | Specifies that a data field value must be a valid phone number. |
+| `ValidUrlAttribute` | Specifies that a data field value must be a valid HTTP, HTTPS, or FTP URL as defined by RFC 3986. |
