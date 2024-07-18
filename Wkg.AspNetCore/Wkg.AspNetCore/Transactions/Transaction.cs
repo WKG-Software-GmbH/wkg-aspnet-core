@@ -69,21 +69,21 @@ internal partial class Transaction<TDbContext>(TDbContext dbContext, IErrorSentr
         // (enables recursion and prevents double error handling)
         if (_isGuarded)
         {
-            ITransactionalContinuation<TResult> result = action.Invoke(DbContext, _scopedTransactionInstance);
-            _continuationType |= result.NextAction;
+            IDeferredTransactionState<TResult> result = action.Invoke(DbContext, _scopedTransactionInstance);
+            _continuationType |= result.NextState;
             return result.Result;
         }
 
         try
         {
             _isGuarded = true;
-            ITransactionalContinuation<TResult> result = action.Invoke(DbContext, _scopedTransactionInstance);
-            _continuationType |= result.NextAction;
+            IDeferredTransactionState<TResult> result = action.Invoke(DbContext, _scopedTransactionInstance);
+            _continuationType |= result.NextState;
             return result.Result;
         }
         catch (Exception e)
         {
-            _continuationType |= TransactionState.ExceptionalRollback;
+            _continuationType |= TransactionState.Exception;
             throw errorSentry.AfterHandled(e);
         }
         finally
@@ -110,21 +110,21 @@ internal partial class Transaction<TDbContext>(TDbContext dbContext, IErrorSentr
         // (enables recursion and prevents double error handling)
         if (_isGuarded)
         {
-            ITransactionalContinuation<TResult> result = await task.Invoke(DbContext, _scopedTransactionInstance);
-            _continuationType |= result.NextAction;
+            IDeferredTransactionState<TResult> result = await task.Invoke(DbContext, _scopedTransactionInstance);
+            _continuationType |= result.NextState;
             return result.Result;
         }
 
         try
         {
             _isGuarded = true;
-            ITransactionalContinuation<TResult> result = await task.Invoke(DbContext, _scopedTransactionInstance);
-            _continuationType |= result.NextAction;
+            IDeferredTransactionState<TResult> result = await task.Invoke(DbContext, _scopedTransactionInstance);
+            _continuationType |= result.NextState;
             return result.Result;
         }
         catch (Exception e)
         {
-            _continuationType |= TransactionState.ExceptionalRollback;
+            _continuationType |= TransactionState.Exception;
             throw errorSentry.AfterHandled(e);
         }
         finally

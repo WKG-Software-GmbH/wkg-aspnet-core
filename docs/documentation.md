@@ -1,6 +1,6 @@
 # `Wkg.AspNetCore` Documentation
 
-`Wkg.AspNetCore` is a company-internal library providing reusable components for the development of ASP .NET Core applications at WKG.
+`Wkg.AspNetCore` is a company-internal library providing reusable components for the development of ASP\.NET Core applications at WKG.
 
 - [`Wkg.AspNetCore` Documentation](#wkgaspnetcore-documentation)
   - [Components](#components)
@@ -9,18 +9,16 @@
       - [Communicating Results with `ManagerResult`](#communicating-results-with-managerresult)
         - [Converting Between Result Types](#converting-between-result-types)
       - [Consuming Multiple Manager Classes](#consuming-multiple-manager-classes)
-    - [`Authentication` Namespace](#authentication-namespace)
-      - [WKG Claims](#wkg-claims)
-        - [Cookie-based Claims](#cookie-based-claims)
     - [`ErrorHandling` Namespace](#errorhandling-namespace)
     - [`Transactions` Namespace](#transactions-namespace)
-    - [`Validation` Namespace](#validation-namespace)
+      - [Configuration](#configuration)
+      - [Consuming Transactions](#consuming-transactions)
 
 ## Components
 
 ### `Abstractions` Namespace
 
-A core part of the `Wkg.AspNetCore` library is the `Abstractions` namespace, which provides new abstractions over existing ASP .NET Core components. These abstractions are designed to extend and unify the existing ASP .NET Core components, such as API controllers, Razor pages, and services.
+A core part of the `Wkg.AspNetCore` library is the `Abstractions` namespace, which provides new abstractions over existing ASP\.NET Core components. These abstractions are designed to extend and unify the existing ASP\.NET Core components, such as API controllers, Razor pages, and services.
 
 #### Introducing Manager Classes
 
@@ -278,16 +276,95 @@ In this example, the `DashboardPageModel` class consumes multiple manager classe
 
 > :information_source: **Note:** Subsequent calls to `GetManager<TManager>` will return the same instance of the manager class, ensuring that the same manager instance is used consistently throughout the page model's lifecycle. All manager instances are resolved from the DI container and are subject to the same lifetime management as other scoped services.
 
-### `Authentication` Namespace
-
-#### WKG Claims
-
-JWT bearer token-based authentication is a convenient way to store user claims in a secure and tamper-proof manner. However, not all technologies or services support bearer tokens, and some may require cookie-based authentication instead. To address this, `Wkg.AspNetCore` introduces the concept of **WKG claims**, which are claims that are stored in a cookie and can be accessed by the application without the need for a bearer token. (TODO)
-
-##### Cookie-based Claims
-
 ### `ErrorHandling` Namespace
+
+The `ErrorHandling` namespace provides the `IErrorSentry` interface which can be used to log exceptions and errors in a consistent manner. The `ErrorSentry` class implements this interface and provides a default implementation for logging errors to configured `Wkg` logging providers.
+
+```csharp
+// Program.cs
+// configure the error handling services
+builder.Services.AddErrorHandling();
+
+// WeatherManager.cs
+public class WeatherManager(IWeatherService weatherService, IUserService userService, IConversionService converter) : ManagerBase
+{
+    public Task<ManagerResult<WeatherForecastEntry[]>> GetWeatherForecastEntriesAsync(string? userId) => ErrorSentry.WatchAsync(async () =>
+    {
+        ManagerResult<WeatherForecast> result = await GetWeatherForecastAsync(userId);
+        if (!result.TryGetResult(out WeatherForecast? weatherForecast))
+        {
+            // preserve the status code and message of the original result, but re-bind the generic type
+            return result.FailureAs<WeatherForecastEntry[]>();
+        }
+        return Success(weatherForecast.Entries);
+    });
+}
+```
+
+In this example, the `GetWeatherForecastEntriesAsync` method uses the `ErrorSentry.WatchAsync` method to intercept any exceptions that occur during the execution of the method. The default implementation of `ErrorSentry` logs any exceptions to the configured logging providers, allowing developers to track and diagnose errors that occur during the execution of their applications.
 
 ### `Transactions` Namespace
 
-### `Validation` Namespace
+`Wkg.AspNetCore.Transactions` provides a set of abstractions and implementations for managing database transactions in ASP\.NET Core applications, alleviating the need to manually manage transaction scopes. Transactions are automatically created and managed on a per-request basis, ensuring that all database operations within a single HTTP request are executed within the same transaction scope, flowing across all manager classes and services.
+
+#### Configuration
+
+The `Wkg.AspNetCore.Transactions` namespace provides the `AddTransactionManagement<TDbContext>` extension method, which configures the necessary services to enable transaction management for the specified `DbContext` type.
+
+```csharp
+// Program.cs
+builder.Services.AddTransactionManagement<WeatherDbContext>(options => options
+    .UseIsolationLevel(IsolationLevel.ReadCommitted));
+```
+
+#### Consuming Transactions
+
+In order to consume transactions, `Wkg.AspNetCore` provides additional abstractions and implementations for manager classes and services. The `DatabaseManager<TDbContext>` class serves as a convenient base class for manager classes that interact with a database context, allowing them to automatically participate in the transaction scope created for the current HTTP request. Similar base classes are provided for controllers and Razor pages.
+
+```csharp
+// UserPreferenceManager.cs
+public class UserPreferenceManager(ITransactionServiceHandle transactionService, IUserService userService) : DatabaseManager<WeatherDbContext>
+{
+    public Task<ManagerResult> UpdateLocationAsync(string userId, Location newLocation) => Transaction.Scoped.RunAsync(async (dbContext, transaction) =>
+    {
+        User? user = await userService.GetUserByIdAsync(userId);
+        if (user is null)
+        {
+            return transaction.Rollback(NotFound("User not found."));
+        }
+        user.Location = newLocation;
+        await dbContext.SaveChangesAsync();
+        return transaction.Commit(Success());
+    });
+
+    public Task<ManagerResult<Location>> GetLocationAsync(string userId) => Transaction.Scoped.RunReadOnlyAsync(async dbContext =>
+    {
+        User? user = await userService.GetUserByIdAsync(userId);
+        if (user is null)
+        {
+            return NotFound("User not found.");
+        }
+        return Success(user.Location);
+    });
+}
+```
+
+In this example, the `UserPreferenceManager` class inherits from `DatabaseManager<WeatherDbContext>` for convenient access to the transaction scope and database context. Note how the database context is not consumed directly, but is instead provided through an `ITransactionService<WeatherDbContext>` instance, exposed by the `Transaction` property of the `DatabaseManager` base class. This indirection prevents misuse of the database context and ensures that all database operations are executed within the same transaction scope.
+
+The `UpdateLocationAsync` method uses the `RunAsync` method of the default request-scoped `ITransaction<WeatherDbContext>` instance, exposed through the `Scoped` property, to lazily create a new transaction on the underlying database context, if one does not already exist. An `IScopedTransaction` instance is subsequently created, representing the scope in which the lambda expression is executed. Every lambda running in a scoped transaction is expected to return an `IDeferredTransactionState`, which is used to control the transaction's outcome. In read/write scenarios, these outcomes must be explicitly defined by returning either a `Commit` or `Rollback` result, which can be created from the `IScopedTransaction` instance. As `ITransaction<TDbContext>` instances may outlive the scope of a single lambda expression, deferred transaction states are used to control the transaction's outcome. As such, the `Commit` and `Rollback` results from the example above are not immediately applied to the transaction, but are instead deferred until the transaction scope is disposed. This allows subsequent operations on the same transaction to influence and override the transaction's outcome, in accordance with the priorities of the returned deferred transaction states.
+
+The `GetLocationAsync` method uses the `RunReadOnlyAsync` method of the transaction instance to operate in a read-only context, where no changes are expected to be made to the database, preferring to roll back the transaction if necessary, but allowing higher-priority read/write operations to override this behavior.
+
+> :warning: **Caution**: The `RunReadOnlyAsync` method only specifies that the current lambda expression does not require a defined outcome for the transaction, as it is intended to be read-only. However, no guarantees are made about the final outcome of the transaction, as higher-priority read/write operations may still commit the transaction. As such, read-only operations should not rely on the transaction being rolled back, but should instead focus on returning the desired result. Therefore common sense is recommended when using this method, as performing write operations in a read-only context may lead to unexpected results, based on side effects from other operations on the same transaction.
+
+Once the transaction scope is disposed, the transaction's outcome is determined by the deferred transaction states returned by all lambda expressions executed within the scope. The transaction is then committed or rolled back based on the aggregate transaction state. This aggregate `TransactionState`, exposed through the `State` property of an `ITransaction<TDbContext>` instance, can consist of one or multiple of the following flags, where higher-priority flags override lower-priority flags. Every deferred transaction state corresponds to one of these flags:
+
+| Flag Value | Name | Description |
+| --- | --- | --- |
+| 0 | `ReadOnly` | Unless otherwise specified, the transaction should be rolled back as no changes are expected to be made, yielding to higher priority states as necessary. As such, read-only operations may result in a commit if a different lambda expression requests it. When combined with other deferred transaction states, this flag has no effect on the final outcome. |
+| 1 | `Commit` | The transaction should be committed, yielding to higher priority rollbacks as necessary. |
+| 2 | `Rollback` | The transaction should be rolled back, overriding any requests to commit the transaction. This is the highest priority flag that can be set by user code. |
+| 6 | `Exception` | Implies `Rollback`. An unhandled exception occurred in user code during the transaction. The transaction will be rolled back, regardless of states specified by user code. |
+| 8 | `Finalized` | The underlying transaction was executed against the database with the specified final flags and cannot be further modified. |
+
+> :bulb: **Tip**: Due to the deferred nature of transaction states, recursive calls to `RunAsync` or `RunReadOnlyAsync` are supported, allowing for nested transaction scopes. As always, the final outcome of the transaction is determined by the highest-priority deferred transaction state returned by all lambda expressions executed within the scope.
