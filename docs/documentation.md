@@ -3,7 +3,7 @@
 `Wkg.AspNetCore` is a company-internal library providing reusable components for the development of ASP\.NET Core applications at WKG.
 
 - [`Wkg.AspNetCore` Documentation](#wkgaspnetcore-documentation)
-  - [Components](#components)
+  - [`Wkg.AspNetCore`](#wkgaspnetcore)
     - [`Abstractions` Namespace](#abstractions-namespace)
       - [Introducing Manager Classes](#introducing-manager-classes)
       - [Communicating Results with `ManagerResult`](#communicating-results-with-managerresult)
@@ -16,8 +16,16 @@
       - [Consuming `ITransactionService` Directly](#consuming-itransactionservice-directly)
       - [Creating Custom Transaction Scopes](#creating-custom-transaction-scopes)
     - [`Validation` Namespace](#validation-namespace)
+  - [`Wkg.AspNetCore.TestAdapters`](#wkgaspnetcoretestadapters)
+    - [Setup](#setup)
+    - [Writing Tests](#writing-tests)
+      - [Testing Simple Classes](#testing-simple-classes)
+      - [Testing Components Using DI](#testing-components-using-di)
+      - [Testing Database Access](#testing-database-access)
+        - [Database Loaders](#database-loaders)
+        - [Using the DbContext Directly in Tests](#using-the-dbcontext-directly-in-tests)
 
-## Components
+## `Wkg.AspNetCore`
 
 ### `Abstractions` Namespace
 
@@ -308,7 +316,7 @@ In this example, the `GetWeatherForecastEntriesAsync` method uses the `ErrorSent
 
 ### `Transactions` Namespace
 
-`Wkg.AspNetCore.Transactions` provides a set of abstractions and implementations for managing database transactions in ASP\.NET Core applications, alleviating the need to manually manage transaction scopes. Transactions are automatically created and managed on a per-request basis, ensuring that all database operations within a single HTTP request are executed within the same transaction scope, flowing across all manager classes and services.
+`Wkg.AspNetCore.Transactions` provides a set of abstractions and implementations for managing database transactions in ASP\.NET Core applications, alleviating the need to manually manage transaction scopes. Transactions are automatically created and managed on a per-request basis, ensuring that all database operations within a single HTTP request are executed within the same transaction scope, flowing across all manager classes and services. All database transactions managed by the `Wkg.AspNetCore.Transactions` framework support mocking and testing, allowing for easy unit and integration testing of database operations without the need to clutter your components with conditional logic to disable transactions during testing.
 
 #### Configuration
 
@@ -420,10 +428,246 @@ In this example, the `ErrorLoggingService` class uses the `BeginTransaction` met
 
 ### `Validation` Namespace
 
-The `Validation` namespace provides additional data validation attributes based on the `Wkg.Data.Validation` framework, providing more refined validation than the built-in data annotations. These attributes can be used to validate input data in ASP\.NET Core applications, ensuring that only valid data is accepted by the application.
+The `Validation` namespace provides additional data validation attributes based on the [`Wkg.Data.Validation`](https://git.wkg.lan/WKG/components/wkg-base/-/blob/main/docs/documentation.md#wkgdatavalidation-namespace) framework, providing more refined validation than the built-in data annotations. These attributes can be used to validate input data in ASP\.NET Core applications, ensuring that only valid data is accepted by the application.
 
 | Attribute | Description |
 | --- | --- |
 | `ValidEmailAddressAttribute` | Specifies that a data field value must be a valid email address conforming to the email address format specified in RFC 5322. |
 | `ValidPhoneNumberAttribute` | Specifies that a data field value must be a valid phone number. |
 | `ValidUrlAttribute` | Specifies that a data field value must be a valid HTTP, HTTPS, or FTP URL as defined by RFC 3986. |
+
+## `Wkg.AspNetCore.TestAdapters`
+
+The `Wkg.AspNetCore.TestAdapters` library provides a set of utilities and abstractions for testing ASP\.NET Core applications, allowing developers to easily write unit and integration tests for their applications. The library integrates with the `Wkg.AspNetCore` library to provide additional testing capabilities, such as mocking database transactions and providing DI facilities for testing manager classes and services.
+
+> :warning: **Caution**
+> The `Wkg.AspNetCore.TestAdapters` library has an implicit runtime dependency on the `Wkg.AspNetCore` library and should be used in conjunction with it. Ensure to reference the identical versions of both libraries to prevent compatibility issues.
+
+### Setup
+
+To ensure that your project integrates with unit testing easily and to test under realistic conditions, identical dependency injection configurations should be for both the main application and the test project, only mocking services as needed. To reuse the same dependency injection configuration, it is recommended to move the DI configuration of your ASP\.NET Core application to a dedicated `Startup` class, implementing the `IStartup` interface, which can be used by both the main application and the test project.
+
+```csharp
+// Program.cs
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+// configure ASPNETCORE_ENVIRONMENT fallbacks and WKG logging
+...
+// invoke startup configuration
+builder.BuildUsing<Startup>().Run();
+
+// Startup.cs
+public class Startup : IStartupScript
+{
+    public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    {
+        // configure dependency injection services
+    }
+
+    public static void Configure(WebApplication app)
+    {
+        // configure middleware
+    }
+}
+```
+
+When using DI in your test project, you can reuse the same `Startup` class to configure the DI container for your tests. This ensures that the same services are registered in both the main application and the test project, allowing you to test your application under realistic conditions.
+
+```csharp
+// WeatherTestInitializer.cs
+public class WeatherTestInitializer : IDITestInitializer
+{
+    public static void Configure(IServiceCollection services)
+    {
+        // run in unit test environment
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "unit-test");
+        // re-use the same dependency injection configuration as the main application
+        services.ConfigureUsing<Startup>();
+        // override services as needed
+        services.AddSingleton<IMyService, MockMyService>();
+    }
+
+    public static void Initialize(IServiceProvider serviceProvider)
+    {
+        // initialize services as needed, such as loading mock data
+    }
+}
+```
+
+In this example, the `WeatherTestInitializer` class configures the DI container for the test project by reusing the same `Startup` class used by the main application. The `Configure` method configures the DI container by invoking the `ConfigureServices` method of the `Startup` class, ensuring that the same services are registered in both the main application and the test project, subsequently mocking database transactions for the `WeatherDbContext`. The `Initialize` method initializes any services needed for the tests, such as loading test data into the database.
+
+### Writing Tests
+
+All test classes should inherit from the `TestBase` class provided by the `Wkg.AspNetCore.TestAdapters` library, which initializes internal utilities required for testing and verifies that the library versions are compatible. 
+
+Depending of the components being tested, additional base classes are provided.
+
+#### Testing Simple Classes
+
+For testing simple classes that do not require DI or database transactions, the `TestBase` class is sufficient.
+
+Write tests as usual, using the `TestBase` class as the base class for your test classes:
+
+```csharp
+// MySimpleClassTests.cs
+[TestClass]
+public class MySimpleClassTests : TestBase
+{
+    [TestMethod]
+    public void TestMethod()
+    {
+        // arrange
+        MySimpleClass mySimpleClass = new MySimpleClass();
+        // act
+        mySimpleClass.DoSomething();
+        // assert
+        Assert.True(mySimpleClass.SomethingHappened);
+    }
+}
+```
+
+#### Testing Components Using DI
+
+For testing components that require DI, such as manager classes, controllers, or other DI services, the `ComponentTest<TComponent, TInitializer>` class should be used. This class provides additional utilities for instantiating the component under test and managing the DI container. The `TComponent` type parameter specifies the type of the component being tested, while the `TInitializer` type parameter specifies the `IDITestInitializer` implementation to use for configuring the DI container, as detailed in the [Setup](#setup) section.
+
+The following example demonstrates how to write a test for a manager class using the `ComponentTest<TComponent, TInitializer>` class:
+
+```csharp
+// MySerializationService.cs
+public class MySerializationService(ILogger<MySerializationService> logger)
+{
+    public string Serialize(object obj)
+    {
+        logger.LogInformation("Serializing object: {0}", obj);
+        return JsonSerializer.Serialize(obj);
+    }
+}
+
+// MySerializationServiceTests.cs
+[TestClass]
+public class MySerializationServiceTests : ComponentTest<MySerializationService, WeatherTestInitializer>
+{
+    [TestMethod]
+    public Task TestSerialize() => UsingComponentAsync(myService =>
+    {
+        // arrange
+        object obj = new { Name = "John Doe", Age = 42 };
+        // act
+        string json = myService.Serialize(obj);
+        // assert
+        Assert.AreEqual("{\"Name\":\"John Doe\",\"Age\":42}", json);
+    });
+}
+```
+
+In this example, the `MySerializationServiceTests` class uses the `UsingComponentAsync` method provided by the `ComponentTest<TComponent, TInitializer>` class to instantiate the `MySerializationService` class with all its dependencies resolved through an automatically configured DI container scoped to the test method. The test method then arranges the input data, calls the method under test, and asserts the expected outcome.
+
+#### Testing Database Access
+
+When writing tests that interact with a database, such as integration tests for manager classes or services that use database transactions, it is important to ensure that the database is properly initialized with test data and that any changes made during the test are rolled back to prevent side effects on other tests. The `DatabaseTest<TDbContext, TInitializer>` class provides utilities for initializing the database with test data and rolling back changes made during the test.
+
+`Wkg.AspNetCore.TestAdapters` ensures this by providing two extension methods that can be used during DI configuration in the test project.
+
+```csharp
+// WeatherTestInitializer.cs
+public class WeatherTestInitializer : IDITestInitializer
+{
+    public static void Configure(IServiceCollection services)
+    {
+        // run in unit test environment
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "unit-test");
+        // re-use the same dependency injection configuration as the main application
+        services.ConfigureUsing<Startup>();
+        // override services as needed
+        services.MockDatabaseTransactions<WeatherDbContext>();
+    }
+
+    public static void Initialize(IServiceProvider serviceProvider)
+    {
+        // initialize services as needed
+        // load test data
+        serviceProvider.InitializeTestDatabase<WeatherTestDatabaseLoader>();
+    }
+}
+```
+
+The `MockDatabaseTransactions<TDbContext>` extension method configures the `Wkg.AspNetCore.Transactions` framework to roll back all all `ITransaction<TDbContext>` instances created during the test, regardless of their outcome, allowing you to write your service code as usual without having to add additional logic to disable transactions when your components are being tested. Read more about transactions in the [Transactions](#transactions-namespace) section.
+
+The `InitializeTestDatabase<ITestDatabaseLoader>` extension method initializes the database with test data using the specified `ITestDatabaseLoader` implementation. This allows you to load test data into the database before running your tests, ensuring that the database is in a known state before the tests are executed. The test database itself may be automatically created and migrated to the latest schema version using external infrastructure, such as Docker containers and GitLab CI/CD pipeline stages.
+
+Subsequently, write tests for your components as usual, and DI will take care of the rest:
+
+```csharp
+// UserManagerTests.cs
+[TestClass]
+public class UserManagerTests : ComponentTest<WeatherDbContext, WeatherTestInitializer>
+{
+    [TestMethod]
+    public Task TestCreateUser() => UsingComponentAsync(async userManager =>
+    {
+        // arrange
+        User user = new User { Name = "John Doe", Email = "johndoe@example.com" };
+        // act
+        ManagerResult result = await userManager.CreateUserAsync(user);
+        // assert
+        Assert.IsTrue(result.IsSuccess);
+        // ensure the user was created in the database
+        User? createdUser = await userManager.GetUserByEmailAsync("johndoe@example.com");
+        Assert.IsNotNull(createdUser);
+        Assert.AreEqual("John Doe", createdUser.Name);
+    });
+}
+```
+
+In this example, the `TestCreateUser` method creates a new user using the `UserManager` class and asserts that the user was successfully created in the database. Since the `UserManager` class uses `Wkg.AspNetCore.Transactions` to manage database transactions, subsequent read operations in the test method will automatically participate in the same transaction scope, ensuring that the data was correctly persisted to the database. After the test method completes, the DI scope is disposed, and the `ITransaction<WeatherDbContext>` instance is finalized, rolling back any changes made during the test, as previously configured by the `MockDatabaseTransactions<WeatherDbContext>` extension method.
+
+##### Database Loaders
+
+To load test data into the database before running any tests, you can implement a custom test database loader by inheriting from the `TestDatabaseLoaderBase<TSelf, TDbContext>` class and implementing the `ITestDatabaseLoader<TDbContext>` interface.
+
+```csharp
+// WeatherTestDatabaseLoader.cs
+class WeatherTestDatabaseLoader : TestDatabaseLoaderBase<WeatherTestDatabaseLoader, WeatherDbContext>, ITestDatabaseLoader<WeatherDbContext>
+{
+    public void InitializeDatabase(WeatherDbContext dbContext)
+    {
+        dbContext.Set<User>().AddRange
+        (
+            new User { Name = "Alice", Email = "alice@example.com" },
+            new User { Name = "Bob", Email = "bob@example.com "}
+        );
+        ...
+        dbContext.SaveChanges();
+    }
+}
+```
+
+##### Using the DbContext Directly in Tests
+
+In some cases, you may need to interact with the database context directly in your tests. The `DbContextTest<TDbContext, TInitializer>` class provides this functionality by allowing you to access the database context directly in your test methods. This can be useful for writing integration tests that require direct access to the database context, such as testing complex queries, database operations that are not covered by the manager classes, or testing the behavior of the database context itself.
+
+```csharp
+// WeatherDbContextTests.cs
+[TestClass]
+public class WeatherDbContextTests : DbContextTest<WeatherDbContext, WeatherTestInitializer>
+{
+    [TestMethod]
+    public Task TestSoftDelete() => UsingDbContextAsync(async dbContext =>
+    {
+        User? bob = await dbContext.Set<User>()
+            .FirstOrDefaultAsync(u => u.Email == "bob@example.com");
+        Assert.IsNotNull(bob);
+        await dbContext.Set<User>().RemoveAsync(bob);
+        await dbContext.SaveChangesAsync();
+        bob = await dbContext.Users
+            .FirstOrDefaultAsync(u => u.Email == "bob@example.com");
+        Assert.IsNull(bob);
+        bob = await dbContext.Set<User>()
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == "bob@example.com");
+        Assert.IsNotNull(bob);
+        Assert.IsTrue(bob.IsDeleted);
+    });
+}
+```
+
+In this example, the `TestSoftDelete` method uses the `UsingDbContextAsync` method provided by the `DbContextTest<TDbContext, TInitializer>` class to access the `WeatherDbContext` directly in the test method. The test then ensures that the soft delete functionality of the `User` entity is working correctly by removing a user from the database and verifying that the user is marked as deleted in the database context. After the test method completes, the changes made to the database context are rolled back, ensuring that the database is in a known state before the next test is executed.

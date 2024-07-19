@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Wkg.AspNetCore.Transactions;
 
-namespace Wkg.AspNetCore.TestAdapters.Extensions;
+namespace Wkg.AspNetCore.TestAdapters.Initialization.Extensions;
 
 /// <summary>
 /// Extension methods for <see cref="IServiceCollection"/>.
@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
     /// <returns>The same <see cref="IServiceCollection"/> instance for fluent configuration.</returns>
     public static IServiceCollection MockDatabaseTransactions<TDbContext>(this IServiceCollection services) where TDbContext : DbContext
     {
-        services.AddTransient<ITransaction<TDbContext>, DummyTransaction<TDbContext>>();
+        services.AddTransient<ITransaction<TDbContext>, MockedTransaction<TDbContext>>();
         return services;
     }
 }
