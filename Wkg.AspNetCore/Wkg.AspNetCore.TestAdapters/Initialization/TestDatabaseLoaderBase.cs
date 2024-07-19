@@ -34,13 +34,3 @@ public abstract class TestDatabaseLoaderBase<TSelf, TDbContext> : ITestDatabaseL
         transaction.Commit();
     }
 }
-
-class WeatherDbContext : DbContext;
-
-class WeatherTestDatabaseLoader : TestDatabaseLoaderBase<WeatherTestDatabaseLoader, WeatherDbContext>, ITestDatabaseLoader<WeatherDbContext>
-{
-    public void InitializeDatabase(WeatherDbContext dbContext)
-    {
-    }
-}
-
