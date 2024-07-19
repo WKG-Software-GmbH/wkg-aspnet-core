@@ -19,21 +19,21 @@ partial class Transaction<TDbContext>
     public void RunReadOnly(ReadOnlyDatabaseRequestAction<TDbContext> action) => Run((dbContext, transaction) =>
     {
         action.Invoke(dbContext);
-        return new TransactionalContinuation<VoidResult>(TransactionState.ReadOnly, default);
+        return new DeferredTransactionState<VoidResult>(TransactionState.ReadOnly, default);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Run(DatabaseRequestAction<TDbContext> action) => Run((dbContext, transaction) =>
     {
-        ITransactionalContinuation continuation = action.Invoke(dbContext, transaction);
-        return new TransactionalContinuation<VoidResult>(continuation.NextAction, default);
+        IDeferredTransactionState continuation = action.Invoke(dbContext, transaction);
+        return new DeferredTransactionState<VoidResult>(continuation.NextState, default);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TResult RunReadOnly<TResult>(ReadOnlyDatabaseRequestAction<TDbContext, TResult> action) => Run((dbContext, transaction) =>
     {
         TResult result = action.Invoke(dbContext);
-        return new TransactionalContinuation<TResult>(TransactionState.ReadOnly, result);
+        return new DeferredTransactionState<TResult>(TransactionState.ReadOnly, result);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -52,21 +52,21 @@ partial class Transaction<TDbContext>
     public Task RunReadOnlyAsync(ReadOnlyDatabaseRequestTask<TDbContext> task) => RunAsync(async (dbContext, transaction) =>
     {
         await task.Invoke(dbContext);
-        return new TransactionalContinuation<VoidResult>(TransactionState.ReadOnly, default);
+        return new DeferredTransactionState<VoidResult>(TransactionState.ReadOnly, default);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Task RunAsync(DatabaseRequestTask<TDbContext> task) => RunAsync<VoidResult>(async (dbContext, transaction) =>
     {
-        ITransactionalContinuation continuation = await task.Invoke(dbContext, transaction);
-        return new TransactionalContinuation<VoidResult>(continuation.NextAction, default);
+        IDeferredTransactionState continuation = await task.Invoke(dbContext, transaction);
+        return new DeferredTransactionState<VoidResult>(continuation.NextState, default);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Task<TResult> RunReadOnlyAsync<TResult>(ReadOnlyDatabaseRequestTask<TDbContext, TResult> task) => RunAsync<TResult>(async (dbContext, transaction) =>
     {
         TResult result = await task.Invoke(dbContext);
-        return new TransactionalContinuation<TResult>(TransactionState.ReadOnly, result);
+        return new DeferredTransactionState<TResult>(TransactionState.ReadOnly, result);
     });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

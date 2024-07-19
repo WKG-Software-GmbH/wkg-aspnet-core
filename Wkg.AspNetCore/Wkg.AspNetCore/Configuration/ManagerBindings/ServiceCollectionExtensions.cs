@@ -4,7 +4,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Wkg.AspNetCore.Abstractions;
 using Wkg.AspNetCore.Abstractions.Managers;
-using Wkg.AspNetCore.Transactions.Configuration;
 using Wkg.Reflection;
 using Wkg.Reflection.Extensions;
 

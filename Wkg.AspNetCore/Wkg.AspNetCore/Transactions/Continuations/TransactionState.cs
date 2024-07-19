@@ -1,10 +1,10 @@
 ﻿namespace Wkg.AspNetCore.Transactions.Continuations;
 
 /// <summary>
-/// Represents a continuation of a transactional operation and defines what action should be taken after the lifecycle of the transaction scope has completed.
+/// Represents a state of a transaction and defines what action should be taken after the lifecycle of the transaction scope has completed.
 /// </summary>
 /// <remarks>
-/// Continuations are designed to be OR-combinable using the bitwise OR operator, so higher priority continuations can override lower priority continuations.
+/// States are designed to be OR-combinable using the bitwise OR operator, so higher priority continuations can override lower priority continuations.
 /// </remarks>
 [Flags]
 public enum TransactionState : uint
@@ -24,12 +24,13 @@ public enum TransactionState : uint
     /// <summary>
     /// The transaction should be rolled back, overriding any requests to commit the transaction.
     /// </summary>
-    Rollback = 3,
+    Rollback = 2,
 
     /// <summary>
-    /// An unexpected error occurred during the transaction. The transaction will be rolled back, regardless of continuations specified by user code.
+    /// Implies <see cref="Rollback"/>. An unexpected error occurred during the transaction. 
+    /// The transaction will be rolled back, regardless of continuations specified by user code.
     /// </summary>
-    ExceptionalRollback = 7,
+    Exception = 6,
 
     /// <summary>
     /// The underlying transaction was executed against the database with the specified final flags and cannot be further modified.

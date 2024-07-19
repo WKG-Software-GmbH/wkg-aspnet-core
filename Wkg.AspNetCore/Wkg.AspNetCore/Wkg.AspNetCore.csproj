@@ -30,7 +30,9 @@
         <IsPackable>true</IsPackable>
         <RepositoryUrl>https://git.wkg.lan/WKG/components/wkg-aspnet-core</RepositoryUrl>
         <PackageProjectUrl>https://git.wkg.lan/WKG/components/wkg-aspnet-core</PackageProjectUrl>
-        <Description>Internal WKG library containing reusable cross-platform frameworks for ASP.NET Core projects.</Description>
+        <Description>
+			Wkg.AspNetCore is a company-internal library providing reusable components for the development of ASP .NET Core applications at WKG. It provides new abstractions over existing ASP .NET Core components, provides request-scoped database transactions, new authentication options, data validation, and more. A core goal of Wkg.AspNetCore is to simplify the development of ASP .NET Core applications by providing a set of reusable components that can be easily integrated into new or existing projects, allowing for consistent and maintainable codebases and easier testing with the Wkg.AspNetCore.TestAdapters companion library.
+		</Description>
         <Company>WKG Software GmbH</Company>
         <Authors>WKG Software GmbH</Authors>
         <Copyright>Copyright (c) WKG Software GmbH 2024</Copyright>

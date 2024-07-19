@@ -2,15 +2,15 @@
 
 internal class ScopedTransaction : IScopedTransaction
 {
-    public ITransactionalContinuation Commit() =>
-        new TransactionalContinuation(TransactionState.Commit);
+    public IDeferredTransactionState Commit() =>
+        new DeferredTransactionState(TransactionState.Commit);
 
-    public ITransactionalContinuation Rollback() =>
-        new TransactionalContinuation(TransactionState.Rollback);
+    public IDeferredTransactionState Rollback() =>
+        new DeferredTransactionState(TransactionState.Rollback);
 
-    public ITransactionalContinuation<TResult> Commit<TResult>(TResult result) =>
-        new TransactionalContinuation<TResult>(TransactionState.Commit, result);
+    public IDeferredTransactionState<TResult> Commit<TResult>(TResult result) =>
+        new DeferredTransactionState<TResult>(TransactionState.Commit, result);
 
-    public ITransactionalContinuation<TResult> Rollback<TResult>(TResult result) =>
-        new TransactionalContinuation<TResult>(TransactionState.Rollback, result);
+    public IDeferredTransactionState<TResult> Rollback<TResult>(TResult result) =>
+        new DeferredTransactionState<TResult>(TransactionState.Rollback, result);
 }

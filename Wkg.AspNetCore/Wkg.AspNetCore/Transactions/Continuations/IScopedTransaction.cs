@@ -7,22 +7,22 @@
 public interface IScopedTransaction
 {
     /// <summary>
-    /// Creates a new <see cref="ITransactionalContinuation"/> that will commit the current transaction.
+    /// Creates a new <see cref="IDeferredTransactionState"/> that will commit the current transaction.
     /// </summary>
-    ITransactionalContinuation Commit();
+    IDeferredTransactionState Commit();
 
     /// <summary>
-    /// Creates a new <see cref="ITransactionalContinuation"/> that will rollback the current transaction.
+    /// Creates a new <see cref="IDeferredTransactionState"/> that will rollback the current transaction.
     /// </summary>
-    ITransactionalContinuation Rollback();
+    IDeferredTransactionState Rollback();
 
     /// <summary>
-    /// Creates a new <see cref="ITransactionalContinuation{TResult}"/> that will commit the current transaction and return the specified <paramref name="result"/>.
+    /// Creates a new <see cref="IDeferredTransactionState{TResult}"/> that will commit the current transaction and return the specified <paramref name="result"/>.
     /// </summary>
-    ITransactionalContinuation<TResult> Commit<TResult>(TResult result);
+    IDeferredTransactionState<TResult> Commit<TResult>(TResult result);
 
     /// <summary>
-    /// Creates a new <see cref="ITransactionalContinuation{TResult}"/> that will rollback the current transaction and return the specified <paramref name="result"/>.
+    /// Creates a new <see cref="IDeferredTransactionState{TResult}"/> that will rollback the current transaction and return the specified <paramref name="result"/>.
     /// </summary>
-    ITransactionalContinuation<TResult> Rollback<TResult>(TResult result);
+    IDeferredTransactionState<TResult> Rollback<TResult>(TResult result);
 }
