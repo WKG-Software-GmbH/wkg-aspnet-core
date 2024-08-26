@@ -14,9 +14,7 @@ namespace Wkg.AspNetCore.Transactions;
 internal partial class Transaction<TDbContext>(TDbContext dbContext, IErrorSentry errorSentry, TransactionServiceOptions options) 
     : ITransaction<TDbContext> where TDbContext : DbContext
 {
-    private static readonly ScopedTransaction _scopedTransactionInstance = new();
-
-    private TransactionState _continuationType = TransactionState.ReadOnly;
+    private static readonly ScopedTransaction s_scopedTransactionInstance = new();
     private IDbContextTransaction? _transaction;
     private bool _isDisposed;
     private bool _isGuarded;
@@ -26,7 +24,7 @@ internal partial class Transaction<TDbContext>(TDbContext dbContext, IErrorSentr
 
     internal TDbContext DbContext => dbContext;
 
-    public TransactionState State => _continuationType;
+    public TransactionState State { get; private set; } = TransactionState.ReadOnly;
 
     IsolationLevel ITransaction<TDbContext>.IsolationLevel 
     {
@@ -69,21 +67,21 @@ internal partial class Transaction<TDbContext>(TDbContext dbContext, IErrorSentr
         // (enables recursion and prevents double error handling)
         if (_isGuarded)
         {
-            IDeferredTransactionState<TResult> result = action.Invoke(DbContext, _scopedTransactionInstance);
-            _continuationType |= result.NextState;
+            IDeferredTransactionState<TResult> result = action.Invoke(DbContext, s_scopedTransactionInstance);
+            State |= result.NextState;
             return result.Result;
         }
 
         try
         {
             _isGuarded = true;
-            IDeferredTransactionState<TResult> result = action.Invoke(DbContext, _scopedTransactionInstance);
-            _continuationType |= result.NextState;
+            IDeferredTransactionState<TResult> result = action.Invoke(DbContext, s_scopedTransactionInstance);
+            State |= result.NextState;
             return result.Result;
         }
         catch (Exception e)
         {
-            _continuationType |= TransactionState.Exception;
+            State |= TransactionState.Exception;
             throw errorSentry.AfterHandled(e);
         }
         finally
@@ -110,21 +108,21 @@ internal partial class Transaction<TDbContext>(TDbContext dbContext, IErrorSentr
         // (enables recursion and prevents double error handling)
         if (_isGuarded)
         {
-            IDeferredTransactionState<TResult> result = await task.Invoke(DbContext, _scopedTransactionInstance);
-            _continuationType |= result.NextState;
+            IDeferredTransactionState<TResult> result = await task.Invoke(DbContext, s_scopedTransactionInstance);
+            State |= result.NextState;
             return result.Result;
         }
 
         try
         {
             _isGuarded = true;
-            IDeferredTransactionState<TResult> result = await task.Invoke(DbContext, _scopedTransactionInstance);
-            _continuationType |= result.NextState;
+            IDeferredTransactionState<TResult> result = await task.Invoke(DbContext, s_scopedTransactionInstance);
+            State |= result.NextState;
             return result.Result;
         }
         catch (Exception e)
         {
-            _continuationType |= TransactionState.Exception;
+            State |= TransactionState.Exception;
             throw errorSentry.AfterHandled(e);
         }
         finally
@@ -147,7 +145,7 @@ internal partial class Transaction<TDbContext>(TDbContext dbContext, IErrorSentr
         _isDisposed = true;
         if (_transaction is not null)
         {
-            if (_continuationType is TransactionState.Commit)
+            if (State is TransactionState.Commit)
             {
                 await CommitAsync(_transaction);
             }
@@ -155,7 +153,7 @@ internal partial class Transaction<TDbContext>(TDbContext dbContext, IErrorSentr
             {
                 await RollbackAsync(_transaction);
             }
-            _continuationType |= TransactionState.Finalized;
+            State |= TransactionState.Finalized;
             _transaction.Dispose();
         }
         if (_slavedScope.HasValue)

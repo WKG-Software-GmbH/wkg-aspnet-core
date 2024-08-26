@@ -6,7 +6,7 @@ namespace Wkg.AspNetCore.Authentication.Jwt.Internals;
 
 internal static class HexViewer
 {
-    private static readonly ImmutableArray<string> _hexMap;
+    private static readonly ImmutableArray<string> s_hexMap;
 
     static HexViewer()
     {
@@ -15,7 +15,7 @@ internal static class HexViewer
         {
             hexMap[i] = i.ToString("X2");
         }
-        _hexMap = [.. hexMap];
+        s_hexMap = [.. hexMap];
     }
 
     public static void PrintBuffer(Span<byte> buffer, string? bufferName = null)
@@ -26,27 +26,27 @@ internal static class HexViewer
         }
         StringBuilder sb = new();
         sb.AppendLine($"Buffer {bufferName}:");
-        const int bytesPerLine = 16;
-        for (int i = 0; i < buffer.Length; i += bytesPerLine)
+        const int BYTES_PER_LINE = 16;
+        for (int i = 0; i < buffer.Length; i += BYTES_PER_LINE)
         {
             if (i > 0)
             {
                 sb.AppendLine();
             }
-            for (int j = 0; j < bytesPerLine && i + j < buffer.Length; j++)
+            for (int j = 0; j < BYTES_PER_LINE && i + j < buffer.Length; j++)
             {
                 byte b = buffer[i + j];
-                sb.Append(_hexMap[b]).Append(' ');
+                sb.Append(s_hexMap[b]).Append(' ');
             }
-            if (i + bytesPerLine > buffer.Length)
+            if (i + BYTES_PER_LINE > buffer.Length)
             {
-                sb.Append(new string(' ', (bytesPerLine - (buffer.Length - i)) * 3 + 4));
+                sb.Append(new string(' ', ((BYTES_PER_LINE - (buffer.Length - i)) * 3) + 4));
             }
             else
             {
                 sb.Append("    ");
             }
-            for (int j = 0; j < bytesPerLine && i + j < buffer.Length; j++)
+            for (int j = 0; j < BYTES_PER_LINE && i + j < buffer.Length; j++)
             {
                 byte b = buffer[i + j];
                 sb.Append(b is >= 32 and <= 126 ? (char)b : '.').Append(' ');

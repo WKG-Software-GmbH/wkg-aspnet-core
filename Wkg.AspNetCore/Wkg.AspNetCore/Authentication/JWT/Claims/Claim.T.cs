@@ -36,14 +36,14 @@ public class Claim<TValue> : Claim
     }
 
     /// <inheritdoc />
-    protected internal override void Serialize()
+    internal protected override void Serialize()
     {
         RawValue = JsonSerializer.Serialize(_value);
         RequiresSerialization = false;
     }
 
     /// <inheritdoc />
-    protected internal override void Deserialize()
+    internal protected override void Deserialize()
     {
         _ = RawValue ?? throw new InvalidOperationException($"Failed to deserialize {nameof(Claim)} from null-value.");
         _value = JsonSerializer.Deserialize<TValue>(RawValue)

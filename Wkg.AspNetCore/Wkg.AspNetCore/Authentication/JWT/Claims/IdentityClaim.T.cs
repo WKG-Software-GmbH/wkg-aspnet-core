@@ -38,14 +38,14 @@ public class IdentityClaim<TIdentityKey> : IdentityClaim where TIdentityKey : no
         ?? throw new InvalidOperationException($"Unable to retrieve {nameof(IdentityKey)} from {nameof(IdentityClaim)} in this context. Ensure the {nameof(IdentityClaim)} is correctly initialized.");
 
     /// <inheritdoc />
-    protected internal override void Serialize()
+    internal protected override void Serialize()
     {
         RawValue = JsonSerializer.Serialize(_identityKey);
         RequiresSerialization = false;
     }
 
     /// <inheritdoc />
-    protected internal override void Deserialize()
+    internal protected override void Deserialize()
     {
         _ = RawValue ?? throw new InvalidOperationException($"Failed to deserialize {nameof(IdentityClaim)} from null-value.");
         _identityKey = JsonSerializer.Deserialize<TIdentityKey>(RawValue)

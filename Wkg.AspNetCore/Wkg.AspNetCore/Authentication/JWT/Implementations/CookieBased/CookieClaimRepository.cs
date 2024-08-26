@@ -13,13 +13,12 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
     where TIdentityClaim : IdentityClaim
     where TDecryptionKeys : IDecryptionKeys<TDecryptionKeys>
 {
-    private const string CookieName = "Wkg.AspNetCore.Authentication.CookieClaims";
+    private const string COOKIE_NAME = "Wkg.AspNetCore.Authentication.CookieClaims";
 
     private readonly HttpContext _context;
     private readonly Dictionary<string, Claim> _claims;
     private readonly CookieClaimOptions _cookieOptions;
 
-    private bool _hasChanges;
     private bool _disposedValue;
     private DateTime _expirationDate;
 
@@ -30,7 +29,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
         _context = contextAccessor.HttpContext
             ?? throw new InvalidOperationException($"Failed to resolve {nameof(HttpContext)} from current repository.");
         ClaimManager = claimManager;
-        if (_context.Request.Cookies.TryGetValue(CookieName, out string? cookieValue))
+        if (_context.Request.Cookies.TryGetValue(COOKIE_NAME, out string? cookieValue))
         {
             if (claimManager.TryDeserialize(cookieValue, out ClaimRepositoryData<TIdentityClaim, TDecryptionKeys>? data, out ClaimRepositoryStatus status)
                 || status is ClaimRepositoryStatus.Expired && data is not null)
@@ -43,7 +42,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
             }
             else
             {
-                _context.Response.Cookies.Delete(CookieName);
+                _context.Response.Cookies.Delete(COOKIE_NAME);
                 _claims = [];
             }
             Status = status;
@@ -65,7 +64,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
         IdentityClaim = identityClaim;
         ExpirationDate = expirationDate;
         DecryptionKeys = TDecryptionKeys.Generate();
-        _hasChanges = true;
+        HasChanges = true;
         Status = ClaimRepositoryStatus.Valid;
     }
 
@@ -83,7 +82,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
         set
         {
             _expirationDate = value;
-            _hasChanges = true;
+            HasChanges = true;
         }
     }
 
@@ -99,7 +98,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
 
     public bool IsReadOnly => false;
 
-    public bool HasChanges => _hasChanges;
+    public bool HasChanges { get; private set; }
 
     public void Initialize(TIdentityClaim identityClaim)
     {
@@ -107,7 +106,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
         ExpirationDate = DateTime.UtcNow.Add(ClaimManager.Options.TimeToLive);
         DecryptionKeys = TDecryptionKeys.Generate();
         Status = ClaimRepositoryStatus.Valid;
-        _hasChanges = true;
+        HasChanges = true;
     }
 
     public Claim this[string subject]
@@ -116,14 +115,14 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
         set
         {
             _claims[subject] = value;
-            _hasChanges = true;
+            HasChanges = true;
         }
     }
 
     public void Add(Claim item)
     {
         _claims.Add(item.Subject, item);
-        _hasChanges = true;
+        HasChanges = true;
     }
 
     public IEnumerable<Claim<TValue>> Claims<TValue>() => _claims.Values.OfType<Claim<TValue>>();
@@ -131,7 +130,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
     public void Clear()
     {
         _claims.Clear();
-        _hasChanges = true;
+        HasChanges = true;
     }
 
     public bool Contains(Claim item) => _claims.ContainsKey(item.Subject);
@@ -174,7 +173,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
     public bool Remove(Claim item)
     {
         bool removed = _claims.Remove(item.Subject);
-        _hasChanges |= removed;
+        HasChanges |= removed;
         return removed;
     }
 
@@ -184,7 +183,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
     {
         if (_claims.TryAdd(claim.Subject, claim))
         {
-            _hasChanges = true;
+            HasChanges = true;
             return true;
         }
         return false;
@@ -204,7 +203,7 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
     public bool SaveChanges()
     {
         ObjectDisposedException.ThrowIf(_disposedValue, this);
-        if (_hasChanges)
+        if (HasChanges)
         {
             if (!IsInitialized)
             {
@@ -223,14 +222,14 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
             };
             ClaimManager.TryRenewClaims(IdentityClaim);
             string cookieValue = ClaimManager.Serialize(data);
-            _context.Response.Cookies.Append(CookieName, cookieValue, new CookieOptions
+            _context.Response.Cookies.Append(COOKIE_NAME, cookieValue, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = _cookieOptions.SecureOnly,
                 SameSite = SameSiteMode.Strict,
                 Expires = ExpirationDate
             });
-            _hasChanges = false;
+            HasChanges = false;
             return true;
         }
         return false;
@@ -257,13 +256,13 @@ internal class CookieClaimRepository<TIdentityClaim, TDecryptionKeys> : IClaimRe
         {
             string oldIdentity = IdentityClaim.RawValue!;
             ClaimManager.TryRevokeClaims(IdentityClaim);
-            _context.Response.Cookies.Delete(CookieName);
+            _context.Response.Cookies.Delete(COOKIE_NAME);
             _claims.Clear();
             IdentityClaim = null;
             DecryptionKeys = default;
             ExpirationDate = default;
             Status = ClaimRepositoryStatus.Uninitialized;
-            _hasChanges = false;
+            HasChanges = false;
             Log.WriteDebug($"[SECURITY] Claim repository for IdentityClaim {oldIdentity} has been revoked.");
         }
     }

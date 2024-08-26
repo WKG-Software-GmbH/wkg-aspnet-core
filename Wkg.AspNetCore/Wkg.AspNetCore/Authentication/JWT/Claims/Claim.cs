@@ -63,11 +63,11 @@ public partial class Claim
     [MemberNotNull(nameof(RawValue))]
 #pragma warning disable CS8774 // Member must have a non-null value when exiting.
     // justification: This method is overridden in derived classes. Concrete instances of this class always have a non-null value.
-    protected internal virtual void Serialize() => RequiresSerialization = false;
+    internal protected virtual void Serialize() => RequiresSerialization = false;
 #pragma warning restore CS8774 // Member must have a non-null value when exiting.
 
     /// <summary>
     /// Deserializes the claim from <see cref="RawValue"/>.
     /// </summary>
-    protected internal virtual void Deserialize() => Pass();
+    internal protected virtual void Deserialize() => Pass();
 }
