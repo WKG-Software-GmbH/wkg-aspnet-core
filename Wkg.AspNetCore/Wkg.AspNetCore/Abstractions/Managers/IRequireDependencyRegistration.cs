@@ -11,5 +11,5 @@ public interface IRequireDependencyRegistration
     /// Registers the required services for the object.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
-    protected internal static abstract void RegisterRequiredServices(IServiceCollection services);
+    internal protected static abstract void RegisterRequiredServices(IServiceCollection services);
 }

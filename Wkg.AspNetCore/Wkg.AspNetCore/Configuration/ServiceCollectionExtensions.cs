@@ -1,8 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Wkg.AspNetCore.Abstractions.Controllers;
-using Wkg.AspNetCore.Abstractions.Managers;
-using Wkg.AspNetCore.Abstractions.RazorPages;
 
 namespace Wkg.AspNetCore.Configuration;
 
@@ -11,17 +8,6 @@ namespace Wkg.AspNetCore.Configuration;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>
-    /// Adds the required services for database abstractions, e.g., for <see cref="DatabaseController{TDbContext}"/> and <see cref="DatabasePageModel{TDbContext}"/>.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-    /// <returns>The <see cref="IServiceCollection"/> for fluent configuration.</returns>
-    public static IServiceCollection AddDbAbstractions(this IServiceCollection services)
-    {
-        services.AddScoped<IDbContextDescriptor, DbContextDescriptor>();
-        return services;
-    }
-
     /// <summary>
     /// Configures the <see cref="IServiceCollection"/> using the specified <typeparamref name="TStartupScript"/>.
     /// </summary>

@@ -21,8 +21,6 @@ public static class ServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> for fluent configuration.</returns>
     public static IServiceCollection AddManagers(this IServiceCollection services)
     {
-        services.AddDbAbstractions();
-
         // collect all manager types used by concrete MvcContext types (controllers, razor pages, etc.)
         IEnumerable<Type> managers = AppDomain.CurrentDomain
             // get all assemblies
@@ -66,7 +64,7 @@ public static class ServiceCollectionExtensions
     }
 
     // for use in expression trees
-    private static readonly MethodInfo _serviceProviderGetRequiredService = typeof(ServiceProviderServiceExtensions).GetMethod(
+    private static readonly MethodInfo s_serviceProviderGetRequiredService = typeof(ServiceProviderServiceExtensions).GetMethod(
             nameof(ServiceProviderServiceExtensions.GetRequiredService),
             BindingFlags.Public | BindingFlags.Static,
             TypeArray.Of<IServiceProvider, Type>())
@@ -92,7 +90,7 @@ public static class ServiceCollectionExtensions
         Expression[] arguments = parameters
             .Select(param =>
                 Expression.Call(UnsafeReflection.As(param.ParameterType),
-                    Expression.Call(_serviceProviderGetRequiredService,
+                    Expression.Call(s_serviceProviderGetRequiredService,
                         serviceProvider,
                         Expression.Constant(param.ParameterType))))
             .ToArray();
