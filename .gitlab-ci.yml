@@ -44,7 +44,7 @@ increase-version:
     - master
     - /^rc-.*$/
     - /^dev-.*$/ 
-    - /^diag-.*$/ 
+    - /^diag-.*$/
 
 deploy-library:
   extends: .deploy-baget
