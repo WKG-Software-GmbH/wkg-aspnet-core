@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Runtime.CompilerServices;
-using Wkg.AspNetCore.Transactions.Actions;
 using Wkg.AspNetCore.Transactions.Continuations;
+using Wkg.AspNetCore.Transactions.Delegates;
 
 namespace Wkg.AspNetCore.Transactions;
 
-partial class Transaction<TDbContext>
+internal partial class Transaction<TDbContext>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IActionResult RunReadOnly(ReadOnlyDatabaseRequestAction<TDbContext, IActionResult> action) =>

@@ -1,4 +1,4 @@
-﻿namespace Wkg.AspNetCore.RequestActions;
+﻿namespace Wkg.AspNetCore.Delegates;
 
 /// <summary>
 /// A delegate that represents an API request action.

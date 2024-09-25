@@ -7,15 +7,15 @@ using Wkg.AspNetCore.Authentication.Jwt.Internals;
 using Wkg.AspNetCore.Authentication.Jwt.SigningFunctions;
 using Wkg.AspNetCore.Authentication.Jwt.SigningFunctions.Implementations;
 
-namespace Wkg.AspNetCore.Authentication.Tests;
+namespace Wkg.AspNetCoreTests.Authentication;
 
 [TestClass]
 public class CookieClaimManagerTests
 {
     private static CookieClaimManager<TestIdentityClaim, NoDecryptionKeys> CreateClaimManager() => new
     (
-        new HttpContextAccessor(), 
-        new CookieClaimOptions(false, new ClaimValidationOptions(TimeSpan.FromHours(12))), 
+        new HttpContextAccessor(),
+        new CookieClaimOptions(false, new ClaimValidationOptions(TimeSpan.FromHours(12))),
         new SessionKeyStore<NoDecryptionKeys>(TimeSpan.FromHours(12)),
         new HmacSha512SigningFunction(new HmacOptions("secret-key"))
     );
@@ -70,7 +70,7 @@ public class CookieClaimManagerTests
         Assert.AreEqual(base64, base64_2);
     }
 
-    [TestMethod] 
+    [TestMethod]
     public void TestDeserialization()
     {
         IClaimManager<TestIdentityClaim, NoDecryptionKeys> manager = CreateClaimManager();
