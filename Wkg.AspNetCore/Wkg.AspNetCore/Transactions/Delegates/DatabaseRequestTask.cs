@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Wkg.AspNetCore.Transactions.Continuations;
 
-namespace Wkg.AspNetCore.Transactions.Actions;
+namespace Wkg.AspNetCore.Transactions.Delegates;
 
 /// <summary>
 /// A delegate that represents an isolated asynchronous API request action that can be executed in a transactional context.

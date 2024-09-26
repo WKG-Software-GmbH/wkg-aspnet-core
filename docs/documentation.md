@@ -25,6 +25,9 @@
         - [Database Loaders](#database-loaders)
         - [Using the DbContext Directly in Tests](#using-the-dbcontext-directly-in-tests)
 
+> :warning: **Warning**
+> This documentation is a work in progress and may not be complete or up-to-date. For the most accurate and up-to-date information, please refer to the source code and the XML documentation comments.
+
 ## `Wkg.AspNetCore`
 
 ### `Abstractions` Namespace
@@ -49,8 +52,8 @@ public class WeatherManager(IWeatherService weatherService, IUserService userSer
 {
     public async Task<WeatherForecast> GetWeatherForecastAsync(string userId)
     {
-        User user = await _userService.GetUserByIdAsync(userId);
-        WeatherForecast weatherForecast = await _weatherService.GetWeatherForecastAsync(user.Location);
+        User user = await userService.GetUserByIdAsync(userId);
+        WeatherForecast weatherForecast = await weatherService.GetWeatherForecastAsync(user.Location);
         foreach (WeatherForecastEntry entry in weatherForecast.Entries)
         {
             entry.Temperature = converter.Convert(entry.Temperature, user.PreferredTemperatureUnit);
@@ -62,6 +65,8 @@ public class WeatherManager(IWeatherService weatherService, IUserService userSer
 // WeatherController.cs
 // controllers use one or more manager classes to perform business operations and only contain additional 
 // logic related to the REST API request/response cycle.
+// IManagerBindings is an interface that provides access to other manager classes in scenarios where multiple 
+// managers are required by a controller.
 public class WeatherController(IManagerBindings managerBindings) : ManagerController<WeatherManager>(managerBindings)
 {
     [HttpGet]
@@ -111,12 +116,12 @@ public class WeatherManager(IWeatherService weatherService, IUserService userSer
         {
             return Unauthorized<WeatherForecast>("User ID is required.");
         }
-        User? user = await _userService.GetUserByIdAsync(userId);
+        User? user = await userService.GetUserByIdAsync(userId);
         if (user is null)
         {
             return Forbidden<WeatherForecast>("The user does not exist or is locked out.");
         }
-        WeatherForecast? weatherForecast = await _weatherService.GetWeatherForecastAsync(user.Location);
+        WeatherForecast? weatherForecast = await weatherService.GetWeatherForecastAsync(user.Location);
         if (weatherForecast is null)
         {
             return NotFound<WeatherForecast>("No weather forecast available for the user's location.");
@@ -269,7 +274,12 @@ public class DashboardPageModel(IManagerBindings managerBindings) : ManagerPageM
             return HandleNonSuccess(uvResult);
         }
         UVIndex = uvIndex;
-
+        // the GetManager<TManager> method is conveniently provided by the ManagerPageModel base class
+        // alternatively, you can use the IManagerBindings service directly to resolve manager instances:
+        //managerBindings.ActivateManager<AirQualityIndexManager>(context: this);
+        // where the context parameter is an instance of IMvcContext, an interface providing access to the 
+        // current HttpContext and other context information, exposing these properties to the manager class
+        // IMvcContext is automatically implemented by base classes provided by Wkg.AspNetCore
         AirQualityIndexManager airQualityManager = GetManager<AirQualityIndexManager>();
         ManagerResult<AirQualityIndex> airQualityResult = await airQualityManager.GetAirQualityIndexAsync(userId);
         if (!airQualityResult.TryGetResult(out AirQualityIndex? airQualityIndex))

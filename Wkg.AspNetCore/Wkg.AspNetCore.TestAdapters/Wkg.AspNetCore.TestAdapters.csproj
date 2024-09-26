@@ -3,9 +3,9 @@
     <!--.NET build settings-->
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>12</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <LangVersion>12</LangVersion>
 		<!-- CI injected versioning -->
 		<VersionPrefix>0.0.0</VersionPrefix>
 		<VersionSuffix>CI-INJECTED</VersionSuffix>
@@ -13,19 +13,22 @@
 
     <!--Nuget packaging-->
     <PropertyGroup>
+		<PackageId>Wkg.AspNetCore.TestAdapters</PackageId>
+        <Title>WKG ASP.NET Core Test Adapters</Title>
         <IsPackable>true</IsPackable>
-        <RepositoryUrl>https://git.wkg.lan/WKG/components/wkg-aspnet-core</RepositoryUrl>
-        <PackageProjectUrl>https://git.wkg.lan/WKG/components/wkg-aspnet-core</PackageProjectUrl>
-        <Description>Internal WKG library containing unit test adapters for projects using WKG ASP.NET Core.</Description>
+        <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/WKG-Software-GmbH/wkg-aspnet-core</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/WKG-Software-GmbH/wkg-aspnet-core</PackageProjectUrl>
+        <Description>Provides unit test adapters for projects using WKG ASP.NET Core.</Description>
         <Company>WKG Software GmbH</Company>
         <Authors>WKG Software GmbH</Authors>
         <Copyright>Copyright (c) WKG Software GmbH 2024</Copyright>
         <PackageIcon>logo.png</PackageIcon>
-        <Title>WKG ASP.NET Core Test Adapters</Title>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageType>Dependency</PackageType>
         <PackageTags>
-            AspNetCore;REST;EntityFrameworkCore;UnitTest;Testing
-        </PackageTags>
+			aspnet-core;rest;entity-framework-core;database-transactions;efcore;data-validation;testing;unit-test
+		</PackageTags>
     </PropertyGroup>
 
     <!--Nuget symbols and debugging-->
@@ -37,11 +40,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Wkg.AspNetCore\Wkg.AspNetCore.csproj" />
+        <ProjectReference Include="..\Wkg.AspNetCore\Wkg.AspNetCore.csproj" />
     </ItemGroup>
     
     <ItemGroup>
-        <None Include="Assets\logo.png" Pack="true" PackagePath="\" />
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
+        <None Include="_Assets\logo.png" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>

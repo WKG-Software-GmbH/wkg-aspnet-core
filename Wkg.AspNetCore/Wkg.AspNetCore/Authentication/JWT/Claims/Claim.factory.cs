@@ -1,6 +1,6 @@
 ﻿namespace Wkg.AspNetCore.Authentication.Jwt.Claims;
 
-partial class Claim
+public partial class Claim
 {
     /// <summary>
     /// Creates a new, basic claim with the specified subject and value.

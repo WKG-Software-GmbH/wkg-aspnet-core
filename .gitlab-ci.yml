@@ -15,12 +15,12 @@ variables:
 
 include:
   - project: 'wkg/gitlab-templates'
-    ref: 'v1.2.13'
+    ref: 'v1.2.18'
     file:
       - '/jobs/build_dotnet_8.yml'
       - '/jobs/test_dotnet_8.yml'
       - '/jobs/increase_version.yml'
-      - '/jobs/deploy_baget_dotnet_8.yml'
+      - '/jobs/deploy_nuget_dotnet_8.yml'
 
 build-library:
   extends: .build
@@ -47,13 +47,13 @@ increase-version:
     - /^diag-.*$/
 
 deploy-library:
-  extends: .deploy-baget
+  extends: .deploy-nuget-public
   variables:
     PROJECT_FILE_PATH: "${LIBRARY_PROJECT}"
     DOTNET_CI_VERSION_FILE: "${LIBRARY_DIRECTORY}/WkgAspNetCore.cs"
         
 deploy-test-adapters:
-  extends: .deploy-baget
+  extends: .deploy-nuget-public
   variables:
     PROJECT_FILE_PATH: "${TEST_ADAPTER_PROJECT}"
     DOTNET_CI_VERSION_FILE: "${TEST_ADAPTER_DIRECTORY}/WkgAspNetCoreTestAdapters.cs"
