@@ -8,7 +8,7 @@
 
 A core goal of `Wkg.AspNetCore` is to simplify the development of ASP .NET Core applications by providing a set of reusable components that can be easily integrated into new or existing projects, allowing for consistent and maintainable codebases and easier testing with the `Wkg.AspNetCore.TestAdapters` library that can also be found in this repository.
 
-As part of our commitment to open-source software, we are making this library available to the public under the GNU General Public License v3.0. We hope that it will be useful to other developers and that the community will contribute to its further development.
+As part of our commitment to open-source software, we are making this library [available to the public](https://github.com/WKG-Software-GmbH/wkg-aspnet-core/) under the GNU General Public License v3.0. We hope that it will be useful to other developers and that the community will contribute to its further development.
 
 ## Installation
 
