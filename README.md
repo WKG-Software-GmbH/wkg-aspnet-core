@@ -1,6 +1,7 @@
 # WKG ASP .NET Core
 
-[![NuGet version (Wkg.AspNetCore)](https://img.shields.io/nuget/v/Wkg.AspNetCore.svg?style=flat-square)](https://www.nuget.org/packages/Wkg.AspNetCore/) [![NuGet version (Wkg.AspNetCore.TestAdapters)](https://img.shields.io/nuget/v/Wkg.AspNetCore.TestAdapters.svg?style=flat-square)](https://www.nuget.org/packages/Wkg.AspNetCore.TestAdapters/)
+[![NuGet](https://img.shields.io/badge/NuGet-555555?style=for-the-badge&logo=nuget)![NuGet version (Wkg.AspNetCore)](https://img.shields.io/nuget/v/Wkg.AspNetCore.svg?style=for-the-badge&label=Wkg.AspNetCore)![NuGet downloads (Wkg.AspNetCore)](https://img.shields.io/nuget/dt/Wkg.AspNetCore?style=for-the-badge)](https://www.nuget.org/packages/Wkg.AspNetCore/)  
+[![NuGet](https://img.shields.io/badge/NuGet-555555?style=for-the-badge&logo=nuget)![NuGet version (Wkg.AspNetCore.TestAdapters)](https://img.shields.io/nuget/v/Wkg.AspNetCore.TestAdapters.svg?style=for-the-badge&label=Wkg.AspNetCore.TestAdapters)![NuGet downloads (Wkg.AspNetCore.TestAdapters)](https://img.shields.io/nuget/dt/Wkg.AspNetCore.TestAdapters?style=for-the-badge)](https://www.nuget.org/packages/Wkg.AspNetCore.TestAdapters/)
 
 ---
 
