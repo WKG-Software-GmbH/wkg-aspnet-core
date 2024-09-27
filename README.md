@@ -5,7 +5,7 @@
 
 ---
 
-`Wkg.AspNetCore` is a company-internal library providing reusable components for the development of ASP .NET Core applications at WKG. It provides new abstractions over existing ASP .NET Core components, provides request-scoped database transactions, new authentication options, data validation, and more.
+`Wkg.AspNetCore` is a company-internal library providing reusable components for the development of ASP .NET Core applications at WKG. It provides new abstractions over existing ASP .NET Core components, request-scoped database transactions, new authentication options, data validation, and more.
 
 A core goal of `Wkg.AspNetCore` is to simplify the development of ASP .NET Core applications by providing a set of reusable components that can be easily integrated into new or existing projects, allowing for consistent and maintainable codebases and easier testing with the `Wkg.AspNetCore.TestAdapters` library that can also be found in this repository.
 
