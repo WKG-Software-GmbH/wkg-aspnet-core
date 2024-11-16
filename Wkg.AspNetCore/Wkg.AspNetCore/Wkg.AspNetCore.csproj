@@ -34,7 +34,7 @@
             Wkg.AspNetCore introduces new abstractions over existing ASP .NET Core components, request-scoped database transactions, new authentication options, data validation, and more. It aims to simplify developing ASP .NET Core applications through a set of reusable components that can be easily integrated into new or existing projects, allowing for consistent and maintainable codebases and easier testing with the Wkg.AspNetCore.TestAdapters companion library.
         </Description>
         <Company>WKG Software GmbH</Company>
-        <Authors>WKG Software GmbH</Authors>
+        <Authors>WKG Software GmbH,Frederik Höft</Authors>
         <Copyright>Copyright (c) WKG Software GmbH 2024</Copyright>
         <PackageIcon>logo.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
