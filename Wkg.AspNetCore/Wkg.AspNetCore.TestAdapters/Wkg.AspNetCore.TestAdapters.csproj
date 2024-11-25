@@ -2,8 +2,8 @@
 
     <!--.NET build settings-->
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <LangVersion>12</LangVersion>
+        <TargetFramework>net9.0</TargetFramework>
+        <LangVersion>13</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <!-- CI injected versioning -->
@@ -21,7 +21,7 @@
         <PackageProjectUrl>https://github.com/WKG-Software-GmbH/wkg-aspnet-core</PackageProjectUrl>
         <Description>Provides unit test adapters for projects using WKG ASP.NET Core.</Description>
         <Company>WKG Software GmbH</Company>
-        <Authors>WKG Software GmbH</Authors>
+        <Authors>WKG Software GmbH,Frederik Höft</Authors>
         <Copyright>Copyright (c) WKG Software GmbH 2024</Copyright>
         <PackageIcon>logo.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
